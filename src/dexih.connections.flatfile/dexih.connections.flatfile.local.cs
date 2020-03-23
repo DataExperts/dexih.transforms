@@ -44,7 +44,7 @@ namespace dexih.connections.flatfile
             return fullPath;
         }
 
-        public override Task<List<string>> GetFileShares()
+        public override Task<List<string>> GetFileShares(CancellationToken cancellationToken)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path)
+        public override Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName)
+        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, string fileName, CancellationToken cancellationToken)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace dexih.connections.flatfile
                 var fullToDirectory = GetFullPath(file, toDirectory);
                 var fullFromDirectory = GetFullPath(file, fromDirectory);
 
-                var createDirectoryResult = await CreateDirectory(file, toDirectory);
+                var createDirectoryResult = await CreateDirectory(file, toDirectory, cancellationToken);
                 if (!createDirectoryResult)
                 {
                     return false;
@@ -137,7 +137,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
+        public override Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
@@ -151,7 +151,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
         {
             try
             {
@@ -174,7 +174,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
         {
             try
             {
@@ -213,7 +213,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
@@ -227,11 +227,11 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
-                await CreateDirectory(file, path);
+                await CreateDirectory(file, path, cancellationToken);
                 var fullDirectory = GetFullPath(file, path);
                 Stream reader = File.OpenWrite(Path.Combine(fullDirectory, fileName));
                 return reader;
@@ -242,11 +242,11 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
+        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream, CancellationToken cancellationToken)
         {
             try
             {
-                await CreateDirectory(file, path);
+                await CreateDirectory(file, path, cancellationToken);
 
 //                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 //                var fileNameExtension = Path.GetExtension(fileName);
@@ -282,7 +282,7 @@ namespace dexih.connections.flatfile
 //                }
 //				else 
 //				{
-                    var filePath = FixFileName(file, path, fileName);
+                    var filePath = FixFileName(file, path, fileName, cancellationToken);
 	                var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile);
@@ -298,7 +298,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        private string FixFileName(FlatFile file, EFlatFilePath path, string fileName)
+        private string FixFileName(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
 			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 			var fileNameExtension = Path.GetExtension(fileName);
@@ -320,7 +320,7 @@ namespace dexih.connections.flatfile
 			return filePath;
 		}
 
-        public override Task<bool> TestFileConnection()
+        public override Task<bool> TestFileConnection(CancellationToken cancellationToken)
         {
             try
             {

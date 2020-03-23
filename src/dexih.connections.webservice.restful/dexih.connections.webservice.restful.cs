@@ -437,7 +437,7 @@ namespace dexih.connections.webservice.restful
 			throw new ConnectionException("Truncate table cannot be used as the webservice is readonly.");
         }
 
-        public override Task<Table> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
             try
             {

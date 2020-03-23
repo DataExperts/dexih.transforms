@@ -211,7 +211,7 @@ namespace dexih.transforms
                     await TargetConnection.CreateTable(TargetTable, false, cancellationToken);
                 }
 
-                await TargetConnection.DataWriterStart(TargetTable);
+                await TargetConnection.DataWriterStart(TargetTable, cancellationToken);
 
                 if (WriterOptions.CheckTarget(TargetTable.Name))
                 {
@@ -716,7 +716,7 @@ namespace dexih.transforms
             {
                 if (TargetConnection != null)
                 {
-                    await TargetConnection?.DataWriterFinish(TargetTable);
+                    await TargetConnection?.DataWriterFinish(TargetTable, cancellationToken);
                 }
             }
             catch(Exception ex)

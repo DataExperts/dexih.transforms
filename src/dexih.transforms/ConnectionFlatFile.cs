@@ -20,16 +20,16 @@ namespace dexih.transforms
 {
     public abstract class ConnectionFlatFile : Connection
     {
-        public abstract Task<List<string>> GetFileShares();
-        public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path);
-        public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName);
-        public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern);
-        public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path);
-        public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName);
-        public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream);
-        public abstract Task<bool> TestFileConnection();
+        public abstract Task<List<string>> GetFileShares(CancellationToken cancellationToken);
+        public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
+        public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName, CancellationToken cancellationToken);
+        public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
+        public abstract Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken);
+        public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
+        public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
+        public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
+        public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream, CancellationToken cancellationToken);
+        public abstract Task<bool> TestFileConnection(CancellationToken cancellationToken);
         public abstract string GetFullPath(FlatFile file, EFlatFilePath path);
         
         public override bool CanBulkLoad => true;
@@ -57,26 +57,26 @@ namespace dexih.transforms
         {
 			var flatFile = (FlatFile)table;
             //create the subdirectories
-            await CreateDirectory(flatFile, EFlatFilePath.Incoming);
+            await CreateDirectory(flatFile, EFlatFilePath.Incoming, cancellationToken);
         }
 
         public override async Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {
             DefaultDatabase = databaseName;
             //create the subdirectories
-            await CreateDirectory(null, EFlatFilePath.None);
+            await CreateDirectory(null, EFlatFilePath.None, cancellationToken);
         }
 
-        public async Task<bool> CreateFilePaths(FlatFile flatFile)
+        public async Task<bool> CreateFilePaths(FlatFile flatFile, CancellationToken cancellationToken)
         {
             //create the subdirectories
-            var returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming);
+            var returnValue = await CreateDirectory(flatFile, EFlatFilePath.Incoming, cancellationToken);
             if (returnValue == false) return false;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Outgoing);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Outgoing, cancellationToken);
             if (returnValue == false) return false;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Processed);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Processed, cancellationToken);
             if (returnValue == false) return false;
-            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected);
+            returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected, cancellationToken);
             return returnValue;
         }
         
@@ -90,11 +90,11 @@ namespace dexih.transforms
         /// <param name="stream"></param>
         /// <returns></returns>
         /// <exception cref="ConnectionException"></exception>
-        public async Task<bool> SaveFiles(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
+        public async Task<bool> SaveFiles(FlatFile file, EFlatFilePath path, string fileName, Stream stream, CancellationToken cancellationToken)
         {
             try
             {
-                await CreateDirectory(file, path);
+                await CreateDirectory(file, path, cancellationToken);
 
                 var fileNameExtension = Path.GetExtension(fileName);
 
@@ -106,7 +106,7 @@ namespace dexih.transforms
                         foreach(var entry in archive.Entries)
                         {
                             if(string.IsNullOrEmpty(entry.Name) || entry.FullName.StartsWith("__MACOSX") || entry.Length == 0) continue;
-                            result = result & await SaveFileStream(file, path, entry.Name, entry.Open());
+                            result = result & await SaveFileStream(file, path, entry.Name, entry.Open(), cancellationToken);
                         }
 
 	                }
@@ -116,12 +116,12 @@ namespace dexih.transforms
                     using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
                     {
                         var newFileName = fileName.Substring(0, fileName.Length - 3);
-                        return await SaveFileStream(file, path, newFileName, decompressionStream);
+                        return await SaveFileStream(file, path, newFileName, decompressionStream, cancellationToken);
                     }
                 }
 				else 
 				{
-                    return await SaveFileStream(file, path, fileName, stream);
+                    return await SaveFileStream(file, path, fileName, stream, cancellationToken);
 				}
             }
             catch (Exception ex)
@@ -138,22 +138,22 @@ namespace dexih.transforms
         /// <param name="fromDirectory"></param>
         /// <param name="toDirectory"></param>
         /// <returns></returns>
-        public async Task<bool> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory)
+        public async Task<bool> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, CancellationToken cancellationToken)
         {
-            return await MoveFile(flatFile, fromDirectory, toDirectory, fileName);
+            return await MoveFile(flatFile, fromDirectory, toDirectory, fileName, cancellationToken);
         }
 
-        public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream)
+        public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream, CancellationToken cancellationToken)
         {
-            return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream);
+            return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream, cancellationToken);
         }
 
-        public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path)
+        public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path, CancellationToken cancellationToken)
         {
-            return await GetFileList(flatFile, path);
+            return await GetFileList(flatFile, path, cancellationToken);
         }
 
-        public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles = false)
+        public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles, CancellationToken cancellationToken)
         {
             
             if (zipFiles)
@@ -164,7 +164,7 @@ namespace dexih.transforms
                 {
                     foreach (var fileName in fileNames)
                     {
-                        var fileStreamResult = await GetReadFileStream(flatFile, path, fileName);
+                        var fileStreamResult = await GetReadFileStream(flatFile, path, fileName, cancellationToken);
                         var fileEntry = archive.CreateEntry(fileName);
 
                         using (var fileEntryStream = fileEntry.Open())
@@ -181,7 +181,7 @@ namespace dexih.transforms
             {
                 if(fileNames.Length == 1)
                 {
-                    return await GetReadFileStream(flatFile, path, fileNames[0]);
+                    return await GetReadFileStream(flatFile, path, fileNames[0], cancellationToken);
                 }
                 else
                 {
@@ -190,7 +190,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task DataWriterStart(Table table)
+        public override async Task DataWriterStart(Table table, CancellationToken cancellationToken)
         {
             try
             {
@@ -203,7 +203,7 @@ namespace dexih.transforms
                 }
                 
                 var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
-                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName);
+                var writerResult = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName, cancellationToken);
 
                 //open a new filestream and write a headerrow
                 _fileStream = writerResult ?? throw new ConnectionException($"Flat file write failed, could not get a write stream for {flatFile.Name}.");
@@ -228,7 +228,7 @@ namespace dexih.transforms
             }
         }
 
-        public override Task DataWriterFinish(Table table)
+        public override Task DataWriterFinish(Table table, CancellationToken cancellationToken)
         {
             _fileWriter.Dispose();
             _fileStream.Dispose();
@@ -277,7 +277,7 @@ namespace dexih.transforms
 
         public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
-            return await GetFileShares();
+            return await GetFileShares(cancellationToken);
         }
 
         public override async Task<Table> GetSourceTableInfo(Table originalTable, CancellationToken cancellationToken = default)
@@ -359,7 +359,7 @@ namespace dexih.transforms
         public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             var flatFile = (FlatFile)table;
-            var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern);
+            var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern, cancellationToken);
             if(fileEnumerator == null)
             {
                 throw new ConnectionException($"Truncate failed, as no files were found.");
@@ -367,7 +367,7 @@ namespace dexih.transforms
 
             while(fileEnumerator.MoveNext())
             {
-                var deleteResult = await DeleteFile(flatFile, EFlatFilePath.Incoming, fileEnumerator.Current.FileName);
+                var deleteResult = await DeleteFile(flatFile, EFlatFilePath.Incoming, fileEnumerator.Current.FileName, cancellationToken);
                 if(!deleteResult)
                 {
                     return;
@@ -375,7 +375,7 @@ namespace dexih.transforms
             }
         }
 
-        public override async Task<Table> InitializeTable(Table table, int position)
+        public override async Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
 			var flatFile = new FlatFile();
             table.CopyProperties(flatFile, false);
@@ -385,7 +385,7 @@ namespace dexih.transforms
             flatFile.AutoManageFiles = true;
             flatFile.FormatType = ETypeCode.Text;
             
-            await CreateFilePaths(flatFile);
+            await CreateFilePaths(flatFile, cancellationToken);
 
             return flatFile;
         }
@@ -408,7 +408,7 @@ namespace dexih.transforms
                 var flatFile = (FlatFile)table;
 
                 //open a new filestream 
-                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName))
+                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName, cancellationToken))
                 using (var streamWriter = new StreamWriter(writer))
                 using (var csv = new CsvWriter(streamWriter, flatFile.FileConfiguration))
                 {

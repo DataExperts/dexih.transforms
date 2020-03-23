@@ -55,7 +55,7 @@ namespace dexih.connections.ftp
             return path + "/" + filename;
         }
 
-        private async Task<FtpClient> GetFtpClient()
+        private async Task<FtpClient> GetFtpClient(CancellationToken cancellationToken)
         {
             bool secure;
 
@@ -91,7 +91,7 @@ namespace dexih.connections.ftp
                 client.SslProtocols = SslProtocols.Tls;
             }
 
-            await client.ConnectAsync();
+            await client.ConnectAsync(cancellationToken);
 
             if (!string.IsNullOrEmpty(workingDirectory))
             {
@@ -101,16 +101,16 @@ namespace dexih.connections.ftp
             return client;
         }
         
-        public override async Task<List<string>> GetFileShares()
+        public override async Task<List<string>> GetFileShares(CancellationToken cancellationToken)
         {
             try
             {
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
 
                     var directories = new List<string>();
 
-                    foreach (var item in client.GetListing())
+                    foreach (var item in await client.GetListingAsync(cancellationToken))
                     {
                         if (item.Type == FtpFileSystemObjectType.Directory)
                         {
@@ -127,17 +127,17 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path)
+        public override async Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
         {
             try
             {
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
 
                     var directory = DefaultDatabase;
                     if (!client.DirectoryExists(directory))
                     {
-                        await client.CreateDirectoryAsync(directory);
+                        await client.CreateDirectoryAsync(directory, cancellationToken);
                     }
 
                     if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
@@ -145,7 +145,7 @@ namespace dexih.connections.ftp
                         directory = CombinePath(DefaultDatabase, file.FileRootPath);
                         if (!client.DirectoryExists(directory))
                         {
-                            await client.CreateDirectoryAsync(directory);
+                            await client.CreateDirectoryAsync(directory, cancellationToken);
                         }
                     }
 
@@ -154,7 +154,7 @@ namespace dexih.connections.ftp
                         directory = CombinePath(directory, file.GetPath(path));
                         if (!client.DirectoryExists(directory))
                         {
-                            await client.CreateDirectoryAsync(directory);
+                            await client.CreateDirectoryAsync(directory, cancellationToken);
                         }
                     }
 
@@ -167,7 +167,7 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName)
+        public override async Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName, CancellationToken cancellationToken)
         {
             try
             {
@@ -179,24 +179,24 @@ namespace dexih.connections.ftp
                 var fullToDirectory = GetFullPath(file, toPath);
                 var fullFromDirectory = GetFullPath(file, fromPath);
 
-                var createDirectoryResult = await CreateDirectory(file, toPath);
+                var createDirectoryResult = await CreateDirectory(file, toPath, cancellationToken);
                 if (!createDirectoryResult)
                 {
                     return false;
                 }
 
-                using (var client = await  GetFtpClient())
+                using (var client = await  GetFtpClient(cancellationToken))
                 {
 
                     // if there is already a file with the same name on the target directory, add a version number until a unique name is found.
-                    while (await client.FileExistsAsync(CombinePath(fullToDirectory, newFileName)))
+                    while (await client.FileExistsAsync(CombinePath(fullToDirectory, newFileName), cancellationToken))
                     {
                         version++;
                         newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
                     }
 
                     await client.MoveFileAsync(CombinePath(fullFromDirectory, fileName),
-                        CombinePath(fullToDirectory, newFileName));
+                        CombinePath(fullToDirectory, newFileName), token: cancellationToken);
                     return true;
                 }
 
@@ -207,14 +207,14 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
                     var fullDirectory = GetFullPath(file, path);
-                    await client.DeleteFileAsync(CombinePath(fullDirectory, fileName));
+                    await client.DeleteFileAsync(CombinePath(fullDirectory, fileName), cancellationToken);
                     return true;
                 }
             }
@@ -224,17 +224,16 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern)
+        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
         {
             try
             {
                 var files = new List<DexihFileProperties>();
 
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
-
                     var fullDirectory = GetFullPath(file, path);
-                    var directoryListing = await client.GetListingAsync(fullDirectory);
+                    var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
                     foreach (var directoryItem in directoryListing)
                     {
                         if (directoryItem.Type == FtpFileSystemObjectType.File &&
@@ -259,16 +258,16 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path)
+        public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
         {
             try
             {
                 var files = new List<DexihFileProperties>();
 
                 var fullDirectory = GetFullPath(file, path);
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
-                    var directoryListing = await client.GetListingAsync(fullDirectory);
+                    var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
                     foreach (var directoryItem in directoryListing)
                     {
                         if (directoryItem.Type == FtpFileSystemObjectType.File)
@@ -292,13 +291,13 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
                 var fullDirectory = GetFullPath(file, path);
-                var client = await GetFtpClient();
-                var reader = await client.OpenReadAsync(CombinePath(fullDirectory, fileName), FtpDataType.ASCII);
+                var client = await GetFtpClient(cancellationToken);
+                var reader = await client.OpenReadAsync(CombinePath(fullDirectory, fileName), FtpDataType.ASCII, cancellationToken);
                 var ftpStream = new FtpStream(reader, client);
                 return ftpStream;
             }
@@ -308,15 +307,15 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName)
+        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
             {
 
-                await CreateDirectory(file, path);
-                var client = await GetFtpClient();
+                await CreateDirectory(file, path, cancellationToken);
+                var client = await GetFtpClient(cancellationToken);
                 var fullDirectory = GetFullPath(file, path);
-                var reader = await client.OpenWriteAsync(CombinePath(fullDirectory, fileName), FtpDataType.ASCII);
+                var reader = await client.OpenWriteAsync(CombinePath(fullDirectory, fileName), FtpDataType.ASCII, cancellationToken);
 
                 var ftpStream = new FtpStream(reader, client);
                 return ftpStream;
@@ -327,15 +326,15 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream)
+        public override async Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream stream, CancellationToken cancellationToken)
         {
             try
             {
-                await CreateDirectory(file, path);
-                var filePath = await FixFileName(file, path, fileName);
+                await CreateDirectory(file, path, cancellationToken);
+                var filePath = await FixFileName(file, path, fileName, cancellationToken);
 
-                using (var client = await GetFtpClient())
-                using (var newFile = await client.OpenWriteAsync(filePath, FtpDataType.ASCII))
+                using (var client = await GetFtpClient(cancellationToken))
+                using (var newFile = await client.OpenWriteAsync(filePath, FtpDataType.ASCII, cancellationToken))
                 {
                     await stream.CopyToAsync(newFile);
                     stream.Close();
@@ -348,7 +347,7 @@ namespace dexih.connections.ftp
             }
         }
 
-        private async Task<string> FixFileName(FlatFile file, EFlatFilePath path, string fileName)
+        private async Task<string> FixFileName(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
          {
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
             var fileNameExtension = Path.GetExtension(fileName);
@@ -359,9 +358,9 @@ namespace dexih.connections.ftp
     
     
              var newFileName = fileName;
-             using (var client = await GetFtpClient())
+             using (var client = await GetFtpClient(cancellationToken))
              {
-                 while (await client.FileExistsAsync(CombinePath(fullPath, newFileName)))
+                 while (await client.FileExistsAsync(CombinePath(fullPath, newFileName), cancellationToken))
                  {
                      version++;
                      newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
@@ -373,11 +372,11 @@ namespace dexih.connections.ftp
              }
          }
 
-        public override async Task<bool> TestFileConnection()
+        public override async Task<bool> TestFileConnection(CancellationToken cancellationToken)
         {
             try
             {
-                using (await GetFtpClient())
+                using (await GetFtpClient(cancellationToken))
                 {
                     State = EConnectionState.Open;
                     return true;
@@ -396,7 +395,7 @@ namespace dexih.connections.ftp
 				var flatFile = (FlatFile)table;
                 var fullPath = CombinePath(DefaultDatabase, flatFile.FileRootPath ?? "");
 
-                using (var client = await GetFtpClient())
+                using (var client = await GetFtpClient(cancellationToken))
                 {
 
                     var exists = client.DirectoryExists(fullPath);

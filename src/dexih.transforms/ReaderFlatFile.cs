@@ -82,12 +82,12 @@ namespace dexih.transforms
             if (string.IsNullOrEmpty(requestQuery?.FileName))
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
-                    CacheFlatFile.FileMatchPattern);
+                    CacheFlatFile.FileMatchPattern, cancellationToken);
             }
             else
             {
                 _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, requestQuery.Path,
-                    requestQuery.FileName);
+                    requestQuery.FileName, cancellationToken);
             }
             
             if (_files.MoveNext() == false)
@@ -95,7 +95,7 @@ namespace dexih.transforms
                 throw new ConnectionException($"There are no matching files in the incoming directory.");
             }
 
-            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
+            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName, cancellationToken);
 
             try
             {
@@ -145,7 +145,7 @@ namespace dexih.transforms
                     {
                         try
                         {
-                            await _fileConnection.MoveFile(CacheFlatFile, EFlatFilePath.Incoming, EFlatFilePath.Processed, _files.Current.FileName); //backup the completed file
+                            await _fileConnection.MoveFile(CacheFlatFile, EFlatFilePath.Incoming, EFlatFilePath.Processed, _files.Current.FileName, cancellationToken); //backup the completed file
                         }
                         catch(Exception ex)
                         {
@@ -160,7 +160,7 @@ namespace dexih.transforms
 
                     try
                     {
-                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName);
+                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName, cancellationToken);
                         await _fileHandler.SetStream(fileStream, SelectQuery);
                     }
                     catch (Exception ex)

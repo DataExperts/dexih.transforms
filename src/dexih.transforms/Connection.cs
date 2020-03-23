@@ -257,7 +257,7 @@ namespace dexih.transforms
         public async Task<Table> GetSourceTableInfo(string tableName, CancellationToken cancellationToken = default)
         {
             var table = new Table(tableName);
-            var initResult = await InitializeTable(table, 0);
+            var initResult = await InitializeTable(table, 0, cancellationToken);
             if(initResult == null)
             {
                 return null;
@@ -271,7 +271,7 @@ namespace dexih.transforms
         /// <param name="table"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        public abstract Task<Table> InitializeTable(Table table, int position);
+        public abstract Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken);
 
         #endregion
         
@@ -596,7 +596,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public virtual Task DataWriterStart(Table table)
+        public virtual Task DataWriterStart(Table table, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -900,7 +900,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public virtual Task DataWriterFinish(Table table)
+        public virtual Task DataWriterFinish(Table table, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

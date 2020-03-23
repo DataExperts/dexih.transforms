@@ -30,7 +30,7 @@ namespace dexih.transforms
         public override bool CanUseDbAutoIncrement => false;
         public override bool DynamicTableCreation => false;
 
-        public override Task<Table> InitializeTable(Table table, int position) => Task.FromResult(table);
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken) => Task.FromResult(table);
 
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default) => Task.FromResult(true);
 

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AssemblyName>dexih.connections.github.tests</AssemblyName>
+        <RootNamespace>dexih.connections.github.tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+      <PackageReference Include="xunit" Version="2.4.1" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\dexih.connections.github\dexih.connections.github.csproj" />
+      <ProjectReference Include="..\..\src\dexih.transforms\dexih.transforms.csproj" />
+    </ItemGroup>
+
+</Project>

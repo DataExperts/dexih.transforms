@@ -111,7 +111,7 @@ namespace dexih.connections.test
             _output.WriteLine($"Reader with data converter, columns: {table.Columns.Count}, row average {1000*rows/time} r/s, column average: {(1000*rows*table.Columns.Count)/time}");
 
             //start a datawriter and insert the test data
-            await connection.DataWriterStart(table);
+            await connection.DataWriterStart(table, CancellationToken.None);
                     
             readerMemory = new ReaderMemory(table);
             cleanedReader = new ReaderConvertDataTypes(connection, readerMemory);
@@ -342,7 +342,7 @@ namespace dexih.connections.test
                 if (buffer >= 5000 || rows == i + 1)
                 {
                     //start a datawriter and insert the test data
-                    await connection.DataWriterStart(table);
+                    await connection.DataWriterStart(table, CancellationToken.None);
                     await connection.ExecuteInsertBulk(table, new ReaderMemory(table), CancellationToken.None);
 
                     table.Data.Clear();

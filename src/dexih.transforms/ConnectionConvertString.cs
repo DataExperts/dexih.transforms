@@ -102,7 +102,7 @@ namespace dexih.transforms
             throw new NotImplementedException();
         }
 
-        public override Task<Table> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

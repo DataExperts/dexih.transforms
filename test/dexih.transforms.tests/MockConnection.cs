@@ -105,7 +105,7 @@ namespace dexih.transforms.tests
             throw new System.NotImplementedException();
         }
 
-        public override Task<Table> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();
         }

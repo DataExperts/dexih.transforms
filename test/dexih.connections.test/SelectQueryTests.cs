@@ -25,18 +25,18 @@ namespace dexih.connections.test
         {
             // create a new table with data.
             var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
-            var table = await connection.InitializeTable(newTable, 1000);
+            var table = await connection.InitializeTable(newTable, 1000, CancellationToken.None);
             await connection.CreateTable(newTable, false);
             
             //start a data writer and insert the test data
-            await connection.DataWriterStart(table);
+            await connection.DataWriterStart(table, CancellationToken.None);
             var testData = DataSets.CreateTestData();
 
             var convertedTestData = new ReaderConvertDataTypes(connection, testData);
             await convertedTestData.Open();
             await connection.ExecuteInsertBulk(table, convertedTestData, CancellationToken.None);
 
-            await connection.DataWriterFinish(table);
+            await connection.DataWriterFinish(table, CancellationToken.None);
 
             _output.WriteLine("Testing select columns");
             var selectQuery = new SelectQuery()

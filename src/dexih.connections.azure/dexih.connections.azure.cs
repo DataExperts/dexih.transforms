@@ -779,7 +779,7 @@ namespace dexih.connections.azure
         }
 
 
-        public override Task<Table> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
             if (table.Columns.All(c => c.DeltaType != EDeltaType.PartitionKey))
             {

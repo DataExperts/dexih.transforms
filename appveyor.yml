@@ -47,7 +47,10 @@ test_script:
 - dotnet test 
 - cd ..\dexih.connections.webservice.restful.tests
 - dotnet test 
+- cd ..\dexih.connections.github.tests
+- dotnet test 
 - cd ..\..
+
 artifacts:
   - path: artifacts\dexih.connections*.nupkg
   - path: artifacts\dexih.transforms*.nupkg

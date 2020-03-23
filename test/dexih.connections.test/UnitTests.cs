@@ -30,7 +30,7 @@ namespace dexih.connections.test
             _output.WriteLine("Using database: " + databaseName);
             
             var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
-            var table = await connection.InitializeTable(newTable, 1000);
+            var table = await connection.InitializeTable(newTable, 1000, CancellationToken.None);
 
             //create the table
             await connection.CreateTable(table, true, CancellationToken.None);
@@ -76,7 +76,7 @@ namespace dexih.connections.test
                 var filename = fileConnection.LastWrittenFile;
 
                 var fileMoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
-                    EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
+                    EFlatFilePath.Outgoing, EFlatFilePath.Incoming, CancellationToken.None);
                     
                 Assert.True(fileMoveResult);
             }
@@ -206,14 +206,14 @@ namespace dexih.connections.test
                 await connection.TruncateTable(table, CancellationToken.None);
 
                 //start a data writer and insert the test data
-                await connection.DataWriterStart(table);
+                await connection.DataWriterStart(table, CancellationToken.None);
                 var testData = DataSets.CreateTestData();
 
                 var convertedTestData = new ReaderConvertDataTypes(connection, testData);
                 await convertedTestData.Open();
                 await connection.ExecuteInsertBulk(table, convertedTestData, CancellationToken.None);
 
-                await connection.DataWriterFinish(table);
+                await connection.DataWriterFinish(table, CancellationToken.None);
 
                 ////if the write was a file.  move it back to the incoming directory to read it.
                 if(connection.Attributes.ConnectionCategory == Connection.EConnectionCategory.File)
@@ -222,7 +222,7 @@ namespace dexih.connections.test
                     var filename = fileConnection.LastWrittenFile;
 
                     var fileMoveResult = await fileConnection.MoveFile((FlatFile) table, filename,
-                        EFlatFilePath.Outgoing, EFlatFilePath.Incoming);
+                        EFlatFilePath.Outgoing, EFlatFilePath.Incoming, CancellationToken.None);
                     
                     Assert.True(fileMoveResult);
                 }

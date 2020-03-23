@@ -327,7 +327,7 @@ namespace dexih.connections.excel
         }
 	    
 
-        public override Task<Table> InitializeTable(Table table, int position)
+        public override Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken)
         {
             return Task.FromResult(table);
         }
