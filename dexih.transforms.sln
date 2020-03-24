@@ -100,6 +100,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.github", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.github.tests", "test\dexih.connections.github.tests\dexih.connections.github.tests.csproj", "{44E81143-3B71-463A-A52D-3A0F07F6FA77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions.tests.async", "test\dexih.functions.tests.async\dexih.functions.tests.async.csproj", "{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -614,6 +616,18 @@ Global
 		{44E81143-3B71-463A-A52D-3A0F07F6FA77}.Release|x64.Build.0 = Release|Any CPU
 		{44E81143-3B71-463A-A52D-3A0F07F6FA77}.Release|x86.ActiveCfg = Release|Any CPU
 		{44E81143-3B71-463A-A52D-3A0F07F6FA77}.Release|x86.Build.0 = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|x64.Build.0 = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Debug|x86.Build.0 = Debug|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x64.ActiveCfg = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x64.Build.0 = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x86.ActiveCfg = Release|Any CPU
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -661,6 +675,7 @@ Global
 		{BE611EF4-1994-472E-B56E-FD6944E01CD1} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{B460CF52-643E-4337-BC53-DBF41EA09307} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{44E81143-3B71-463A-A52D-3A0F07F6FA77} = {4712A230-9747-4447-B4C5-022006511342}
+		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED} = {4712A230-9747-4447-B4C5-022006511342}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5BB1D6C4-C2EC-45ED-AB2E-F43CD8D84EA3}
