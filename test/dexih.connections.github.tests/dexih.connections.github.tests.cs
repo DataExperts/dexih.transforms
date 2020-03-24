@@ -40,11 +40,13 @@ namespace dexih.connections.github.tests
         {
             var connection = GetConnection();
             
-            var tables = await connection.GetFiles(new FlatFile(), EFlatFilePath.None, CancellationToken.None);
-
-            Assert.Single(tables);
-            Assert.Equal("sample_data.csv", tables[0].FileName);
-            Assert.Equal(new DateTime(2020, 3, 23), tables[0].LastModified.Date);
+            var tables =  connection.GetFileEnumerator(new FlatFile(), EFlatFilePath.None, "", CancellationToken.None);
+            var tablesEnum = tables.GetAsyncEnumerator();
+            Assert.True(await tablesEnum.MoveNextAsync());
+            Assert.Equal("sample_data.csv", tablesEnum.Current.FileName);
+            Assert.Equal(new DateTime(2020, 3, 23), tablesEnum.Current.LastModified.Date);
+            
+            Assert.False(await tablesEnum.MoveNextAsync());
         }
 
         [Fact]
