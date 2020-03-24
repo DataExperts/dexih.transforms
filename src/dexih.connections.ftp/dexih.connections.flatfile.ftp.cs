@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -224,72 +225,62 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
+            string searchPattern, [EnumeratorCancellation]CancellationToken cancellationToken)
         {
-            try
+            using (var client = await GetFtpClient(cancellationToken))
             {
-                var files = new List<DexihFileProperties>();
-
-                using (var client = await GetFtpClient(cancellationToken))
-                {
-                    var fullDirectory = GetFullPath(file, path);
-                    var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
-                    foreach (var directoryItem in directoryListing)
-                    {
-                        if (directoryItem.Type == FtpFileSystemObjectType.File &&
-                            (string.IsNullOrEmpty(searchPattern) || FitsMask(directoryItem.Name, searchPattern)))
-                        {
-                            files.Add(new DexihFileProperties()
-                            {
-                                FileName = directoryItem.Name,
-                                LastModified = directoryItem.Modified,
-                                Length = directoryItem.Size
-                            });
-                        }
-                    }
-
-                    var newFiles = new DexihFiles(files.ToArray());
-                    return newFiles;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Error occurred getting files from {path} with pattern {searchPattern}.  {ex.Message}", ex);
-            }
-        }
-
-        public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var files = new List<DexihFileProperties>();
-
                 var fullDirectory = GetFullPath(file, path);
-                using (var client = await GetFtpClient(cancellationToken))
+                var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
+                foreach (var directoryItem in directoryListing)
                 {
-                    var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
-                    foreach (var directoryItem in directoryListing)
+                    if (directoryItem.Type == FtpFileSystemObjectType.File &&
+                        (string.IsNullOrEmpty(searchPattern) || FitsMask(directoryItem.Name, searchPattern)))
                     {
-                        if (directoryItem.Type == FtpFileSystemObjectType.File)
+                        var properties = new DexihFileProperties()
                         {
-                            files.Add(new DexihFileProperties()
-                            {
-                                FileName = directoryItem.Name,
-                                LastModified = directoryItem.Modified,
-                                Length = directoryItem.Size,
-                                ContentType = ""
-                            });
-                        }
+                            FileName = directoryItem.Name,
+                            LastModified = directoryItem.Modified,
+                            Length = directoryItem.Size
+                        };
+                        yield return properties;
                     }
-
-                    return files;
                 }
             }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
-            }
         }
+
+        // public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
+        // {
+        //     try
+        //     {
+        //         var files = new List<DexihFileProperties>();
+        //
+        //         var fullDirectory = GetFullPath(file, path);
+        //         using (var client = await GetFtpClient(cancellationToken))
+        //         {
+        //             var directoryListing = await client.GetListingAsync(fullDirectory, cancellationToken);
+        //             foreach (var directoryItem in directoryListing)
+        //             {
+        //                 if (directoryItem.Type == FtpFileSystemObjectType.File)
+        //                 {
+        //                     files.Add(new DexihFileProperties()
+        //                     {
+        //                         FileName = directoryItem.Name,
+        //                         LastModified = directoryItem.Modified,
+        //                         Length = directoryItem.Size,
+        //                         ContentType = ""
+        //                     });
+        //                 }
+        //             }
+        //
+        //             return files;
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
+        //     }
+        // }
 
         public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {

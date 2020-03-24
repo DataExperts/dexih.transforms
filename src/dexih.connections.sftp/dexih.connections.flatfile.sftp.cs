@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -219,73 +220,63 @@ namespace dexih.connections.sftp
             }
         }
 
-        public override Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
+            string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            try
+            using (var client = GetSftpClient())
             {
-                var files = new List<DexihFileProperties>();
-
-                using (var client = GetSftpClient())
-                {
-
-                    var fullDirectory = GetFullPath(file, path);
-                    var directoryListing = client.ListDirectory(fullDirectory);
-                    foreach (var directoryItem in directoryListing)
-                    {
-                        if (directoryItem.IsRegularFile &&
-                            (string.IsNullOrEmpty(searchPattern) || FitsMask(directoryItem.Name, searchPattern)))
-                        {
-                            files.Add(new DexihFileProperties()
-                            {
-                                FileName = directoryItem.Name,
-                                LastModified = directoryItem.LastWriteTime,
-                                Length = directoryItem.Length
-                            });
-                        }
-                    }
-
-                    var newFiles = new DexihFiles(files.ToArray());
-                    return Task.FromResult(newFiles);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Error occurred getting files from {path} with pattern {searchPattern}.  {ex.Message}", ex);
-            }
-        }
-
-        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var files = new List<DexihFileProperties>();
 
                 var fullDirectory = GetFullPath(file, path);
-                using (var client = GetSftpClient())
+                var directoryListing = client.ListDirectory(fullDirectory);
+                foreach (var directoryItem in directoryListing)
                 {
-                    var directoryListing = client.ListDirectory(fullDirectory);
-                    foreach (var directoryItem in directoryListing)
+                    if (directoryItem.IsRegularFile &&
+                        (string.IsNullOrEmpty(searchPattern) || FitsMask(directoryItem.Name, searchPattern)))
                     {
-                        if (directoryItem.IsRegularFile)
+                        var properties = new DexihFileProperties()
                         {
-                            files.Add(new DexihFileProperties()
-                            {
-                                FileName = directoryItem.Name,
-                                LastModified = directoryItem.LastWriteTime,
-                                Length = directoryItem.Length,
-                                ContentType = ""
-                            });
-                        }
+                            FileName = directoryItem.Name,
+                            LastModified = directoryItem.LastWriteTime,
+                            Length = directoryItem.Length
+                        };
+                        yield return properties;
                     }
-
-                    return Task.FromResult(files);
                 }
             }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
-            }
         }
+        
+        // public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
+        // {
+        //     try
+        //     {
+        //         var files = new List<DexihFileProperties>();
+        //
+        //         var fullDirectory = GetFullPath(file, path);
+        //         using (var client = GetSftpClient())
+        //         {
+        //             var directoryListing = client.ListDirectory(fullDirectory);
+        //             foreach (var directoryItem in directoryListing)
+        //             {
+        //                 if (directoryItem.IsRegularFile)
+        //                 {
+        //                     files.Add(new DexihFileProperties()
+        //                     {
+        //                         FileName = directoryItem.Name,
+        //                         LastModified = directoryItem.LastWriteTime,
+        //                         Length = directoryItem.Length,
+        //                         ContentType = ""
+        //                     });
+        //                 }
+        //             }
+        //
+        //             return Task.FromResult(files);
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
+        //     }
+        // }
 
         public override Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {

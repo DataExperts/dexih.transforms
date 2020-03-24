@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace dexih.connections.github
         Name = "GitHub Flat File", 
         Description = "Flat files from a github repository",
         DatabaseDescription = "Sub Directory",
-        ServerDescription = "Github Repository (use format :owner/:repo)",
+        ServerDescription = "Github Repository.  Use format owner/repo (e.g. DataExperts/TestRepository",
         AllowsConnectionString = false,
         AllowsSql = false,
         AllowsFlatFiles = true,
@@ -182,64 +183,59 @@ namespace dexih.connections.github
             throw new ConnectionException($"Deleting files not supported");
         }
 
-        private async Task<List<DexihFileProperties>> GetFiles(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
+        private async IAsyncEnumerable<DexihFileProperties> GetFiles(FlatFile file, EFlatFilePath path,
+            string searchPattern,[EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            try
+            var fullDirectory = GetFullPath(file, path);
+
+            var gitHubFiles =
+                await GitHubAction("contents/" + fullDirectory, HttpMethod.Get, null, CancellationToken.None);
+
+            foreach (var item in gitHubFiles.RootElement.EnumerateArray())
             {
-                var fullDirectory = GetFullPath(file, path);
-                
-                var gitHubFiles = await GitHubAction("contents/" + fullDirectory, HttpMethod.Get, null, CancellationToken.None);
-
-                var files = new List<DexihFileProperties>();
-
-                foreach (var item in gitHubFiles.RootElement.EnumerateArray())
+                if (item.TryGetProperty("type", out var type))
                 {
-                    if (item.TryGetProperty("type", out var type))
+                    if (type.GetString() == "file")
                     {
-                        if (type.GetString() == "file")
+                        var name = item.GetProperty("name").GetString();
+                        if (string.IsNullOrEmpty(searchPattern) || FitsMask(name, searchPattern))
                         {
-                            var name = item.GetProperty("name").GetString();
-                            if (string.IsNullOrEmpty(searchPattern) || FitsMask(name, searchPattern))
+                            var properties = new DexihFileProperties()
                             {
-                                var properties = new DexihFileProperties()
-                                {
-                                    FileName = item.GetProperty("name").GetString(),
-                                    Length = item.GetProperty("size").GetInt32(),
-                                    ContentType = ""
-                                };
-                            
-                                var commit = await GitHubAction("commits?path=" + HttpUtility.HtmlEncode(DefaultDatabase), HttpMethod.Get, null, CancellationToken.None);
-                                var commitItem = commit.RootElement.EnumerateArray().First();
-                                var date = commitItem.GetProperty("commit").GetProperty("committer").GetProperty("date")
-                                    .GetDateTime();
-                                properties.LastModified = date;
+                                FileName = item.GetProperty("name").GetString(),
+                                Length = item.GetProperty("size").GetInt32(),
+                                ContentType = ""
+                            };
 
-                                files.Add(properties);
-                            }
+                            var commit = await GitHubAction("commits?path=" + HttpUtility.HtmlEncode(DefaultDatabase),
+                                HttpMethod.Get, null, CancellationToken.None);
+                            var commitItem = commit.RootElement.EnumerateArray().First();
+                            var date = commitItem.GetProperty("commit").GetProperty("committer").GetProperty("date")
+                                .GetDateTime();
+                            properties.LastModified = date;
+
+                            yield return properties;
                         }
                     }
-                    else
-                    {
-                        throw new ConnectionException($"Github error occurred getting directories from {Server}.  The \"type\" property could not be found.", new Exception("Full response: " + gitHubFiles));
-                    }
                 }
-
-                return files;
+                else
+                {
+                    throw new ConnectionException(
+                        $"Github error occurred getting directories from {Server}.  The \"type\" property could not be found.",
+                        new Exception("Full response: " + gitHubFiles));
+                }
             }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Github error occurred getting directories from {Server}.  {ex.Message}", ex);
-            }            
-        }
-        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
-        {
-            return new DexihFiles((await GetFiles(file, path, searchPattern, cancellationToken)).ToArray());
         }
 
-        public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
+        public override IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
         {
-            return GetFiles(file, path, null, cancellationToken);
+            return GetFiles(file, path, searchPattern, cancellationToken);
         }
+
+        // public override IAsyncEnumerable<DexihFileProperties> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
+        // {
+        //     return GetFiles(file, path, null, cancellationToken);
+        // }
 
         public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
@@ -247,7 +243,7 @@ namespace dexih.connections.github
             {
                 var fullDirectory = GetFullPath(file, path);
 
-                var request = new HttpRequestMessage(HttpMethod.Get, new Uri(RawUri + fullDirectory + "/" + file.Name));
+                var request = new HttpRequestMessage(HttpMethod.Get, new Uri(RawUri + fullDirectory + "/" + fileName));
                 request.Headers.UserAgent.Add(new ProductInfoHeaderValue("DexihRemote", "1.0"));
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

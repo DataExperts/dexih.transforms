@@ -24,8 +24,8 @@ namespace dexih.transforms
         public abstract Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
         public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName, CancellationToken cancellationToken);
         public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
-        public abstract Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken);
-        public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
+        public abstract IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken);
+        // public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
         public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
         public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
         public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream, CancellationToken cancellationToken);
@@ -143,15 +143,15 @@ namespace dexih.transforms
             return await MoveFile(flatFile, fromDirectory, toDirectory, fileName, cancellationToken);
         }
 
-        public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream, CancellationToken cancellationToken)
-        {
-            return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream, cancellationToken);
-        }
+        // public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream, CancellationToken cancellationToken)
+        // {
+        //     return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream, cancellationToken);
+        // }
 
-        public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path, CancellationToken cancellationToken)
-        {
-            return await GetFileList(flatFile, path, cancellationToken);
-        }
+        // public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path, CancellationToken cancellationToken)
+        // {
+        //     return await GetFileList(flatFile, path, cancellationToken);
+        // }
 
         public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles, CancellationToken cancellationToken)
         {
@@ -328,7 +328,7 @@ namespace dexih.transforms
                     newFlatFile.Columns.Add(column);
                 }
 
-                var col = new TableColumn()
+                newFlatFile.Columns.Add(new TableColumn()
                 {
 
                     //add the basic properties
@@ -340,8 +340,21 @@ namespace dexih.transforms
                     Description = "The name of the file the record was loaded from.",
                     AllowDbNull = false,
                     IsUnique = false
-                };
-                newFlatFile.Columns.Add(col);
+                });
+
+                newFlatFile.Columns.Add(new TableColumn()
+                {
+
+                    //add the basic properties
+                    Name = "FileDate",
+                    LogicalName = "FileDate",
+                    IsInput = false,
+                    DataType = ETypeCode.DateTime,
+                    DeltaType = EDeltaType.FileDate,
+                    Description = "The date/time the file was last modified.",
+                    AllowDbNull = false,
+                    IsUnique = false
+                });
 
                 return newFlatFile;
             }
@@ -359,15 +372,15 @@ namespace dexih.transforms
         public override async Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
             var flatFile = (FlatFile)table;
-            var fileEnumerator = await GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern, cancellationToken);
+            var fileEnumerator = GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern, cancellationToken);
             if(fileEnumerator == null)
             {
                 throw new ConnectionException($"Truncate failed, as no files were found.");
             }
 
-            while(fileEnumerator.MoveNext())
+            await foreach(var item in fileEnumerator.WithCancellation(cancellationToken))
             {
-                var deleteResult = await DeleteFile(flatFile, EFlatFilePath.Incoming, fileEnumerator.Current.FileName, cancellationToken);
+                var deleteResult = await DeleteFile(flatFile, EFlatFilePath.Incoming, item.FileName, cancellationToken);
                 if(!deleteResult)
                 {
                     return;

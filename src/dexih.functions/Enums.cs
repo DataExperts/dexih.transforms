@@ -37,6 +37,7 @@ namespace dexih.functions
         Error, // error message 
         Url, // the full url called for the web service.
         UpdateReason, // delta transform will write columns which caused an update
+        FileDate,
     }
 
     // [JsonConverter(typeof(StringEnumConverter))]

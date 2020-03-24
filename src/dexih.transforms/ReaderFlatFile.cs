@@ -13,13 +13,14 @@ namespace dexih.transforms
 {
     public class ReaderFlatFile : Transform
     {
-        private DexihFiles _files;
+        private IAsyncEnumerator<DexihFileProperties> _files;
 
         private readonly FileHandlerBase _fileHandler;
 
         private readonly ConnectionFlatFile _fileConnection;
 
         private readonly int _fileNameOrdinal;
+        private readonly int _fileDateOrdinal;
 
         private readonly bool _previewMode;
 
@@ -49,6 +50,7 @@ namespace dexih.transforms
                             $"The format type {table.FormatType} is not currently supported.");
             }
             _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
+            _fileDateOrdinal = table.GetOrdinal(EDeltaType.FileDate);
         }
         
         public override string TransformName { get; } = "Flat File Reader";
@@ -81,16 +83,16 @@ namespace dexih.transforms
             // if a filename was specified in the query, use this, otherwise, get a list of files from the incoming directory.
             if (string.IsNullOrEmpty(requestQuery?.FileName))
             {
-                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
-                    CacheFlatFile.FileMatchPattern, cancellationToken);
+                _files = _fileConnection.GetFileEnumerator(CacheFlatFile, EFlatFilePath.Incoming,
+                    CacheFlatFile.FileMatchPattern, cancellationToken).GetAsyncEnumerator(cancellationToken);
             }
             else
             {
-                _files = await _fileConnection.GetFileEnumerator(CacheFlatFile, requestQuery.Path,
-                    requestQuery.FileName, cancellationToken);
+                _files = _fileConnection.GetFileEnumerator(CacheFlatFile, requestQuery.Path,
+                    requestQuery.FileName, cancellationToken).GetAsyncEnumerator(cancellationToken);
             }
             
-            if (_files.MoveNext() == false)
+            if (await _files.MoveNextAsync() == false)
             {
                 throw new ConnectionException($"There are no matching files in the incoming directory.");
             }
@@ -153,7 +155,7 @@ namespace dexih.transforms
                         }
                     }
 
-                    if (_files.MoveNext() == false)
+                    if (await _files.MoveNextAsync() == false)
                     {
                         return null;
                     }
@@ -186,6 +188,11 @@ namespace dexih.transforms
                 if (_fileNameOrdinal >= 0)
                 {
                     row[_fileNameOrdinal] = _files.Current.FileName;
+                }
+
+                if (_fileDateOrdinal >= 0)
+                {
+                    row[_fileDateOrdinal] = _files.Current.LastModified;
                 }
 
                 return row;

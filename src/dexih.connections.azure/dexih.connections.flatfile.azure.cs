@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
@@ -219,80 +220,76 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async Task<DexihFiles> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
+            string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            try
+            var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+            var pathString = file.GetPath(path);
+            var pathLength = pathString.Length + 1;
+            var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathString);
+
+            BlobContinuationToken continuationToken = null;
+            var list = new List<IListBlobItem>();
+            do
             {
-                var files = new List<DexihFileProperties>();
+                var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(false, BlobListingDetails.None, 500,
+                    continuationToken, null, null, cancellationToken);
+                continuationToken = filesList.ContinuationToken;
+                list.AddRange(filesList.Results);
 
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
-                var pathstring = file.GetPath(path);
-                var pathlength = pathstring.Length + 1;
-                var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
+            } while (continuationToken != null);
 
-                BlobContinuationToken continuationToken = null;
-                var list = new List<IListBlobItem>();
-                do
+            foreach (CloudBlob cloudFile in list)
+            {
+                await cloudFile.FetchAttributesAsync();
+                var fileName = cloudFile.Name.Substring(pathLength);
+                if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
                 {
-                    var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(false, BlobListingDetails.None, 500, continuationToken, null, null, cancellationToken);
-                    continuationToken = filesList.ContinuationToken;
-                    list.AddRange(filesList.Results);
-
-                } while (continuationToken != null);
-
-                foreach (CloudBlob cloudFile in list)
-                {
-                    await cloudFile.FetchAttributesAsync();
-                    var fileName = cloudFile.Name.Substring(pathlength);
-                    if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
+                    var properties = new DexihFileProperties()
                     {
-                        files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length });
-                    }
+                        FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime,
+                        Length = cloudFile.Properties.Length
+                    };
+                    yield return properties;
                 }
-                var newFiles = new DexihFiles(files.ToArray());
-                return newFiles;
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Failed get file {file.Name} files in path {path} with pattern {searchPattern}.  {ex.Message}", ex);
             }
         }
 
-        public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var files = new List<DexihFileProperties>();
-
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
-
-                var pathstring = file.GetPath(path);
-                var pathlength = pathstring.Length + 1;
-                var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
-
-                BlobContinuationToken continuationToken = null;
-                var list = new List<IListBlobItem>();
-                do
-                {
-                    var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(true, BlobListingDetails.None, 500, continuationToken, null, null);
-                    continuationToken = filesList.ContinuationToken;
-                    list.AddRange(filesList.Results);
-
-                } while (continuationToken != null);
-
-                foreach (CloudBlob cloudFile in list)
-                {
-                    await cloudFile.FetchAttributesAsync();
-                    var fileName = cloudFile.Name.Substring(pathlength);
-                    files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length, ContentType = cloudFile.Properties.ContentType });
-                }
-                return files;
-            }
-            catch (Exception ex)
-            {
-                throw new ConnectionException($"Failed get filelist {file.Name} files in path {path}.  {ex.Message}", ex);
-            }
-        }
+        // public override async Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
+        // {
+        //     try
+        //     {
+        //         var files = new List<DexihFileProperties>();
+        //
+        //         var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+        //
+        //         var pathstring = file.GetPath(path);
+        //         var pathlength = pathstring.Length + 1;
+        //         var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathstring);
+        //
+        //         BlobContinuationToken continuationToken = null;
+        //         var list = new List<IListBlobItem>();
+        //         do
+        //         {
+        //             var filesList = await cloudSubDirectory.ListBlobsSegmentedAsync(true, BlobListingDetails.None, 500, continuationToken, null, null);
+        //             continuationToken = filesList.ContinuationToken;
+        //             list.AddRange(filesList.Results);
+        //
+        //         } while (continuationToken != null);
+        //
+        //         foreach (CloudBlob cloudFile in list)
+        //         {
+        //             await cloudFile.FetchAttributesAsync();
+        //             var fileName = cloudFile.Name.Substring(pathlength);
+        //             files.Add(new DexihFileProperties() { FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime, Length = cloudFile.Properties.Length, ContentType = cloudFile.Properties.ContentType });
+        //         }
+        //         return files;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new ConnectionException($"Failed get filelist {file.Name} files in path {path}.  {ex.Message}", ex);
+        //     }
+        // }
 
         public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
