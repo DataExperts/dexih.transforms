@@ -5,7 +5,7 @@
         <AssemblyTitle>Data Experts Group - Dexih Machine Learning</AssemblyTitle>
         <VersionPrefix>1.0.1</VersionPrefix>
         <Authors>Gary Holland</Authors>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <AssemblyName>dexih.functions.ml</AssemblyName>
         <PackageId>dexih.functions.ml</PackageId>
         <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>

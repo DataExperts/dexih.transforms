@@ -4,7 +4,7 @@
     <AssemblyTitle>Data Experts Group - Connections Library - Restful Web Services</AssemblyTitle>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Gary Holland</Authors>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>dexih.connections.webservice.restful</AssemblyName>
     <PackageId>dexih.connections.webservice.restful</PackageId>
     <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle</PackageTags>
