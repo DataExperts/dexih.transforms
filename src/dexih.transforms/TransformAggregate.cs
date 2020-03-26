@@ -193,7 +193,7 @@ namespace dexih.transforms
                         for (var i = 0; i < nextGroupValues.Length; i++)
                         {
                             if (
-                                (nextGroupValues[i] == null && _groupValues != null) ||
+                                (nextGroupValues[i] == null && _groupValues?[i] != null) ||
                                 (nextGroupValues[i] != null && _groupValues == null) ||
                                 !Equals(nextGroupValues[i], _groupValues?[i]) )
                             {

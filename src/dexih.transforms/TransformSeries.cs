@@ -57,6 +57,8 @@ namespace dexih.transforms
             
             // get only the required columns
             requestQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
+            requestQuery.Groups = new List<TableColumn>();
+            requestQuery.GroupFilters = new Filters();
 
             var requiredSorts = RequiredSortFields();
 
@@ -159,6 +161,8 @@ namespace dexih.transforms
                 return null;
             }
 
+            var currentRow = PrimaryTransform.CurrentRow;
+
             do
             {
                 _lastRecord = false;
@@ -177,7 +181,7 @@ namespace dexih.transforms
                     //if not first row, then check if the group values have changed from the previous row
                     for (var i = 0; i < nextGroupValues.Length; i++)
                     {
-                        if (nextGroupValues[i] == null && _groupValues != null ||
+                        if (nextGroupValues[i] == null && _groupValues?[i] != null ||
                             (nextGroupValues[i] != null && _groupValues == null) ||
                             !Equals(nextGroupValues[i], _groupValues[i]))
                         {
@@ -325,7 +329,7 @@ namespace dexih.transforms
                             {
                                 // if the series is not greater then create a dummy one, and continue the loop
                                 var fillerRow = new object[PrimaryTransform.FieldCount];
-                                Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
+                                Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
                                 var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
                                     fillerRow, null, cancellationToken);
 
@@ -355,7 +359,7 @@ namespace dexih.transforms
                 // when group has changed
                 else
                 {
-                    outputRow = await ProcessGroupChange(outputRow, cancellationToken);
+                    outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
 
                     //store the last groupvalues read to start the next grouping.
                     _groupValues = nextGroupValues;
@@ -369,6 +373,8 @@ namespace dexih.transforms
                     break;
                 }
 
+                currentRow = PrimaryTransform.CurrentRow;
+
             } while (await PrimaryTransform.ReadAsync(cancellationToken));
 
 
@@ -379,7 +385,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                outputRow = await ProcessGroupChange(outputRow, cancellationToken);
+                outputRow = await ProcessGroupChange(outputRow, outputRow, cancellationToken);
 
                 _lastRecord = true;
             }
@@ -389,7 +395,7 @@ namespace dexih.transforms
 
         }
 
-        private async Task<object[]> ProcessGroupChange(object[] outputRow, CancellationToken cancellationToken)
+        private async Task<object[]> ProcessGroupChange(object[] outputRow, object[] previousRow, CancellationToken cancellationToken)
         {
             // if the group has changed, update all cached rows with aggregate functions.
             if (_cachedRows != null)
@@ -419,7 +425,7 @@ namespace dexih.transforms
                     {
                         // if the series is not greater then create a dummy one, and continue the loop
                         var fillerRow = new object[PrimaryTransform.FieldCount];
-                        Mappings.CreateFillerRow(PrimaryTransform.CurrentRow, fillerRow, _seriesValue);
+                        Mappings.CreateFillerRow(previousRow, fillerRow, _seriesValue);
                         (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue, Forecast = true}, fillerRow, null, cancellationToken);
 
                         if (ignore)

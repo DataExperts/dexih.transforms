@@ -13,7 +13,7 @@ namespace dexih.transforms.tests
 {
     public class TransformSeriesTests
     {
-        private readonly string _seriesFunctions = typeof(SeriesFunctions).FullName;
+        private readonly string _seriesFunctions = typeof(SeriesFunctions<double>).FullName;
 
         [Fact]
         public async Task Group_SeriesTests1()
@@ -40,7 +40,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters
             {
@@ -98,7 +98,10 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(
+                typeof(SeriesFunctions<Double>).FullName, 
+                nameof(SeriesFunctions<Double>.MovingAverage), 
+                Helpers.BuiltInAssembly).GetTransformFunction(typeof(Double));
             
             var parameters = new Parameters
             {
@@ -116,14 +119,13 @@ namespace dexih.transforms.tests
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
-
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
             
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
             
             var counter = 0;
-            double[] mAvgExpectedValues = { 3, 3 };
+            int[] mAvgExpectedValues = { 3, 3 };
             string[] expectedDates = { "2015/01/01", "2015/01/02",  };
             while (await transformGroup.ReadAsync())
             {
@@ -145,7 +147,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(true);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters
             {
@@ -164,7 +166,7 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
             
-            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions.HighestSince), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var highest = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.HighestSince), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             parameters = new Parameters
             {
                 Inputs = new Parameter[]
@@ -172,12 +174,12 @@ namespace dexih.transforms.tests
                     new ParameterColumn("IntColumn", ETypeCode.Double),
                     new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
                 },
-                ResultOutputs = new Parameter[]
+                ResultReturnParameters = new List<Parameter>
                 {
-                    new ParameterOutputColumn("Count", ETypeCode.Int32), 
-                    new ParameterOutputColumn("HighestValue", ETypeCode.Double), 
-                },
-                ResultReturnParameters = new List<Parameter> { new ParameterOutputColumn("Highest", ETypeCode.DateTime)}
+                    new ParameterOutputColumn("CountBank", ETypeCode.Int32), 
+                    new ParameterOutputColumn("Value", ETypeCode.Double), 
+                    new ParameterOutputColumn("SeriesItem", ETypeCode.DateTime)
+                }
             };
             mappings.Add(new MapFunction(highest, parameters, EFunctionCaching.NoCache));
             mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
@@ -192,7 +194,7 @@ namespace dexih.transforms.tests
             while (await transformGroup.ReadAsync())
             {
                 Assert.Equal(mAvgExpectedValues[counter], Math.Round((double)transformGroup["MAvg"], 2));
-                Assert.Equal(highestExpectedValues[counter], ((DateTime)transformGroup["Highest"]).ToString("yyyy/MM/dd"));
+                Assert.Equal(highestExpectedValues[counter], ((DateTime)transformGroup["SeriesItem"]).ToString("yyyy/MM/dd"));
                 counter = counter + 1;
             }
             Assert.Equal(11, counter);

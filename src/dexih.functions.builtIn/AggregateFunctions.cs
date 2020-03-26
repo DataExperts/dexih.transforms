@@ -394,14 +394,14 @@ namespace dexih.functions.BuiltIn
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public object RunningSum(T value)
+        public T RunningSum(T value)
         {
             _cacheGeneric = Operations.Add(_cacheGeneric, value);
             return _cacheGeneric;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public object RunningAverage(T value)
+        public T RunningAverage(T value)
         {
             _cacheGeneric = Operations.Add(_cacheGeneric, value);
             _cacheCount++;
