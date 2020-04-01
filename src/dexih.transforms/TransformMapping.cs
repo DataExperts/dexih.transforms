@@ -44,7 +44,7 @@ namespace dexih.transforms
             }
             var newSelectQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
-            // TODO Allow mapping to translate group columns and pushdown a groupby.
+            // TODO Allow mapping to translate group columns and push-down and group-by.
             newSelectQuery.Groups = new List<TableColumn>();
             newSelectQuery.GroupFilters = new Filters();
             

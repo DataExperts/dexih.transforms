@@ -53,20 +53,19 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            requestQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            // requestQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
             
             // get only the required columns
+            requestQuery = new SelectQuery();
             requestQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
-            requestQuery.Groups = new List<TableColumn>();
-            requestQuery.GroupFilters = new Filters();
 
             var requiredSorts = RequiredSortFields();
 
             if(requestQuery.Sorts != null && requestQuery.Sorts.Count > 0)
             {
-                for(var i =0; i<requiredSorts.Count; i++)
+                for(var i =0; i < requiredSorts.Count; i++)
                 {
-                    if (requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
+                    if (requestQuery.Sorts.Count <= i && requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
                         requiredSorts[i].Direction = requestQuery.Sorts[i].Direction;
                     else
                         break;
@@ -385,7 +384,7 @@ namespace dexih.transforms
 
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
-                outputRow = await ProcessGroupChange(outputRow, outputRow, cancellationToken);
+                outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
 
                 _lastRecord = true;
             }

@@ -250,7 +250,14 @@ namespace dexih.transforms.File
                         }
                         else
                         {
-                            row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);    
+                            try
+                            {
+                                row[colPos] = Operations.Parse(mapping.TypeCode, mapping.Rank, value);
+                            }
+                            catch (DataTypeException ex)
+                            {
+                                throw new FileHandlerException($"field {_table[colPos].Name}, {ex.Message}");
+                            }
                         }
                         
                         
@@ -285,7 +292,7 @@ namespace dexih.transforms.File
             }
             catch (Exception ex)
             {
-                throw new FileHandlerException($"The file load failed at data row {_currentFileRowNumber}, with error - {ex.Message}", ex);
+                throw new FileHandlerException($"Failed at row {_currentFileRowNumber}, with error - {ex.Message}", ex);
             }
         }
 

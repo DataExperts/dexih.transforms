@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Dexih.Utils.DataType;
@@ -22,13 +23,13 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Null", Description = "Checks if the string is null, and sets to the default value when true.")]
-        public bool CleanNull(
-            [TransformFunctionParameter(Description = "Value to test for nulls")] string value,
-            [TransformFunctionParameter(Description = "Value to set when null")] string defaultValue,
-            [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out string cleanedValue)
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Clean Null", Description = "Checks if the string is null, and sets to the default value when true.", GenericType = EGenericType.All)]
+        public bool CleanNull<T>(
+            [TransformFunctionParameter(Description = "Value to test for nulls")] T value,
+            [TransformFunctionParameter(Description = "Value to set when null")] T defaultValue,
+            [TransformFunctionParameter(Name = "Cleaned Output", Description = "Cleaned output value")]  out T cleanedValue)
         {
-            if (string.IsNullOrEmpty(value))
+            if (EqualityComparer<T>.Default.Equals(value, default(T)))
             {
                 cleanedValue = defaultValue;
                 return false;

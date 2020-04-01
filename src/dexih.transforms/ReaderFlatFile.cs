@@ -134,7 +134,7 @@ namespace dexih.transforms
                 }
                 catch (Exception ex)
                 {
-                    throw new ConnectionException("The flat file reader failed with the following message: " + ex.Message, ex);
+                    throw new ConnectionException($"The flat file reader failed to read the file {_files.Current.FileName} due to the following error: " + ex.Message, ex);
                 }
 
                 if (row == null)

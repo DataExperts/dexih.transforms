@@ -65,9 +65,9 @@ namespace dexih.transforms
             {
                 for(var i =0; i < requiredSorts.Count; i++)
                 {
-                    if (requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
+                    if (requestQuery.Sorts.Count > i && requestQuery.Sorts[i].Column.Name == requiredSorts[i].Column.Name)
                     {
-                        requiredSorts[i].Direction = newSelectQuery.Sorts[i].Direction;
+                        requiredSorts[i].Direction = requestQuery.Sorts[i].Direction;
                     }
                     else
                     {
@@ -125,7 +125,7 @@ namespace dexih.transforms
                                 continue;
                             }
 
-                            groupFilter.Column1 = col.OutputColumn;
+                            groupFilter.Column1 = col.OutputColumn ?? col.Column;
                         }
                         if (filter.Column2 != null)
                         {
@@ -136,7 +136,7 @@ namespace dexih.transforms
                                 continue;
                             }
 
-                            groupFilter.Column2 = col.OutputColumn;
+                            groupFilter.Column2 = col.OutputColumn ?? col.Column;
                         }
 
                         newSelectQuery.GroupFilters.Add(groupFilter);

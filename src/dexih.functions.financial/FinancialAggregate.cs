@@ -50,7 +50,7 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The internal rate of return for a series of cash flows ([learn more](http://office.microsoft.com/en-us/excel/HP052091461033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal Rate of Return",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal Rate of Return at Regular Intervals",
             Description = "The internal rate of return for a series of cash flows", ResetMethod = nameof(Reset), ResultMethod = nameof(IrrResult))]
         public void Irr(double value)
         {
@@ -65,9 +65,9 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The internal rate of return where positive and negative cash flows are financed at different rates ([learn more](http://office.microsoft.com/en-us/excel/HP052091801033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal Rate of Return",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Modified Internal Rate of Return",
             Description =
-                "The internal rate of return where positive and negative cash flows are financed at different rates", ResetMethod = nameof(Reset), ResultMethod = nameof(MirrResult))]
+                "The mofieid internal rate of return where positive and negative cash flows are financed at different rates", ResetMethod = nameof(Reset), ResultMethod = nameof(MirrResult))]
         public void Mirr(double value)
         {
             _cacheData.Add(value);
@@ -103,7 +103,7 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The internal rate of return for a schedule of cash flows that is not necessarily periodic ([learn more](http://office.microsoft.com/en-us/excel/HP052093411033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal rate of return (with guess)",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal Rate of return at Regular Intervals (with guess)",
             Description = "The internal rate of return for a schedule of cash flows that is not necessarily periodic", ResetMethod = nameof(Reset), ResultMethod = nameof(XIrrGuessResult))]
         public void XIrrGuess(double value, DateTime date)
         {
@@ -119,7 +119,7 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The internal rate of return for a schedule of cash flows that is not necessarily periodic ([learn more](http://office.microsoft.com/en-us/excel/HP052093411033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal rate of return",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Internal rate of return at Regular Intervals",
             Description = "The internal rate of return for a schedule of cash flows that is not necessarily periodic", ResetMethod = nameof(Reset), ResultMethod = nameof(XIrrResult))]
         public void XIrr(double value, DateTime date)
         {

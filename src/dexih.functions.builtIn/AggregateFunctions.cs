@@ -278,7 +278,10 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Pivot to Columns", 
             Description = "Pivots the labelColumn and valueColumn into separate columns specified by the labels.  Returns true if all labels are found, false is some are missing.", ResultMethod = nameof(PivotToColumnsResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
-        public void PivotToColumns(string labelColumn, T valueColumn, [TransformFunctionLinkedParameter("Columns")] object[] labels)
+        public void PivotToColumns(
+            [TransformFunctionParameter(Name = "Column to Pivot")] string labelColumn, 
+            [TransformFunctionParameter(Name = "Value to Pivot")] T valueColumn, 
+            [TransformFunctionLinkedParameter("Columns")] string[] labels)
         {
             if (_cacheDictionary == null)
             {
@@ -407,7 +410,48 @@ namespace dexih.functions.BuiltIn
             _cacheCount++;
             return Operations.DivideInt(_cacheGeneric, _cacheCount);
         }
-        
 
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Previous Row Change", Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T PreviousRowChange(T value)
+        {
+            var result = Operations.Subtract(value, _cacheGeneric);
+            _cacheGeneric = value;
+            return result;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public void MovingAverage(T value)
+        {
+            if (_cacheList == null)
+            {
+                _cacheList = new List<T>();
+            }
+            
+            _cacheList.Add(value);
+        }
+
+        public T MovingAverageResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int preCount, int postCount)
+        {
+            var lowIndex = index < preCount ? 0 : index - preCount;
+            var valueCount = _cacheList.Count;
+            var highIndex = postCount + index + 1;
+            if (highIndex > valueCount) highIndex = valueCount;
+
+            T sum = default;
+            var denominator = highIndex - lowIndex;
+
+            for (var i = lowIndex; i < highIndex; i++)
+            {
+                sum = Operations.Add(sum, _cacheList[i]);
+            }
+            
+            //return the result.
+            if (denominator == 0)
+            {
+                return default;
+            }
+
+            return Operations.DivideInt(sum, denominator);
+        }
     }
 }

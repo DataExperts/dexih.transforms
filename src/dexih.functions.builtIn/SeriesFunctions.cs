@@ -107,7 +107,7 @@ namespace dexih.functions.BuiltIn
             }
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Average", Description = "Calculates moving series average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
         public void MovingAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
@@ -138,7 +138,7 @@ namespace dexih.functions.BuiltIn
             return Operations.DivideInt(sum, denominator);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a higher value than this.", ResultMethod = nameof(HighestSinceResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
         public void HighestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
@@ -173,7 +173,7 @@ namespace dexih.functions.BuiltIn
             };
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a lower value than this.", ResultMethod = nameof(LowestSinceResult), ResetMethod = nameof(Reset))]
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Highest Value Since ", Description = "Return the last period that had a lower value than this.", ResultMethod = nameof(LowestSinceResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
         public void LowestSince([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
@@ -208,13 +208,13 @@ namespace dexih.functions.BuiltIn
             };
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value", Description = "Return the previous series.", ResultMethod = nameof(PreviousValueResult), ResetMethod = nameof(Reset))]
-        public void PreviousValue([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value", Description = "Return the value from the series item (count periods ago).", ResultMethod = nameof(PreviousSeriesValueResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void PreviousSeriesValue([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }
 
-        public PreviousSeriesResult<T> PreviousValueResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int count = 1)
+        public PreviousSeriesResult<T> PreviousSeriesValueResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int count = 1)
         {
             if (index < count || _cacheSeries.Count > index - count)
             {
@@ -230,13 +230,13 @@ namespace dexih.functions.BuiltIn
             
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value If Null", Description = "Return the previous series value if the current value is null.", ResultMethod = nameof(PreviousValueNullResult), ResetMethod = nameof(Reset))]
-        public void PreviousValueNull([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value If Null", Description = "Return the previous series item (count periods ago) if the current value is null.", ResultMethod = nameof(PreviousSeriesValueNullResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        public void PreviousSeriesValueNull([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }
 
-        public PreviousSeriesResult<T> PreviousValueNullResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int count = 1)
+        public PreviousSeriesResult<T> PreviousSeriesValueNullResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int count = 1)
         {
             if (index < count && _cacheSeries.Count > index - count)
             {

@@ -89,10 +89,14 @@ namespace dexih.transforms.Mapping
             {
                 mapping.InitializeColumns(inputTable, joinTable, _detailMappings);
             }
+
+            // used to store any columns that were added by a mapping.
+            var mappingsTable = new Table();
             
             foreach (var mapping in _primaryMappings)
             {
                 mapping.AddOutputColumns(table);
+                mapping.AddOutputColumns(mappingsTable);
             }
 
             if (PassThroughColumns && _groupNode == null)
@@ -109,8 +113,10 @@ namespace dexih.transforms.Mapping
                     
                     if(column.IsParent) { continue; }
 
+                    // if there is a mapping with the same name or a column with exact match then don't add
+                    var mappingOrdinal = mappingsTable.Columns.GetOrdinal(column);
                     var parentOrdinal = table.Columns.GetOrdinal(column, true);
-                    if (parentOrdinal < 0)
+                    if (mappingOrdinal < 0 && parentOrdinal < 0)
                     {
                         targetOrdinal++;
                         table.Columns.Add(column.Copy());
