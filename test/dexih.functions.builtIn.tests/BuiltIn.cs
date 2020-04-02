@@ -278,6 +278,95 @@ namespace dexih.functions.builtIn.tests
             }
         }
         
+        [Fact]
+        public void MovingSumTest()
+        {
+            var function = Functions.GetFunction(typeof(AggregateFunctions<>).FullName, nameof(AggregateFunctions<int>.MovingSum), BuiltInAssembly);
+            var transformFunction = function.GetTransformFunction(typeof(int));
+
+            var data = new object[] {1, 2, 3, 4, 5};
+            var expectedResult = new object[] {6, 10, 15, 14, 12};
+
+            for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
+            {
+                for (var i = 0; i < data.Length; i++)
+                {
+                    transformFunction.RunFunction(new[] { data[i] }, CancellationToken.None);
+                }
+
+                for(var i = 0; i < expectedResult.Length; i++)
+                {
+                    var functionVariables = new FunctionVariables()
+                    {
+                        Index = i,
+                    };
+                    var aggregateResult = transformFunction
+                        .RunResult(functionVariables, new object[] {2, 2}, out _, CancellationToken.None).returnValue;
+                    Assert.NotNull(aggregateResult);
+                    Assert.Equal(expectedResult[i], aggregateResult);
+                }
+
+                transformFunction.Reset();
+            }
+        }
+        
+        [Theory]
+        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningAverage), new object[] {1,1.5,2,2.5,3})]
+        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningCount), new object[] {1,2,3,4,5})]
+        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningSum), new object[] {1,3,6,10,15})]
+        public void RunningTests(Type type, string methodName, object[] expectedResult)
+        {
+            var function = Functions.GetFunction(type.FullName, methodName, BuiltInAssembly);
+            var transformFunction = function.GetTransformFunction(typeof(double));
+
+            var data = new object[] {1, 2, 3, 4, 5};
+
+            for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
+            {
+                for (var i = 0; i < data.Length; i++)
+                {
+                    var result = transformFunction.RunFunction(new[] { data[i] }, CancellationToken.None);
+                    Assert.NotNull(result);
+                    Assert.Equal(Convert.ToDouble(expectedResult[i]), Convert.ToDouble(result.returnValue));
+                }
+                
+                transformFunction.Reset();
+            }
+        }
+        
+        [Fact]
+        
+        public void MovingAverageTest()
+        {
+            var function = Functions.GetFunction(typeof(AggregateFunctions<>).FullName, nameof(AggregateFunctions<double>.MovingAverage), BuiltInAssembly);
+            var transformFunction = function.GetTransformFunction(typeof(double));
+
+            var data = new object[] {1, 2, 3, 4, 5};
+            var expectedResult = new object[] {1.5, 2d, 3d, 4d, 4.5};
+
+            for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
+            {
+                for (var i = 0; i < data.Length; i++)
+                {
+                    transformFunction.RunFunction(new[] { data[i] }, CancellationToken.None);
+                }
+
+                for(var i = 0; i < expectedResult.Length; i++)
+                {
+                    var functionVariables = new FunctionVariables()
+                    {
+                        Index = i,
+                    };
+                    var aggregateResult = transformFunction
+                        .RunResult(functionVariables, new object[] {1, 1}, out _, CancellationToken.None).returnValue;
+                    Assert.NotNull(aggregateResult);
+                    Assert.Equal(expectedResult[i], aggregateResult);
+                }
+
+                transformFunction.Reset();
+            }
+        }
+        
         [Theory]
         [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.CountEqual), 3)]
         public void CountEqualTests(Type type, string methodName, object expectedResult)

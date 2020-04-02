@@ -553,7 +553,7 @@ namespace dexih.connections.sql
                     sql.Append($" {parameterName} ");
                 }
 
-                sql.Append(GetSqlCompare(filter.Operator));
+                sql.Append(GetSqlCompare(filter.Operator) + " ");
 
                 if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
                 {

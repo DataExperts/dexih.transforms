@@ -107,8 +107,8 @@ namespace dexih.functions.BuiltIn
             }
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Average", Description = "Calculates moving series average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
-        public void MovingAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Moving Series Average", Description = "Calculates moving series average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public void MovingSeriesAverage([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);
         }

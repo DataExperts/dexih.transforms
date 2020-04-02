@@ -40,7 +40,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(false);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingSeriesAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters
             {
@@ -100,7 +100,7 @@ namespace dexih.transforms.tests
 
             var mavg = Functions.GetFunction(
                 typeof(SeriesFunctions<Double>).FullName, 
-                nameof(SeriesFunctions<Double>.MovingAverage), 
+                nameof(SeriesFunctions<Double>.MovingSeriesAverage), 
                 Helpers.BuiltInAssembly).GetTransformFunction(typeof(Double));
             
             var parameters = new Parameters
@@ -147,7 +147,7 @@ namespace dexih.transforms.tests
 
             var mappings = new Mappings(true);
 
-            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
+            var mavg = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<double>.MovingSeriesAverage), Helpers.BuiltInAssembly).GetTransformFunction(typeof(double));
             
             var parameters = new Parameters
             {

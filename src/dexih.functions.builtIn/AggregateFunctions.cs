@@ -453,5 +453,33 @@ namespace dexih.functions.BuiltIn
 
             return Operations.DivideInt(sum, denominator);
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Sum", Description = "Calculates the sum of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingSumResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        public void MovingSum(T value)
+        {
+            if (_cacheList == null)
+            {
+                _cacheList = new List<T>();
+            }
+            
+            _cacheList.Add(value);
+        }
+
+        public T MovingSumResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int preCount, int postCount)
+        {
+            var lowIndex = index < preCount ? 0 : index - preCount;
+            var valueCount = _cacheList.Count;
+            var highIndex = postCount + index + 1;
+            if (highIndex > valueCount) highIndex = valueCount;
+
+            T sum = default;
+
+            for (var i = lowIndex; i < highIndex; i++)
+            {
+                sum = Operations.Add(sum, _cacheList[i]);
+            }
+            
+            return sum;
+        }
     }
 }
