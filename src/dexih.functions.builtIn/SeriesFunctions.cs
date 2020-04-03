@@ -236,32 +236,42 @@ namespace dexih.functions.BuiltIn
             AddSeries(series, value, duplicateAggregate);
         }
 
-        public PreviousSeriesResult<T> PreviousSeriesValueNullResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int count = 1)
+        public PreviousSeriesResult<T> PreviousSeriesValueNullResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
         {
-            if (index < count && _cacheSeries.Count > index - count)
+            var i = index - 1;
+            var currentSeries = ((SeriesValue<T>) _cacheSeries[index]);
+            var currentValue = currentSeries.Result();
+
+            if (!EqualityComparer<T>.Default.Equals(currentValue, default(T)))
             {
-                return new PreviousSeriesResult<T>();
-            }
-
-            var currentValue = ((SeriesValue<T>)_cacheSeries[index]);
-            var currentResult = currentValue.Result();
-            
-            while(EqualityComparer<T>.Default.Equals(currentResult, default(T))) {
-                index = index - count;
-                currentValue = ((SeriesValue<T>)_cacheSeries[index]);
-                currentResult = currentValue.Result();
-                
-                if (index < count && _cacheSeries.Count > index - count)
+                return new PreviousSeriesResult<T>()
                 {
-                    return new PreviousSeriesResult<T>();
+                    Value = currentValue,
+                    SeriesItem = currentSeries.Series
+                };
+            }
+            
+            while (i >= 0)
+            {
+                var checkValue = ((SeriesValue<T>)_cacheSeries[i]).Result();
+                if (!EqualityComparer<T>.Default.Equals(checkValue, default(T)))
+                {
+                    return new PreviousSeriesResult<T>()
+                    {
+                        Value = checkValue,
+                        SeriesItem = ((SeriesValue<T>) _cacheSeries[i]).Series
+                    };
                 }
+                i--;
             }
 
+            // if not value found, the current value is the highest.
             return new PreviousSeriesResult<T>()
             {
-                Value = currentResult,
-                SeriesItem = currentValue.Series
+                Value = currentValue,
+                SeriesItem = currentSeries.Series
             };
+            
         }
     }
 }

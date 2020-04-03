@@ -271,6 +271,7 @@ namespace dexih.transforms
                             : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
                         if (isAfterStart > 0 || isBeforeFinish == 1)
                         {
+                            _seriesValue = null;
                             continue;
                         }
 
