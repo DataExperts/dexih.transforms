@@ -82,7 +82,7 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The net present value of an investment based on a series of periodic cash flows and a discount rate ([learn more](http://office.microsoft.com/en-us/excel/HP052091991033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Net Present Value",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Net Present Value (periodic)",
             Description =
                 "The net present value of an investment based on a series of periodic cash flows and a discount rate", ResetMethod = nameof(Reset), ResultMethod = nameof(NpvResult))]
         public void Npv(double value)
@@ -135,7 +135,7 @@ namespace dexih.functions.financial
         /// <summary>
         ///  The net present value for a schedule of cash flows that is not necessarily periodic ([learn more](http://office.microsoft.com/en-us/excel/HP052093421033.aspx))
         /// </summary>
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Net present value",
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Net present value (non preiodic)",
             Description = "The net present value for a schedule of cash flows that is not necessarily periodic", ResetMethod = nameof(Reset), ResultMethod = nameof(XNpvResult))]
         public void XNpv(double value, DateTime date)
         {

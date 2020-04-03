@@ -389,36 +389,8 @@ namespace dexih.functions.BuiltIn
             return (int)_cacheArray[index];
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Count", Description = "The running count of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Int32, GenericType = EGenericType.Numeric)]
-        public int RunningCount()
-        {
-            _cacheCount++;
-            return _cacheCount;
-        }
+    
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T RunningSum(T value)
-        {
-            _cacheGeneric = Operations.Add(_cacheGeneric, value);
-            return _cacheGeneric;
-        }
-        
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T RunningAverage(T value)
-        {
-            _cacheGeneric = Operations.Add(_cacheGeneric, value);
-            _cacheCount++;
-            return Operations.DivideInt(_cacheGeneric, _cacheCount);
-        }
-
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Previous Row Change", Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T PreviousRowChange(T value)
-        {
-            var result = Operations.Subtract(value, _cacheGeneric);
-            _cacheGeneric = value;
-            return result;
-        }
-
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
         public void MovingAverage(T value)
         {

@@ -310,22 +310,30 @@ namespace dexih.functions.builtIn.tests
             }
         }
         
+       
+        
         [Theory]
-        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningAverage), new object[] {1,1.5,2,2.5,3})]
-        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningCount), new object[] {1,2,3,4,5})]
-        [InlineData(typeof(AggregateFunctions<>), nameof(AggregateFunctions<int>.RunningSum), new object[] {1,3,6,10,15})]
-        public void RunningTests(Type type, string methodName, object[] expectedResult)
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRow), 1, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {null, null, 1, 2, null, 3, 4})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRow), 2, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {null, null, null, 1, 2, null, 3})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowChange), 1, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {0, 1, 1, -2, 3, 1, 1})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowChange), 2, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {0, 1, 2, -1, 1, 4, 2})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 1, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 2, 0, 0, 2, 0.5})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 2, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 0, 0, 1.5, 0, 1})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowIfNull), 0, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {null, 1, 2, 2, 3, 4, 5})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowIfNull), 0, new object[] {1, null, 2, null, 3, 4, 5, null}, new object[] {1, 1, 2, 2, 3, 4, 5, 5})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.RunningAverage), 0, new object[] {1, 2, 3, 4, 5}, new object[] {1,1.5,2,2.5,3})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.RowNumber), 0, new object[] {1, 2, 3, 4, 5}, new object[] {1,2,3,4,5})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.RunningSum), 0, new object[] {1, 2, 3, 4, 5}, new object[] {1,3,6,10,15})]
+        public void PreviousRowTests(Type type, string methodName, int count, object[] data, object[] expectedResult)
         {
             var function = Functions.GetFunction(type.FullName, methodName, BuiltInAssembly);
             var transformFunction = function.GetTransformFunction(typeof(double));
-
-            var data = new object[] {1, 2, 3, 4, 5};
 
             for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
             {
                 for (var i = 0; i < data.Length; i++)
                 {
-                    var result = transformFunction.RunFunction(new[] { data[i] }, CancellationToken.None);
+                    var result = transformFunction.RunFunction(new[] { data[i], count }, CancellationToken.None);
                     Assert.NotNull(result);
                     Assert.Equal(Convert.ToDouble(expectedResult[i]), Convert.ToDouble(result.returnValue));
                 }
