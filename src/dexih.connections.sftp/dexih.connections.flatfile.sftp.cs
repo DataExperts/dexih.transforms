@@ -57,7 +57,7 @@ namespace dexih.connections.sftp
             return path + "/" + filename;
         }
 
-        private SftpClient GetSftpClient()
+        private SftpClientWrapper GetSftpClient()
         {
             string[] paths;
             
@@ -80,7 +80,7 @@ namespace dexih.connections.sftp
 //            
 //            var client = new SftpClient(connectionInfo);
             
-            var client = new SftpClient(serverName, Username, Password);
+            var client = new SftpClientWrapper(serverName, Username, Password);
             client.Connect();
             client.ChangeDirectory(_workingDirectory);
 

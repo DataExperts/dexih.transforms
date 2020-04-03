@@ -53,7 +53,7 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
-            Name = "Previous Row If Null",
+            Name = "Previous Row in Group If Null",
             Description = "Returns the value from the previous row from the current group if the current value is null.",
             GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.Decimal, ResetMethod = nameof(Reset))]
         public T PreviousGroupRowIfNull(T value) => PreviousRowIfNull(value);
@@ -136,13 +136,13 @@ namespace dexih.functions.BuiltIn
             return Operations.DivideInt(sum, _cacheQueue.Count);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Row Change",
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row Change",
             Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset),
             GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T PreviousRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")]
-            int preCount = 1) => PreviousRow(value, preCount);
+            int preCount = 1) => PreviousGroupRowChange(value, preCount);
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Group Row Change", Description = "The change from the previous row value to the current in the group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Group Row Change", Description = "The change from the previous row value to the current in the group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T PreviousGroupRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
         {
             var previousValue = AddToQueue(value, preCount);
