@@ -391,7 +391,7 @@ namespace dexih.functions.BuiltIn
         
     
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Average", Description = "Calculates the average of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingAverageResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
         public void MovingAverage(T value)
         {
             if (_cacheList == null)
@@ -426,7 +426,7 @@ namespace dexih.functions.BuiltIn
             return Operations.DivideInt(sum, denominator);
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Sum", Description = "Calculates the sum of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingSumResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Aggregate", Name = "Moving Sum", Description = "Calculates the sum of the last (pre-count) points and the future (post-count) points.", ResultMethod = nameof(MovingSumResult), ResetMethod = nameof(Reset), GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
         public void MovingSum(T value)
         {
             if (_cacheList == null)

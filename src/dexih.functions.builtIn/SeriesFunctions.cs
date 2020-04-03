@@ -230,7 +230,7 @@ namespace dexih.functions.BuiltIn
             
         }
         
-        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value If Null", Description = "Return the previous series item (count periods ago) if the current value is null.", ResultMethod = nameof(PreviousSeriesValueNullResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All)]
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Series", Name = "Previous Series Value If Null", Description = "Return the previous series item (count periods ago) if the current value is null.", ResultMethod = nameof(PreviousSeriesValueNullResult), ResetMethod = nameof(Reset), GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.Decimal)]
         public void PreviousSeriesValueNull([TransformFunctionVariable(EFunctionVariable.SeriesValue)]DateTime series, T value, EAggregate duplicateAggregate = EAggregate.Sum)
         {
             AddSeries(series, value, duplicateAggregate);

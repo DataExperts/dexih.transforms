@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using dexih.functions;
 using dexih.transforms.Exceptions;
 using dexih.transforms.File;
+using Renci.SshNet;
 
 namespace dexih.connections.sftp
 {
@@ -56,7 +57,7 @@ namespace dexih.connections.sftp
             return path + "/" + filename;
         }
 
-        private SftpClientWrapper GetSftpClient()
+        private SftpClient GetSftpClient()
         {
             string[] paths;
             
@@ -79,7 +80,7 @@ namespace dexih.connections.sftp
 //            
 //            var client = new SftpClient(connectionInfo);
             
-            var client = new SftpClientWrapper(serverName, Username, Password);
+            var client = new SftpClient(serverName, Username, Password);
             client.Connect();
             client.ChangeDirectory(_workingDirectory);
 
@@ -225,9 +226,8 @@ namespace dexih.connections.sftp
         {
             using (var client = GetSftpClient())
             {
-
                 var fullDirectory = GetFullPath(file, path);
-                var directoryListing = client.ListDirectory(fullDirectory);
+                var directoryListing = await Task.Run(() =>client.ListDirectory(fullDirectory), cancellationToken);
                 foreach (var directoryItem in directoryListing)
                 {
                     if (directoryItem.IsRegularFile &&

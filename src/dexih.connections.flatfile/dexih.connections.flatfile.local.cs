@@ -155,7 +155,7 @@ namespace dexih.connections.flatfile
         public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
                 var fullDirectory = GetFullPath(file, path);
-                var filenames = string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern);
+                var filenames = await Task.Run(() => string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern), cancellationToken);
                 foreach (var fileName in filenames)
                 {
                     var fileInfo = new FileInfo(fileName);

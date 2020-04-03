@@ -38,17 +38,28 @@ namespace dexih.functions.BuiltIn
 
             return default;
         }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Group Row",
+            Description = "Returns the value from the previous row in the group.", GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.String,
+            ResetMethod = nameof(Reset))]
+        public T PreviousGroupRow(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1) => PreviousRow(value, preCount);
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row",
-            Description = "Returns the value from the previous row.", GenericType = EGenericType.All, ResetMethod = nameof(Reset))]
+            Description = "Returns the value from the previous row.", GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.String, ResetMethod = nameof(Reset))]
         public T PreviousRow(T value, 
             [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
         {
             return AddToQueue(value, preCount);
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
+            Name = "Previous Row If Null",
+            Description = "Returns the value from the previous row from the current group if the current value is null.",
+            GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.Decimal, ResetMethod = nameof(Reset))]
+        public T PreviousGroupRowIfNull(T value) => PreviousRowIfNull(value);
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row If Null",
-            Description = "Returns the value from the previous row if the current value is null.", GenericType = EGenericType.All, ResetMethod = nameof(Reset))]
+            Description = "Returns the value from the previous row if the current value is null.", GenericType = EGenericType.All, GenericTypeDefault = ETypeCode.Decimal, ResetMethod = nameof(Reset))]
         public T PreviousRowIfNull(T value)
         {
             if(EqualityComparer<T>.Default.Equals(value, default(T))) {
@@ -60,6 +71,10 @@ namespace dexih.functions.BuiltIn
                 return value;
             }
         }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Group Row Number",
+            Description = "Returns the current row number in the group", ResetMethod = nameof(Reset))]
+        public int GroupRowNumber() => RowNumber();
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Row Number",
             Description = "Returns the current row number", ResetMethod = nameof(Reset))]
@@ -67,8 +82,14 @@ namespace dexih.functions.BuiltIn
         {
             return ++_cacheCount;
         }
-        
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Running Sum", Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Running Group Sum",
+            Description = "The running sum of rows in the current group.", ResetMethod = nameof(Reset),
+            GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T RunningGroupSum(T value, [TransformFunctionParameter(Name = "Number of rows (0=all)")]
+            int preCount = 0) => RunningSum(value, preCount);
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Running Sum", Description = "The running sum of rows.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T RunningSum(T value, [TransformFunctionParameter(Name = "Number of rows (0=all)")] int preCount = 0)
         {
             // if precount is zero we run keep a running value
@@ -87,8 +108,14 @@ namespace dexih.functions.BuiltIn
 
             return sum;
         }
+
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
+            Name = "Running Group Average", Description = "The running average of rows in the current group.",
+            ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T RunningGroupAverage(T value, [TransformFunctionParameter(Name = "Number of rows (0=all)")]
+            int preCount = 0) => RunningAverage(value, preCount);
         
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Running Average", Description = "The running average of rows in the current group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Running Average", Description = "The running average.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T RunningAverage(T value, [TransformFunctionParameter(Name = "Number of rows (0=all)")] int preCount = 0)
         {
             // if precount is zero we run keep a running value
@@ -109,14 +136,28 @@ namespace dexih.functions.BuiltIn
             return Operations.DivideInt(sum, _cacheQueue.Count);
         }
 
-        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row Change", Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T PreviousRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Row Change",
+            Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset),
+            GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T PreviousRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")]
+            int preCount = 1) => PreviousRow(value, preCount);
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Group Row Change", Description = "The change from the previous row value to the current in the group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T PreviousGroupRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
         {
             var previousValue = AddToQueue(value, preCount);
             var result = Operations.Subtract(value, previousValue);
             return result;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
+            Name = "Previous Group Row Ratio",
+            Description = "The ratio of the current value / previous row value in the current group.",
+            ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
+        public T PreviousGroupRowRatio(T value, [TransformFunctionParameter(Name = "Number of rows back")]
+            int preCount = 1) => PreviousRowRatio(value, preCount);
+
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row Ratio", Description = "The ratio of the current value / previous row value.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T PreviousRowRatio(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
         {
