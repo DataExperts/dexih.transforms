@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 using MathNet.Numerics;
+using MathNet.Numerics.LinearRegression;
 
 namespace dexih.functions.maths
 {
@@ -16,6 +17,10 @@ namespace dexih.functions.maths
         private bool _firstResult = true;
         private double _yIntercept;
         private double _slope;
+        private double _exponentialA;
+        private double _exponentialR;
+        private double _logarithmA;
+        private double _logarithmB;
         private double[] _pValues;
         
         public bool Reset()
@@ -93,6 +98,54 @@ namespace dexih.functions.maths
             }
 
             coefficients = _pValues;
+            return value;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Exponential Regression", 
+            Description = "Least-Squares fitting the points (x,y) to an exponential y : x -> a*exp(r*x), returning its best fitting parameters as (a, r) tuple.", ResultMethod = nameof(ExponentialRegressionResult), ResetMethod = nameof(Reset))]
+        public void ExponentialRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
+        {
+            AddSeries(series, value, duplicateAggregate);
+        }
+
+        public double ExponentialRegressionResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, DirectRegressionMethod regressionMethod, out double a, out double r)
+        {
+            if (_firstResult)
+            {
+                var exponential = Fit.Exponential(XValues(), YValues(), regressionMethod);
+                _exponentialA = exponential.Item1;
+                _exponentialR = exponential.Item2;
+            }
+
+
+            var value = _exponentialA * Math.Exp(_exponentialR * index);
+
+            a = _exponentialA;
+            r = _exponentialR;
+            
+            return value;
+        }
+        
+        [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Logarithm Regression", 
+            Description = "Least-Squares fitting the points (x,y) to a logarithm y : x -> a + b*ln(x),", ResultMethod = nameof(LogarithmRegressionResult), ResetMethod = nameof(Reset))]
+        public void LogarithmRegression([TransformFunctionVariable(EFunctionVariable.SeriesValue)]object series, double value, EAggregate duplicateAggregate = EAggregate.Sum)
+        {
+            AddSeries(series, value, duplicateAggregate);
+        }
+
+        public double LogarithmRegressionResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, DirectRegressionMethod regressionMethod, out double a, out double b)
+        {
+            if (_firstResult)
+            {
+                var exponential = Fit.Logarithm(XValues(), YValues(), regressionMethod);
+                _logarithmA = exponential.Item1;
+                _logarithmB = exponential.Item2;
+            }
+
+            var value = _logarithmA + _logarithmB * Math.Log(index);
+
+            a = _logarithmA;
+            b = _logarithmB;
             return value;
         }
     }

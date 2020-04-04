@@ -159,14 +159,16 @@ namespace dexih.functions.BuiltIn
 
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row Ratio", Description = "The ratio of the current value / previous row value.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T PreviousRowRatio(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
+        public T PreviousRowRatio(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1,
+            [TransformFunctionParameter(Name = "Value when previous is 0/null")]T defaultRatio = default)
         {
             var previousValue = AddToQueue(value, preCount);
 
             if (Operations.Equal(previousValue, default))
             {
-                return default;
+                return defaultRatio;
             }
+            
             var result = Operations.Divide(value, previousValue);
             return result;
         }
