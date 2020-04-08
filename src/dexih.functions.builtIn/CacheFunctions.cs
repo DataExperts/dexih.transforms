@@ -154,8 +154,11 @@ namespace dexih.functions.BuiltIn
             Name = "Previous Group Row Ratio",
             Description = "The ratio of the current value / previous row value in the current group.",
             ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T PreviousGroupRowRatio(T value, [TransformFunctionParameter(Name = "Number of rows back")]
-            int preCount = 1) => PreviousRowRatio(value, preCount);
+        public T PreviousGroupRowRatio(
+            T value, 
+            [TransformFunctionParameter(Name = "Number of rows back")]
+            int preCount = 1,
+            [TransformFunctionParameter(Name = "Value when previous is 0/null")]T defaultRatio = default) => PreviousRowRatio(value, preCount, defaultRatio );
 
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Row Caching", Name = "Previous Row Ratio", Description = "The ratio of the current value / previous row value.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
