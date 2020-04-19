@@ -263,12 +263,12 @@ namespace dexih.transforms
                         var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
 
                         //filter series start/finish
-                        var isAfterStart = _seriesStart == null
-                            ? 0
+                        var isAfterStart = _seriesStart == null ? 0
                             : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
-                        var isBeforeFinish = _seriesFinish == null
-                            ? 0
+                        
+                        var isBeforeFinish = _seriesFinish == null ? 0
                             : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
+                        
                         if (isAfterStart > 0 || isBeforeFinish == 1)
                         {
                             _seriesValue = null;
@@ -278,8 +278,7 @@ namespace dexih.transforms
                         // loop to create filler rows.
                         do
                         {
-                            var compareResult =
-                                ((IComparable) _seriesValue)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+                            var compareResult = ((IComparable) _seriesValue)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
 
                             if (compareResult > 0)
                             {
@@ -414,11 +413,10 @@ namespace dexih.transforms
                 }
 
                 // fill any remaining rows.
-                if (_seriesMapping.SeriesFill && _seriesMapping.SeriesFinish != null)
+                if (_seriesMapping.SeriesFill && _seriesFinish != null)
                 {
-                    var seriesFinish = _seriesMapping.GetSeriesFinish();
                     _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
-                    var compareResult = ((IComparable) seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
+                    var compareResult = ((IComparable) _seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
 
                     // loop while the series value is less than the series finish.
                     while (compareResult >= 0)
@@ -440,7 +438,7 @@ namespace dexih.transforms
                         }
 
                         _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
-                        compareResult = ((IComparable) seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
+                        compareResult = ((IComparable) _seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
                     }
                 }
 

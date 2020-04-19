@@ -35,8 +35,9 @@ using System.Threading.Tasks;
         private readonly SelectQuery _selectQuery;
         private readonly object _chartConfig;
         private readonly string _name;
+        private readonly bool _showTransformProperties;
 
-        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, object chartConfig = null)
+        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, object chartConfig = null, bool showTransformProperties = true)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -45,6 +46,7 @@ using System.Threading.Tasks;
             _name = name;
             _chartConfig = chartConfig;
             _selectQuery = selectQuery;
+            _showTransformProperties = showTransformProperties;
 
             var maxRows = selectQuery?.Rows ?? -1;
             _maxRows = maxRows <= 0 ? long.MaxValue : maxRows;
@@ -194,7 +196,7 @@ using System.Threading.Tasks;
                         {
                             await _streamWriter.WriteAsync("]");
 
-                            if (_reader is Transform transform)
+                            if (_reader is Transform transform && _showTransformProperties)
                             {
                                 var properties = transform.GetTransformProperties(true);
                                 var propertiesSerialized = properties.Serialize();

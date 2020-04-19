@@ -52,11 +52,23 @@ namespace dexih.transforms.Mapping
 
         public object GetSeriesStart()
         {
+            if (SeriesStart == null) return null;
+            if (SeriesStart is string s && string.IsNullOrWhiteSpace(s))
+            {
+                return null;
+            }
+
             return Operations.Parse(InputColumn.DataType, SeriesStart);
         }
 
         public object GetSeriesFinish()
         {
+            if (SeriesFinish == null) return null;
+            if (SeriesFinish is string s && string.IsNullOrWhiteSpace(s))
+            {
+                return null;
+            }
+            
             return Operations.Parse(InputColumn.DataType, SeriesFinish);
         }
 
