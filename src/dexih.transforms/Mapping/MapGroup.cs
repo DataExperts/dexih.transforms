@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using dexih.functions;
-using dexih.functions.Query;
+﻿using dexih.functions;
 
 namespace dexih.transforms.Mapping
 {

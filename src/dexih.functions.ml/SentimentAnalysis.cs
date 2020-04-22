@@ -11,13 +11,12 @@ namespace dexih.functions.ml
 
         private PredictionEngine<SentimentIssue, SentimentPredictionResult> _predictionFunction;
 
-        private MLContext _mlContext;
         private List<SentimentIssue> _data;
         private byte[] _sentimentModel;
 
         public void Reset()
         {
-            _mlContext = new MLContext();
+            new MLContext();
             _data = new List<SentimentIssue>();
         }
 

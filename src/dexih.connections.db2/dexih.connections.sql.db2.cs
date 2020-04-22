@@ -8,7 +8,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using dexih.connections.sql;
-using static Dexih.Utils.DataType.DataType;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;

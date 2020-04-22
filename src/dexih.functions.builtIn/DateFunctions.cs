@@ -362,7 +362,7 @@ namespace dexih.functions.builtIn
             };
         }
 
-        public enum eCalendarType
+        public enum ECalendarType
         {
             Calendar,
             FourFiveFour,
@@ -370,9 +370,9 @@ namespace dexih.functions.builtIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Fiscal Date Components",
             Description = "Splits a fiscal date into it's components such as day, month, year etc.")]
-        public DateComponentsClass FiscalDateComponents(DateTime dateValue, eCalendarType calendarType, DateTime calendarStart)
+        public DateComponentsClass FiscalDateComponents(DateTime dateValue, ECalendarType calendarType, DateTime calendarStart)
         {
-            if (calendarType == eCalendarType.Calendar)
+            if (calendarType == ECalendarType.Calendar)
             {
                 var fiscalDate = dateValue.AddMonths(-calendarStart.Month - 1);
                 return DateComponents(fiscalDate);

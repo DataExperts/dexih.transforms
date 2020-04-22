@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using dexih.functions;
 using dexih.functions.Query;
-using Microsoft.Extensions.Logging;
 
 
 namespace dexih.transforms

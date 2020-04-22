@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
-using dexih.transforms.Mapping;
 
 namespace dexih.transforms
 {

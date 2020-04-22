@@ -82,7 +82,7 @@ namespace dexih.functions.BuiltIn
                 return fileName;
             }
             
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 switch (duplicateFileOptions)
                 {
@@ -97,7 +97,7 @@ namespace dexih.functions.BuiltIn
                             fileName = GetFileNameUnique(filePrefix, fileNameBody, filePostfix, extension, uniqueCount);
                             filePath = Path.Combine(path, fileName);
                             uniqueCount++;
-                            if(System.IO.File.Exists(filePath)) continue;
+                            if(File.Exists(filePath)) continue;
 
                             // safety check.
                             if (uniqueCount > 1000000)
@@ -127,7 +127,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                await System.IO.File.WriteAllBytesAsync(filePath, fileData, cancellationToken);
+                await File.WriteAllBytesAsync(filePath, fileData, cancellationToken);
                 return fileName;
             }
             else
@@ -151,7 +151,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                await System.IO.File.WriteAllTextAsync(filePath, fileData, cancellationToken);
+                await File.WriteAllTextAsync(filePath, fileData, cancellationToken);
                 return fileName;
             }
             else
@@ -170,7 +170,7 @@ namespace dexih.functions.BuiltIn
 
             GlobalSettings.FilePermissions?.ValidatePath(filePath);
 
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 return fileName;
             }
@@ -217,7 +217,7 @@ namespace dexih.functions.BuiltIn
             if (fileName != null)
             {
                 var filePath = Path.Combine(path, fileName);
-                var data = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
+                var data = await File.ReadAllTextAsync(filePath, cancellationToken);
                 return data;
             }
             else
@@ -313,7 +313,7 @@ namespace dexih.functions.BuiltIn
             var filePath = Path.Combine(path, fileName);
             GlobalSettings.FilePermissions?.ValidatePath(filePath);
 
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 var info = new FileInfo(path);
 

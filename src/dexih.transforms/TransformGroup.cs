@@ -6,7 +6,6 @@ using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {

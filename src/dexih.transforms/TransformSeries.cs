@@ -8,7 +8,6 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {

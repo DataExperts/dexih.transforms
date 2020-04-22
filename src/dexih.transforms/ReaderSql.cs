@@ -7,7 +7,6 @@ using System.Data.Common;
 using System.Threading;
 using dexih.transforms.Exceptions;
 using dexih.functions.Query;
-using Dexih.Utils.CopyProperties;
 
 namespace dexih.connections.sql
 {

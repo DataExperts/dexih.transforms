@@ -59,16 +59,16 @@ namespace dexih.connections.azure
             }
         }
 
-        private async Task<CloudBlobContainer> GetCloudBlobContainer(CancellationToken cancellationToken)
-        {
-            if (_cloudBlobContainer == null)
-            {
-                _cloudBlobContainer = CloudBlobClient.GetContainerReference(DefaultDatabase);
-                await _cloudBlobContainer.CreateIfNotExistsAsync();
-            }
-
-            return _cloudBlobContainer;
-        }
+        // private async Task<CloudBlobContainer> GetCloudBlobContainer(CancellationToken cancellationToken)
+        // {
+        //     if (_cloudBlobContainer == null)
+        //     {
+        //         _cloudBlobContainer = CloudBlobClient.GetContainerReference(DefaultDatabase);
+        //         await _cloudBlobContainer.CreateIfNotExistsAsync();
+        //     }
+        //
+        //     return _cloudBlobContainer;
+        // }
 
         public override async Task<List<string>> GetFileShares(CancellationToken cancellationToken)
         {

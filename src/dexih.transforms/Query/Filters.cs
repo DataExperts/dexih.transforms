@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Net.Sockets;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.Query
