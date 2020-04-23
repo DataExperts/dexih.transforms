@@ -346,7 +346,7 @@ namespace dexih.transforms
 
                             _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
 
-                            if (fillCount > 10000)
+                            if (fillCount++ > 10000)
                             {
                                 throw new Exception("The series continuation could not be found.");
                             }

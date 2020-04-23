@@ -126,8 +126,6 @@ namespace dexih.functions.external
                 var element = await JsonSerializer.DeserializeAsync<IpStackError>(await response.Content.ReadAsStreamAsync(), cancellationToken: cancellationToken);
                 throw new FunctionException($"The IpToGeolocation failed.  Message: {element.error.info}");
             }
-
-            throw new FunctionException("The stock data from IpToGeolocation could not be retrieved.");
         }
         
         public void Dispose()

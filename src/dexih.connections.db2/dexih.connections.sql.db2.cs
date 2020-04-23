@@ -152,7 +152,7 @@ namespace dexih.connections.db2
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table);
+                    await DropTable(table);
                 }
 
                 var createSql = new StringBuilder();
@@ -160,7 +160,7 @@ namespace dexih.connections.db2
                 //Create the table
                 createSql.Append($"create table {SqlTableName(table)} ");
 
-                //sqlite does not support table/column comments, so add a comment string into the ddl.
+                //db2 does not support table/column comments, so add a comment string into the ddl.
                 if (!string.IsNullOrEmpty(table.Description))
                     createSql.Append(" -- " + table.Description);
 

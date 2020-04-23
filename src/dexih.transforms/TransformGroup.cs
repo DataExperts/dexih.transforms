@@ -199,7 +199,7 @@ namespace dexih.transforms
                 if (matched)
                 {
                     _isPushDownQuery = true;
-                    GeneratedQuery.Filters = requestQuery.GroupFilters;
+                    GeneratedQuery.Filters = requestQuery?.GroupFilters;
                 }
             }
             
@@ -280,7 +280,7 @@ namespace dexih.transforms
                         {
                             if ((nextGroupValues[i] == null && _groupValues?[i] != null) ||
                                 (nextGroupValues[i] != null && _groupValues == null) ||
-                                !Equals(nextGroupValues[i], _groupValues[i]) )
+                                !Equals(nextGroupValues[i], _groupValues?[i]) )
                             {
                                 groupChanged = true;
                                 break;
