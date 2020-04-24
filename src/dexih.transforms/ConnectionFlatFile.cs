@@ -113,7 +113,7 @@ namespace dexih.transforms
 					return result;
 				} else if (fileNameExtension == ".gz")
                 {
-                    using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
+                    await using (var decompressionStream = new GZipStream(stream, CompressionMode.Decompress))
                     {
                         var newFileName = fileName.Substring(0, fileName.Length - 3);
                         return await SaveFileStream(file, path, newFileName, decompressionStream, cancellationToken);
@@ -167,9 +167,9 @@ namespace dexih.transforms
                         var fileStreamResult = await GetReadFileStream(flatFile, path, fileName, cancellationToken);
                         var fileEntry = archive.CreateEntry(fileName);
 
-                        using (var fileEntryStream = fileEntry.Open())
+                        await using (var fileEntryStream = fileEntry.Open())
                         {
-                            await fileStreamResult.CopyToAsync(fileEntryStream);
+                            await fileStreamResult.CopyToAsync(fileEntryStream, cancellationToken);
                         }
                     }
                 }
@@ -421,9 +421,9 @@ namespace dexih.transforms
                 var flatFile = (FlatFile)table;
 
                 //open a new filestream 
-                using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName, cancellationToken))
-                using (var streamWriter = new StreamWriter(writer))
-                using (var csv = new CsvWriter(streamWriter, flatFile.FileConfiguration))
+                await using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName, cancellationToken))
+                await using (var streamWriter = new StreamWriter(writer))
+                await using (var csv = new CsvWriter(streamWriter, flatFile.FileConfiguration))
                 {
 
                     if (!(queries?.Count >= 0))
@@ -471,7 +471,7 @@ namespace dexih.transforms
         public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var flatFile = (FlatFile)table;
-            using (var reader = new ReaderFlatFile(this, flatFile, true))
+            await using (var reader = new ReaderFlatFile(this, flatFile, true))
             {
                 var openResult = await reader.Open(0, query, cancellationToken);
                 if (!openResult)

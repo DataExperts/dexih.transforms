@@ -141,8 +141,8 @@ namespace dexih.transforms
                 if (mapping is MapFilter mapFilter)
                 {
                     // if either filter columns reference the joinTable, then not a primary filter.
-                    if ((mapFilter.Column1 != null && mapFilter.Column1.ReferenceTable == _referenceTableName) ||
-                        (mapFilter.Column2 != null && mapFilter.Column2.ReferenceTable == _referenceTableName))
+                    if (mapFilter.Column1 != null && mapFilter.Column1.ReferenceTable == _referenceTableName ||
+                        mapFilter.Column2 != null && mapFilter.Column2.ReferenceTable == _referenceTableName)
                     {
                         continue;
                     }
@@ -155,7 +155,7 @@ namespace dexih.transforms
                     var isPrimaryFilter = true;
                     foreach (var parameter in mapFunction.Parameters.Inputs)
                     {
-                        if (parameter is ParameterJoinColumn || (parameter is ParameterColumn parameterColumn && parameterColumn.Column?.ReferenceTable == _referenceTableName))
+                        if (parameter is ParameterJoinColumn || parameter is ParameterColumn parameterColumn && parameterColumn.Column?.ReferenceTable == _referenceTableName)
                         {
                             isPrimaryFilter = false;
                             break;
@@ -165,7 +165,7 @@ namespace dexih.transforms
                         {
                             foreach (var arrayParameter in parameterArray.Parameters)
                             {
-                                if (arrayParameter is ParameterJoinColumn || (arrayParameter is ParameterColumn arrayParameterColumn && arrayParameterColumn.Column?.ReferenceTable == _referenceTableName))
+                                if (arrayParameter is ParameterJoinColumn || arrayParameter is ParameterColumn arrayParameterColumn && arrayParameterColumn.Column?.ReferenceTable == _referenceTableName)
                                 {
                                     isPrimaryFilter = false;
                                     break;
@@ -201,8 +201,8 @@ namespace dexih.transforms
                 if (mapping is MapFilter mapFilter)
                 {
                     // if either filter columns reference the joinTable, then not a reference filter.
-                    if ((mapFilter.Column1 != null && mapFilter.Column1.ReferenceTable != _referenceTableName) ||
-                        (mapFilter.Column2 != null && mapFilter.Column2.ReferenceTable != _referenceTableName))
+                    if (mapFilter.Column1 != null && mapFilter.Column1.ReferenceTable != _referenceTableName ||
+                        mapFilter.Column2 != null && mapFilter.Column2.ReferenceTable != _referenceTableName)
                     {
                         continue;
                     }

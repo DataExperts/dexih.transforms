@@ -453,7 +453,7 @@ namespace dexih.transforms
             var sorts = new Sorts() { new Sort(new TableColumn("AuditKey", ETypeCode.Int64), ESortDirection.Descending) };
             var query = new SelectQuery() { Filters = filters, Sorts = sorts, Rows = rows };
 
-            using var reader2 = new TransformQuery(reader, query) {Name = "Internal Query"};
+            await using var reader2 = new TransformQuery(reader, query) {Name = "Internal Query"};
 
             var returnValue = await reader2.Open(0, query, cancellationToken);
             if (!returnValue)
@@ -826,14 +826,14 @@ namespace dexih.transforms
                 return null;
             }
             
-            if ((column.Rank > 0 && !CanUseArray) ||
-                (column.DataType == ETypeCode.CharArray && !CanUseCharArray) ||
-                (column.DataType == ETypeCode.Binary && !CanUseBinary) ||
-                (column.DataType == ETypeCode.Json && !CanUseJson) ||
-                (column.DataType == ETypeCode.Xml && !CanUseXml) ||
-                (column.DataType == ETypeCode.Boolean && !CanUseBoolean) ||
-                (column.DataType == ETypeCode.SByte && !CanUseSByte) ||
-                (column.DataType == ETypeCode.Byte && !CanUseByte) ||
+            if (column.Rank > 0 && !CanUseArray ||
+                column.DataType == ETypeCode.CharArray && !CanUseCharArray ||
+                column.DataType == ETypeCode.Binary && !CanUseBinary ||
+                column.DataType == ETypeCode.Json && !CanUseJson ||
+                column.DataType == ETypeCode.Xml && !CanUseXml ||
+                column.DataType == ETypeCode.Boolean && !CanUseBoolean ||
+                column.DataType == ETypeCode.SByte && !CanUseSByte ||
+                column.DataType == ETypeCode.Byte && !CanUseByte ||
                 column.DataType == ETypeCode.Guid) // GUID's get parameterized as binary.  So need to explicitly convert to string.
             {
                 return Operations.Parse(column.DataType, column.Rank, reader[ordinal]);
@@ -920,7 +920,7 @@ namespace dexih.transforms
 
                 var rows = query?.Rows ?? -1;
 
-                using (var reader = GetTransformReader(table, true))
+                await using (var reader = GetTransformReader(table, true))
                 {
                     var returnValue = await reader.Open(0, query, cancellationToken);
                     if (!returnValue)
@@ -966,7 +966,7 @@ namespace dexih.transforms
 
                 var rows = selectQuery?.Rows ?? -1;
 
-                using (var reader = GetTransformReader(table, true))
+                await using (var reader = GetTransformReader(table, true))
                 {
                     var returnValue = await reader.Open(0, selectQuery, cancellationToken);
                     if (!returnValue)
@@ -1010,8 +1010,8 @@ namespace dexih.transforms
                 Columns = new SelectColumns() {new SelectColumn(column)},
                 Groups = new List<TableColumn>() {column},
             };
-            
-            using (var reader = GetTransformReader(table, true))
+
+            await using (var reader = GetTransformReader(table, true))
             {
                 var returnValue = await reader.Open(0, query, cancellationToken);
                 

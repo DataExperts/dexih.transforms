@@ -15,14 +15,14 @@ namespace dexih.functions
         /// <returns></returns>
         public static bool UnsortedSequenceEquals<T>(this IEnumerable<T> list1, IEnumerable<T> list2) {
             var cnt = new Dictionary<T, int>();
-            foreach (T s in list1) {
+            foreach (var s in list1) {
                 if (cnt.ContainsKey(s)) {
                     cnt[s]++;
                 } else {
                     cnt.Add(s, 1);
                 }
             }
-            foreach (T s in list2) {
+            foreach (var s in list2) {
                 if (cnt.ContainsKey(s)) {
                     cnt[s]--;
                 } else {
@@ -44,7 +44,7 @@ namespace dexih.functions
         public static bool UnsortedSequenceEquals<T, U>(this IEnumerable<T> list1, IEnumerable<T> list2, Func<T, U> property)
         {
             var cnt = new Dictionary<U, int>();
-            foreach (T s in list1)
+            foreach (var s in list1)
             {
                 var value = property.Invoke(s);
                 if (cnt.ContainsKey(value)) {
@@ -53,7 +53,7 @@ namespace dexih.functions
                     cnt.Add(value, 1);
                 }
             }
-            foreach (T s in list2) {
+            foreach (var s in list2) {
                 var value = property.Invoke(s);
                 if (cnt.ContainsKey(value)) {
                     cnt[value]--;
@@ -67,7 +67,7 @@ namespace dexih.functions
         public static bool SequenceContains<T>(this IEnumerable<T> list1, IEnumerable<T> list2) {
             var hash = new HashSet<T>(list1);
             
-            foreach (T s in list2) {
+            foreach (var s in list2) {
                 if (!hash.Contains(s)) {
                     return false;
                 }
@@ -79,7 +79,7 @@ namespace dexih.functions
         public static bool SequenceContains<T, U>(this IEnumerable<T> list1, IEnumerable<T> list2, Func<T, U> property)
         {
             var hash = new HashSet<U>(list1.Select(property.Invoke));
-            foreach (T s in list2)
+            foreach (var s in list2)
             {
                 var value = property.Invoke(s);
                 if (!hash.Contains(value)) {
@@ -177,7 +177,7 @@ namespace dexih.functions
         public static void AddIfNotExists<T, U>(this ICollection<T> list, T item,  Func<T, U> property)
         {
             var itemValue = property.Invoke(item);
-            foreach(T s in list)
+            foreach(var s in list)
             {
                 var listValue = property.Invoke(s);
                 if (Equals(itemValue, listValue))

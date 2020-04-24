@@ -96,7 +96,7 @@ namespace dexih.connections.ftp
 
             if (!string.IsNullOrEmpty(workingDirectory))
             {
-                client.SetWorkingDirectory(workingDirectory);
+                await client.SetWorkingDirectoryAsync(workingDirectory, cancellationToken);
             }
 
             return client;
@@ -136,7 +136,7 @@ namespace dexih.connections.ftp
                 {
 
                     var directory = DefaultDatabase;
-                    if (!client.DirectoryExists(directory))
+                    if (!await client.DirectoryExistsAsync(directory, cancellationToken))
                     {
                         await client.CreateDirectoryAsync(directory, cancellationToken);
                     }
@@ -144,7 +144,7 @@ namespace dexih.connections.ftp
                     if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                     {
                         directory = CombinePath(DefaultDatabase, file.FileRootPath);
-                        if (!client.DirectoryExists(directory))
+                        if (!await client.DirectoryExistsAsync(directory, cancellationToken))
                         {
                             await client.CreateDirectoryAsync(directory, cancellationToken);
                         }
@@ -153,7 +153,7 @@ namespace dexih.connections.ftp
                     if (file != null && path != EFlatFilePath.None)
                     {
                         directory = CombinePath(directory, file.GetPath(path));
-                        if (!client.DirectoryExists(directory))
+                        if (!await client.DirectoryExistsAsync(directory, cancellationToken))
                         {
                             await client.CreateDirectoryAsync(directory, cancellationToken);
                         }
@@ -193,7 +193,7 @@ namespace dexih.connections.ftp
                     while (await client.FileExistsAsync(CombinePath(fullToDirectory, newFileName), cancellationToken))
                     {
                         version++;
-                        newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                        newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                     }
 
                     await client.MoveFileAsync(CombinePath(fullFromDirectory, fileName),
@@ -325,9 +325,9 @@ namespace dexih.connections.ftp
                 var filePath = await FixFileName(file, path, fileName, cancellationToken);
 
                 using (var client = await GetFtpClient(cancellationToken))
-                using (var newFile = await client.OpenWriteAsync(filePath, FtpDataType.ASCII, cancellationToken))
+                await using (var newFile = await client.OpenWriteAsync(filePath, FtpDataType.ASCII, cancellationToken))
                 {
-                    await stream.CopyToAsync(newFile);
+                    await stream.CopyToAsync(newFile, cancellationToken);
                     stream.Close();
                     return true;
                 }
@@ -354,7 +354,7 @@ namespace dexih.connections.ftp
                  while (await client.FileExistsAsync(CombinePath(fullPath, newFileName), cancellationToken))
                  {
                      version++;
-                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                     newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                  }
     
                  var filePath = CombinePath(fullPath, newFileName);
@@ -389,7 +389,7 @@ namespace dexih.connections.ftp
                 using (var client = await GetFtpClient(cancellationToken))
                 {
 
-                    var exists = client.DirectoryExists(fullPath);
+                    var exists = await client.DirectoryExistsAsync(fullPath, cancellationToken);
                     return exists;
                 }
             }

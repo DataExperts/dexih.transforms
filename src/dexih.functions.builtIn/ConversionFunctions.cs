@@ -195,7 +195,7 @@ namespace dexih.functions.BuiltIn
             switch (fromScale)
             {
                 case ETemperatureScale.Fahrenheit:
-                    kelvin = (fromTemperature - 32 * (5 / 9)) + 273.15;
+                    kelvin = fromTemperature - 32 * (5 / 9) + 273.15;
                     break;
                 case ETemperatureScale.Celsius:
                     kelvin = fromTemperature + 273.15;

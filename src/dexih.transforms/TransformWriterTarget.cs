@@ -341,7 +341,7 @@ namespace dexih.transforms
 
                 if (TargetConnection != null && TargetTable != null)
                 {
-                    using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
+                    await using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
                     {
                         if (updateStrategy != null)
                         {
@@ -439,7 +439,7 @@ namespace dexih.transforms
 
             Transform transform = transformNode;
 
-            using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
+            await using (var targetReader = TargetConnection.GetTransformReader(TargetTable))
             {
                 var target = targetReader;
                 

@@ -60,7 +60,7 @@ namespace dexih.functions.ml
 	    /// <exception cref="Exception"></exception>
         public static Type CreateDynamicType(IEnumerable<DynamicTypeProperty> properties)
         {
-            StringBuilder classCode = new StringBuilder();
+            var classCode = new StringBuilder();
 
             // Generate the class code
             classCode.AppendLine("using System;");

@@ -30,28 +30,28 @@ namespace dexih.transforms.File
 		[DataMember(Order = 3)]
 		public string FileIncomingPath
 		{
-			get => AutoManageFiles ? ( UseCustomFilePaths ? _fileIncomingPath: "incoming") : "";
+			get => AutoManageFiles ? UseCustomFilePaths ? _fileIncomingPath: "incoming" : "";
 			set => _fileIncomingPath = value;
 		}
 
 		[DataMember(Order = 4)]
         public string FileOutgoingPath
         {
-            get => AutoManageFiles ? (UseCustomFilePaths ? _fileOutgoingPath : "outgoing") : "";
+            get => AutoManageFiles ? UseCustomFilePaths ? _fileOutgoingPath : "outgoing" : "";
             set => _fileOutgoingPath = value;
         }
 
         [DataMember(Order = 5)]
         public string FileProcessedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileProcessedPath : "processed") : "";
+			get => AutoManageFiles ? UseCustomFilePaths ? _fileProcessedPath : "processed" : "";
             set => _fileProcessedPath = value;
 		}
 
         [DataMember(Order = 6)]
 		public string FileRejectedPath
 		{
-			get => AutoManageFiles ? (UseCustomFilePaths ? _fileRejectedPath : "rejected") : "";
+			get => AutoManageFiles ? UseCustomFilePaths ? _fileRejectedPath : "rejected" : "";
             set => _fileRejectedPath = value;
 		}
 

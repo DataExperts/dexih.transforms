@@ -95,7 +95,7 @@ namespace dexih.functions
             if (string.IsNullOrEmpty(value))
                 return value;
 
-            var arr = value.Where(c => (char.IsLetterOrDigit(c))).ToArray();
+            var arr = value.Where(c => char.IsLetterOrDigit(c)).ToArray();
             var newValue = new string(arr);
             return newValue;
         }

@@ -171,7 +171,7 @@ namespace dexih.functions.Query
         {
             unchecked
             {
-                var hashCode = (Column1 != null ? Column1.GetHashCode() : 0);
+                var hashCode = Column1 != null ? Column1.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (Value1 != null ? Value1.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (int) CompareDataType;
                 hashCode = (hashCode * 397) ^ (Column2 != null ? Column2.GetHashCode() : 0);

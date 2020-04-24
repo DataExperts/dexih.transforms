@@ -454,7 +454,7 @@ namespace dexih.functions
         {
             unchecked
             {
-                var hashCode = (ReferenceTable != null ? ReferenceTable.GetHashCode() : 0);
+                var hashCode = ReferenceTable != null ? ReferenceTable.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (LogicalName != null ? LogicalName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Description != null ? Description.GetHashCode() : 0);

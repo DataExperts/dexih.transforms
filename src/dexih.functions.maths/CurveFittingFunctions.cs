@@ -73,7 +73,7 @@ namespace dexih.functions.maths
             yIntercept = _yIntercept;
             slope = _slope;
 
-            return yIntercept + (slope * index);
+            return yIntercept + slope * index;
         }
         
         [TransformFunction(FunctionType = EFunctionType.Series, Category = "Curve Fit", Name = "Polynomial Regression", Description = "Least-Squares fitting the points (x,y) to a k-order polynomial y : x -> p0 + p1*x + p2*x^2 + ... + pk*x^k", ResultMethod = nameof(PolynomialRegressionResult), ResetMethod = nameof(Reset))]

@@ -77,7 +77,7 @@ namespace dexih.functions.BuiltIn
                 _cacheInt++;
             }
 
-            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt > _cacheArray.Length - 1)
+            if (maxItems > 0 && _cacheInt > maxItems - 1 || _cacheInt > _cacheArray.Length - 1)
             {
                 item = "";
                 return false;
@@ -127,7 +127,7 @@ namespace dexih.functions.BuiltIn
                 _cacheInt = 0;
             }
 
-            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt >= _cacheXmlNodeList.Count)
+            if (maxItems > 0 && _cacheInt > maxItems - 1 || _cacheInt >= _cacheXmlNodeList.Count)
             {
                 node = "";
                 return false;
@@ -156,7 +156,7 @@ namespace dexih.functions.BuiltIn
             else
                 _cacheInt++;
 
-            if ((maxItems > 0 && _cacheInt > maxItems - 1) || _cacheInt > _cacheJsonTokens.Length - 1)
+            if (maxItems > 0 && _cacheInt > maxItems - 1 || _cacheInt > _cacheJsonTokens.Length - 1)
             {
                 item = "";
                 return false;
@@ -196,7 +196,7 @@ namespace dexih.functions.BuiltIn
             var item = _cacheJsonTokens == null || _cacheJsonTokens.Length == 0
                 ? null
                 : _cacheJsonTokens[0].ElementAtOrDefault((int) _cacheInt);
-            if ((maxItems > 0 && _cacheInt > maxItems - 1) || item == null)
+            if (maxItems > 0 && _cacheInt > maxItems - 1 || item == null)
             {
                 name = "";
                 value = "";

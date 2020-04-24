@@ -143,14 +143,14 @@ namespace dexih.connections.github
                             }
                             else
                             {
-                                throw new ConnectionException($"Github error occurred getting directories from {Server}.  The \"name\" property could not be found.", new Exception("Full response: " + directories.ToString()));
+                                throw new ConnectionException($"Github error occurred getting directories from {Server}.  The \"name\" property could not be found.", new Exception("Full response: " + directories));
                             }
                             
                         }
                     }
                     else
                     {
-                        throw new ConnectionException($"Github error occurred getting directories from {Server}.  The \"type\" property could not be found.", new Exception("Full response: " + directories.ToString()));
+                        throw new ConnectionException($"Github error occurred getting directories from {Server}.  The \"type\" property could not be found.", new Exception("Full response: " + directories));
                     }
                 }
 
@@ -310,7 +310,7 @@ namespace dexih.connections.github
             }
             catch(Exception ex)
             {
-                throw new ConnectionException($"Error occurred testing if a directory exists for flatfile {table.Name}.  {ex.Message}", ex);
+                throw new ConnectionException($"Error occurred testing if a directory exists for flat file {table.Name}.  {ex.Message}", ex);
             }
         }
     }

@@ -50,7 +50,7 @@ namespace dexih.connections.excel
 
                 IsOpen = true;
 
-                var connection = ((ConnectionExcel)ReferenceConnection);
+                var connection = (ConnectionExcel)ReferenceConnection;
                 _excelPackage = connection.NewConnection();
                 _currentRow = connection.ExcelDataRow;
                 _excelWorkSheet = connection.GetWorkSheet(_excelPackage, CacheTable.Name);

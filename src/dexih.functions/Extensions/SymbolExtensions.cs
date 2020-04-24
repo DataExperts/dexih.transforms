@@ -53,7 +53,7 @@ namespace dexih.functions
                 throw new ArgumentException("Invalid Expression.  Expression can not be null.");
             }
             
-            MethodCallExpression outermostExpression = expression.Body as MethodCallExpression;
+            var outermostExpression = expression.Body as MethodCallExpression;
  
             if (outermostExpression == null)
             {

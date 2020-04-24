@@ -252,10 +252,10 @@ namespace dexih.transforms
                             PrimaryTransform.CacheTable.Columns[_primarySortOrdinals[i]].DataType,
                             PrimaryTransform[_primarySortOrdinals[i]], ReferenceTransform[_referenceSortOrdinals[i]]);
 
-                        if ((compareResult > 0 &&
-                             SortFields[i].Direction == ESortDirection.Ascending) ||
-                            (compareResult < 0 &&
-                             SortFields[i].Direction == ESortDirection.Descending))
+                        if (compareResult > 0 &&
+                            SortFields[i].Direction == ESortDirection.Ascending ||
+                            compareResult < 0 &&
+                            SortFields[i].Direction == ESortDirection.Descending)
                         {
                             usePrimary = false;
                             break;

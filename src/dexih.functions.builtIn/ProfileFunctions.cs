@@ -110,7 +110,7 @@ namespace dexih.functions.BuiltIn
                 result = "DateTime";
             if (count == 1 && _dictionary.ContainsKey("Int64"))
                 result = "Integer";
-            if ((count == 1 && _dictionary.ContainsKey("Double")) || (count == 2 && _dictionary.ContainsKey("Double") && _dictionary.ContainsKey("Int64")))
+            if (count == 1 && _dictionary.ContainsKey("Double") || count == 2 && _dictionary.ContainsKey("Double") && _dictionary.ContainsKey("Int64"))
                 result = "Double";
             if (_dictionary.ContainsKey("Float") && _dictionary.ContainsKey("String") == false && _dictionary.ContainsKey("DateTime") == false)
                 result = "Float";

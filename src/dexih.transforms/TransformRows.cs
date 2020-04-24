@@ -69,8 +69,7 @@ namespace dexih.transforms
                 {
                     var groupNames = groupFields.Select(c => c.InputColumn.Name).ToArray();
                     requestQuery.Filters = new Filters(requestQuery.Filters.Where(c =>
-                        (c.Column1 != null && groupNames.Contains(c.Column1.Name)) &&
-                        (c.Column2 != null && groupNames.Contains((c.Column2.Name)))));
+                        c.Column1 != null && groupNames.Contains(c.Column1.Name) && c.Column2 != null && groupNames.Contains(c.Column2.Name)));
                 }
                 else
                 {

@@ -213,7 +213,7 @@ namespace dexih.transforms
             _referenceOpen = true;
 
             //do some integrity checks
-            if (DoPreserve && (_colAutoIncrement == null || (_colIsCurrentField == null && (_colValidTo == null || _colValidFrom == null))))
+            if (DoPreserve && (_colAutoIncrement == null || _colIsCurrentField == null && (_colValidTo == null || _colValidFrom == null)))
             {
                 throw new Exception(
                     "The delta transform requires target table table to have a one \"Auto Increment\" column, and one \"Is Current\" or a \"Valid From\"|\"Valid To\" combination columns for row preservation.");

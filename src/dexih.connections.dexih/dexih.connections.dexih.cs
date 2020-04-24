@@ -117,8 +117,6 @@ namespace dexih.connections.dexih
                         }
                         
                     }
-                    
-                    throw new ConnectionException($"Could not connect to server {Server}\n. Response: {response.StatusCode.ToString()} - {response.ReasonPhrase}");
                 }
 		        catch (HttpRequestException ex)
 		        {
@@ -330,7 +328,7 @@ namespace dexih.connections.dexih
         }
 
         /// <summary>
-        /// This performns a lookup directly against the underlying data source, returns the result, and adds the result to cache.
+        /// This performs a lookup directly against the underlying data source, returns the result, and adds the result to cache.
         /// </summary>
         /// <param name="table"></param>
         /// <param name="filters"></param>
@@ -338,8 +336,8 @@ namespace dexih.connections.dexih
         /// <returns></returns>
         public object[] LookupRow(Table table, Filters filters, CancellationToken cancellationToken = default)
         {
-			throw new NotImplementedException();
-		}
+            throw new NotImplementedException();
+        }
 
         public override Task TruncateTable(Table table, int transactionReference, CancellationToken cancellationToken = default)
         {
@@ -368,8 +366,8 @@ namespace dexih.connections.dexih
 
         public override Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
-			throw new NotImplementedException();
-		}
+            throw new NotImplementedException();
+        }
 
         public override Task CreateDatabase(string databaseName, CancellationToken cancellationToken = default)
         {

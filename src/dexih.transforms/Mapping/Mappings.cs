@@ -379,9 +379,12 @@ namespace dexih.transforms.Mapping
                     {
                         if (task.Exception?.InnerException is TargetInvocationException targetInvocationException2)
                         {
-                            throw new FunctionException(
-                                $"The mapping {_primaryMappings[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",
-                                targetInvocationException2);
+                            if (targetInvocationException2.InnerException != null)
+                            {
+                                throw new FunctionException(
+                                    $"The mapping {_primaryMappings[i].Description()} failed due to {targetInvocationException2.InnerException.Message}.",
+                                    targetInvocationException2);
+                            }
                         }
                     }
                 }

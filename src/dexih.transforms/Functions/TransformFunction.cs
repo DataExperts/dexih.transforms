@@ -374,6 +374,11 @@ namespace dexih.functions
 					case EParameterClass.EnumArray:
 						var enumType = functionParameters[pos].ParameterType.GetElementType();
 						var array = (Array)inputParameters[inputPosition];
+
+						if (enumType == null)
+						{
+							throw new FunctionException("The class enumArray was specied, however the enumType is null");
+						}
 						var newArray = Array.CreateInstance(enumType, array.Length);
 
 						var i = 0;
@@ -500,6 +505,11 @@ namespace dexih.functions
 				var task = (Task) methodInfo.MethodInfo.Invoke(ObjectReference, parameters);
 				await task.ConfigureAwait(false);
 				var resultProperty = task.GetType().GetProperty("Result");
+
+				if (resultProperty == null)
+				{
+					throw new FunctionException($"The method {methodInfo.MethodInfo} did not return a result.");
+				}
 				_returnValue = resultProperty.GetValue(task);
 				return (_returnValue, false);
 

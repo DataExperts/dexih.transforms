@@ -77,7 +77,7 @@ namespace dexih.connections.mysql
             try
             {
                 Stopwatch.StartNew();
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
                     var row = new StringBuilder();
                     
@@ -130,10 +130,10 @@ namespace dexih.connections.mysql
                             // sql statement is going to be too large to handle, so exit.
                             if (insert.Length > MaxSqlSize)
                             {
-                                throw new ConnectionException($"The generated sql was too large to execute.  The size was {(insert.Length + row.Length)} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
+                                throw new ConnectionException($"The generated sql was too large to execute.  The size was {insert.Length + row.Length} and the maximum supported by MySql is {MaxSqlSize}.  To fix this, either reduce the fields being used or increase the `max_allow_packet` variable in the MySql database.");
                             }
 
-                            using (var cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
+                            await using (var cmd = new MySqlCommand(insert.ToString(), (MySqlConnection)connection))
                             {
                                 cmd.CommandType = CommandType.Text;
                                 try
@@ -164,8 +164,8 @@ namespace dexih.connections.mysql
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                     var tableExists = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -227,8 +227,8 @@ namespace dexih.connections.mysql
                 createSql.Append(")");
 
 
-				using (var connection = await NewConnection())
-				using (var command = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var command = connection.CreateCommand())
 				{
 					command.CommandText = createSql.ToString();
 					try
@@ -443,7 +443,7 @@ namespace dexih.connections.mysql
                 }
 
 				// update the maximum packet size supported by this mysql database.
-				using (var cmd = CreateCommand(connection, @" SELECT @@max_allowed_packet"))
+                await using (var cmd = CreateCommand(connection, @" SELECT @@max_allowed_packet"))
 				{
 					var result = await cmd.ExecuteScalarAsync();
 					if(result != DBNull.Value && result != null)
@@ -467,8 +467,8 @@ namespace dexih.connections.mysql
             {
                 DefaultDatabase = "";
 
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
@@ -487,9 +487,9 @@ namespace dexih.connections.mysql
             {
                 var list = new List<string>();
 
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "SHOW DATABASES"))
-                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "SHOW DATABASES"))
+                await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -510,11 +510,10 @@ namespace dexih.connections.mysql
             {
                 var tableList = new List<Table>();
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-
-                    using (var cmd = CreateCommand(connection, "SHOW TABLES"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, "SHOW TABLES"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -546,15 +545,15 @@ namespace dexih.connections.mysql
             {
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     //The new datatable that will contain the table schema
                     table.Columns.Clear();
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + DefaultDatabase + "' AND TABLE_NAME='" + table.Name + "'"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, @"SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + DefaultDatabase + "' AND TABLE_NAME='" + table.Name + "'"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {

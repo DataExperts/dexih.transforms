@@ -189,7 +189,7 @@ namespace dexih.connections.sftp
                     while (client.Exists(CombinePath(fullToDirectory, newFileName)))
                     {
                         version++;
-                        newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                        newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                     }
 
                     sourceFile.MoveTo(CombinePath(fullToDirectory, newFileName));
@@ -320,7 +320,7 @@ namespace dexih.connections.sftp
                 using (var client = GetSftpClient())
                 {
                     var newFile = client.OpenWrite(filePath);
-                    await stream.CopyToAsync(newFile);
+                    await stream.CopyToAsync(newFile, cancellationToken);
                     stream.Close();
                     return true;
                 }
@@ -347,7 +347,7 @@ namespace dexih.connections.sftp
                  while (client.Exists(CombinePath(fullPath, newFileName)))
                  {
                      version++;
-                     newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                     newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                  }
     
                  var filePath = CombinePath(fullPath, newFileName);

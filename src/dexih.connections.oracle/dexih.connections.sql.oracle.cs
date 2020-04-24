@@ -158,7 +158,7 @@ namespace dexih.connections.oracle
                 // set the default schema
                 if (!string.IsNullOrEmpty(DefaultDatabase))
                 {
-                    using (var cmd = CreateCommand(connection, $"ALTER SESSION SET CURRENT_SCHEMA={AddDelimiter(DefaultDatabase)}"))
+                    await using (var cmd = CreateCommand(connection, $"ALTER SESSION SET CURRENT_SCHEMA={AddDelimiter(DefaultDatabase)}"))
                     {
                         await cmd.ExecuteNonQueryAsync();
                     }
@@ -354,21 +354,21 @@ namespace dexih.connections.oracle
             {
                 DefaultDatabase = "";
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         $"create user {AddDelimiter(databaseName)} identified by {AddDelimiter(databaseName)} CONTAINER=CURRENT"))
                     {
                         await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
 
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         $"grant create session to {AddDelimiter(databaseName)}"))
                     {
                         await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
-                    
-                    using (var cmd = CreateCommand(connection, $"ALTER USER {AddDelimiter(databaseName)} quota unlimited on USERS"))
+
+                    await using (var cmd = CreateCommand(connection, $"ALTER USER {AddDelimiter(databaseName)} quota unlimited on USERS"))
                     {
                         await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
@@ -390,7 +390,7 @@ namespace dexih.connections.oracle
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
                     var tableExists = await TableExists(table, cancellationToken);
 
@@ -443,7 +443,7 @@ namespace dexih.connections.oracle
 
                     createSql.AppendLine(")");
 
-                    using (var command = connection.CreateCommand())
+                    await using (var command = connection.CreateCommand())
                     {
                         command.CommandText = createSql.ToString();
                         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -452,7 +452,7 @@ namespace dexih.connections.oracle
                     var skCol = table.GetAutoIncrementColumn();
                     if (skCol != null)
                     {
-                        using (var command = connection.CreateCommand())
+                        await using (var command = connection.CreateCommand())
                         {
                             command.CommandText = $"alter table {SqlTableName(table)} add (constraint {table.Name +"_pk"} primary key ( {AddDelimiter(skCol.Name)} ))";
                             await command.ExecuteNonQueryAsync(cancellationToken);
@@ -472,9 +472,9 @@ namespace dexih.connections.oracle
             {
                 var list = new List<string>();
 
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "select USERNAME from USER_USERS"))
-                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "select USERNAME from USER_USERS"))
+                await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -495,13 +495,12 @@ namespace dexih.connections.oracle
             {
                 var tableList = new List<Table>();
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         "select object_name from USER_OBJECTS where object_type = 'TABLE'"))
                     {
-                        using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                        await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                         {
                             while (await reader.ReadAsync(cancellationToken))
                             {
@@ -597,10 +596,10 @@ namespace dexih.connections.oracle
 				var schema = string.IsNullOrEmpty(originalTable.Schema) ? "public" : originalTable.Schema;
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
                     // table table comment if exists
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         @"SELECT comments FROM all_tab_comments WHERE OWNER = '" + schema + "' AND TABLE_NAME='" + table.Name +
                         "'"))
                     {
@@ -615,8 +614,8 @@ namespace dexih.connections.oracle
                     table.Columns.Clear();
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"SELECT * FROM all_tab_columns WHERE OWNER = '" + schema + "' AND TABLE_NAME='" + table.Name + "'"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, @"SELECT * FROM all_tab_columns WHERE OWNER = '" + schema + "' AND TABLE_NAME='" + table.Name + "'"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -669,8 +668,8 @@ namespace dexih.connections.oracle
                     }
                     
                     // add any column comments
-                    using (var cmd = CreateCommand(connection, $@"select COLUMN_NAME, COMMENTS from all_col_comments where table_name= '{table.Name}' and owner = '{table.Schema}'"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, $@"select COLUMN_NAME, COMMENTS from all_col_comments where table_name= '{table.Name}' and owner = '{table.Schema}'"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -684,7 +683,7 @@ namespace dexih.connections.oracle
                     }
                     
                     // get the primary key
-                    using (var cmd = CreateCommand(connection, $@"
+                    await using (var cmd = CreateCommand(connection, $@"
 SELECT cols.table_name, cols.column_name, cols.position, cons.status, cons.owner
 FROM all_constraints cons, all_cons_columns cols
 WHERE cols.table_name = '{table.Name}'
@@ -693,7 +692,7 @@ AND cons.constraint_type = 'P'
 AND cons.constraint_name = cols.constraint_name
 AND cons.owner = cols.owner
 ORDER BY cols.table_name, cols.position"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -864,106 +863,106 @@ ORDER BY cols.table_name, cols.position"))
         public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
              try
-            {
-                if (queries.Count == 0) return 0;
+             {
+                 if (queries.Count == 0) return 0;
                 
-                long identityValue = 0;
-                long autoIncrementValue = 0;
+                 long identityValue = 0;
+                 long autoIncrementValue = 0;
 
-                var transactionConnection = await GetTransaction(transactionReference);
-                var connection = (OracleConnection) transactionConnection.connection;
-                var transaction = (OracleTransaction) transactionConnection.transaction;
+                 var transactionConnection = await GetTransaction(transactionReference);
+                 var connection = (OracleConnection) transactionConnection.connection;
+                 var transaction = (OracleTransaction) transactionConnection.transaction;
 
-                try
-                {
-                    var insert = new StringBuilder();
-                    var values = new StringBuilder();
+                 try
+                 {
+                     var insert = new StringBuilder();
+                     var values = new StringBuilder();
 
-                    foreach (var query in queries)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
+                     foreach (var query in queries)
+                     {
+                         cancellationToken.ThrowIfCancellationRequested();
 
-                        insert.Clear();
-                        values.Clear();
+                         insert.Clear();
+                         values.Clear();
 
-                        insert.Append("INSERT INTO " + SqlTableName(table) + " (");
-                        values.Append("VALUES (");
+                         insert.Append("INSERT INTO " + SqlTableName(table) + " (");
+                         values.Append("VALUES (");
 
-                        for (var i = 0; i < query.InsertColumns.Count; i++)
-                        {
-                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.DbAutoIncrement)
-                                continue;
+                         for (var i = 0; i < query.InsertColumns.Count; i++)
+                         {
+                             if (query.InsertColumns[i].Column.DeltaType == EDeltaType.DbAutoIncrement)
+                                 continue;
                             
-                            if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
-                                autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
+                             if (query.InsertColumns[i].Column.DeltaType == EDeltaType.AutoIncrement)
+                                 autoIncrementValue = Convert.ToInt64(query.InsertColumns[i].Value);
                             
-                            insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
-                            values.Append(":col" + i + " ,");
-                        }
+                             insert.Append(AddDelimiter(query.InsertColumns[i].Column.Name) + ",");
+                             values.Append(":col" + i + " ,");
+                         }
 
-                        var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
-                                            values.Remove(values.Length - 1, 1) + ") ";
+                         var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " +
+                                             values.Remove(values.Length - 1, 1) + ") ";
 
-                        try
-                        {
-                            using (var cmd = connection.CreateCommand())
-                            {
-                                cmd.CommandText = insertCommand;
-                                cmd.Transaction = transaction;
+                         try
+                         {
+                             await using (var cmd = connection.CreateCommand())
+                             {
+                                 cmd.CommandText = insertCommand;
+                                 cmd.Transaction = transaction;
 
-                                for (var i = 0; i < query.InsertColumns.Count; i++)
-                                {
-                                    var converted = ConvertForWrite(query.InsertColumns[i].Column,
-                                        query.InsertColumns[i].Value);
-                                    var param = cmd.CreateParameter();
-                                    param.ParameterName = $"col{i}";
-                                    param.OracleDbType = GetSqlDbType(converted.typeCode);
-                                    param.Value = converted.value;
-                                    cmd.Parameters.Add(param);
-                                }
+                                 for (var i = 0; i < query.InsertColumns.Count; i++)
+                                 {
+                                     var converted = ConvertForWrite(query.InsertColumns[i].Column,
+                                         query.InsertColumns[i].Value);
+                                     var param = cmd.CreateParameter();
+                                     param.ParameterName = $"col{i}";
+                                     param.OracleDbType = GetSqlDbType(converted.typeCode);
+                                     param.Value = converted.value;
+                                     cmd.Parameters.Add(param);
+                                 }
                                 
-                                cancellationToken.ThrowIfCancellationRequested();
+                                 cancellationToken.ThrowIfCancellationRequested();
 
-                                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
 
-                            }
+                             }
 
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
-                        }
-                    }
+                         }
+                         catch (Exception ex)
+                         {
+                             throw new ConnectionException($"The insert query failed.  {ex.Message}", ex);
+                         }
+                     }
                     
-                    if (autoIncrementValue > 0)
-                    {
-                        return autoIncrementValue;
-                    }
+                     if (autoIncrementValue > 0)
+                     {
+                         return autoIncrementValue;
+                     }
 
-                    var deltaColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
-                    if (deltaColumn != null)
-                    {
-                        var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
-                        using (var cmd = connection.CreateCommand())
-                        {
-                            cmd.CommandText = sql;
-                            cmd.Transaction = transaction;
-                            var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-                            identityValue = Convert.ToInt64(identity);
-                        }
-                    }
+                     var deltaColumn = table.GetColumn(EDeltaType.DbAutoIncrement);
+                     if (deltaColumn != null)
+                     {
+                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
+                         await using (var cmd = connection.CreateCommand())
+                         {
+                             cmd.CommandText = sql;
+                             cmd.Transaction = transaction;
+                             var identity = await cmd.ExecuteScalarAsync(cancellationToken);
+                             identityValue = Convert.ToInt64(identity);
+                         }
+                     }
                     
-                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
-                }
-                finally
-                {
-                    EndTransaction(transactionReference, transactionConnection);
-                }
-            }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
-            }        
+                     return identityValue; //sometimes reader returns -1, when we want this to be error condition.
+                 }
+                 finally
+                 {
+                     EndTransaction(transactionReference, transactionConnection);
+                 }
+             }
+             catch(Exception ex)
+             {
+                 throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
+             }        
         }
         
 //        public override async Task ExecuteUpdate(Table table, List<UpdateQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
@@ -1045,8 +1044,8 @@ ORDER BY cols.table_name, cols.position"))
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
                     cmd.Parameters.Add(CreateParameter(cmd, "SCHEMA", ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));

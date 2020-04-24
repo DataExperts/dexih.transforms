@@ -50,7 +50,7 @@ namespace dexih.functions.ml
 
         public class AnomalyEntry
         {
-            public Single Value;
+            public float Value;
         }
 
         public class AnomalyPrediction

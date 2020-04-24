@@ -30,10 +30,10 @@ namespace dexih.functions.BuiltIn
         private string GetFileNameUnique(string filePrefix, string fileNameBody, string filePostfix, string extension,
             int uniqueCount = 0)
         {
-            string unique = "";
+            var unique = "";
             if (uniqueCount > 0)
             {
-                unique = "_" + uniqueCount.ToString();
+                unique = "_" + uniqueCount;
             }
 
             string fileName;

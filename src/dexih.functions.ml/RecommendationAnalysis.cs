@@ -21,7 +21,7 @@ namespace dexih.functions.ml
 
         public class RecommendationEntry
         {
-            public Single Label { get; set; }
+            public float Label { get; set; }
             public string Item1 { get; set; }
 
             public string Item2 { get; set; }
@@ -62,7 +62,7 @@ namespace dexih.functions.ml
             var mlContext = new MLContext();
             var trainData = mlContext.Data.LoadFromEnumerable(_recommendationEntries);
 
-            MatrixFactorizationTrainer.Options options = new MatrixFactorizationTrainer.Options();
+            var options = new MatrixFactorizationTrainer.Options();
             options.MatrixColumnIndexColumnName = "Item1Key";
             options.MatrixRowIndexColumnName = "Item2Key";
             options.LabelColumnName= "Label";

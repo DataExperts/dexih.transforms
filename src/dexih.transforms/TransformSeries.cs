@@ -180,7 +180,7 @@ namespace dexih.transforms
                     for (var i = 0; i < nextGroupValues.Length; i++)
                     {
                         if (nextGroupValues[i] == null && _groupValues?[i] != null ||
-                            (nextGroupValues[i] != null && _groupValues == null) ||
+                            nextGroupValues[i] != null && _groupValues == null ||
                             !Equals(nextGroupValues[i], _groupValues[i]))
                         {
                             groupChanged = true;
@@ -396,7 +396,7 @@ namespace dexih.transforms
         private async Task<object[]> ProcessGroupChange(object[] outputRow, object[] previousRow, CancellationToken cancellationToken)
         {
             // if the group has changed, update all cached rows with aggregate functions.
-            if (_cachedRows != null)
+            if (_cachedRows != null && _cachedRows.Count > 0)
             {
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
@@ -441,7 +441,7 @@ namespace dexih.transforms
                     }
                 }
 
-                Mappings.Reset(EFunctionType.Aggregate);
+               Mappings.Reset(EFunctionType.Aggregate);
 
                 var cacheIndex = 0;
                 foreach (var row in _cachedRows)

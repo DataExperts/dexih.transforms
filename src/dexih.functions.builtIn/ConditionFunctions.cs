@@ -172,8 +172,8 @@ namespace dexih.functions.BuiltIn
         {
             foreach (var t in value)
             {
-                if ((skipNonAlpha && char.IsLetter(t) && !char.IsUpper(t)) ||
-                    (skipNonAlpha == false && !char.IsUpper(t)))
+                if (skipNonAlpha && char.IsLetter(t) && !char.IsUpper(t) ||
+                    skipNonAlpha == false && !char.IsUpper(t))
                     return false;
             }
 
@@ -186,8 +186,8 @@ namespace dexih.functions.BuiltIn
         {
             foreach (var t in value)
             {
-                if ((skipNonAlpha && char.IsLetter(t) && !char.IsLower(t)) ||
-                    (skipNonAlpha == false && !char.IsLower(t)))
+                if (skipNonAlpha && char.IsLetter(t) && !char.IsLower(t) ||
+                    skipNonAlpha == false && !char.IsLower(t))
                     return false;
             }
 

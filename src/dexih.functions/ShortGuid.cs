@@ -109,13 +109,13 @@ namespace dexih.functions
     /// <returns></returns>
     public override bool Equals(object obj)
     {
-      if (obj is ShortGuid guid)
-        return _guid.Equals(guid._guid);
-      if (obj is Guid guid1)
-        return _guid.Equals(guid1);
-      if (obj is string)
-        return _guid.Equals(((ShortGuid)obj)._guid);
-      return false;
+      return obj switch
+      {
+        ShortGuid guid => _guid.Equals(guid._guid),
+        Guid guid1 => _guid.Equals(guid1),
+        string _ => _guid.Equals(((ShortGuid) obj)._guid),
+        _ => false
+      };
     }
 
     #endregion
@@ -156,7 +156,7 @@ namespace dexih.functions
     /// <returns></returns>
     public static string Encode(string value)
     {
-      Guid guid = new Guid(value);
+      var guid = new Guid(value);
       return Encode(guid);
     }
 
@@ -168,7 +168,7 @@ namespace dexih.functions
     /// <returns></returns>
     public static string Encode(Guid guid)
     {
-      string encoded = Convert.ToBase64String(guid.ToByteArray());
+      var encoded = Convert.ToBase64String(guid.ToByteArray());
       encoded = encoded
         .Replace("/", "_")
         .Replace("+", "-");
@@ -189,7 +189,7 @@ namespace dexih.functions
       value = value
         .Replace("_", "/")
         .Replace("-", "+");
-      byte[] buffer = Convert.FromBase64String(value + "==");
+      var buffer = Convert.FromBase64String(value + "==");
       return new Guid(buffer);
     }
 

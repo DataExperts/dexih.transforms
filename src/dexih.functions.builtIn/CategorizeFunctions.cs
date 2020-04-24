@@ -74,7 +74,7 @@ namespace dexih.functions.BuiltIn
                 return false;
             }
 
-            rangeLow = ( Math.Floor((value - lowValue??0) / interval) * interval) + lowValue;
+            rangeLow = Math.Floor((value - lowValue??0) / interval) * interval + lowValue;
             rangeHigh = rangeLow + interval;
 
             if (rangeHigh > highValue)

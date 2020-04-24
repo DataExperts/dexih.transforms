@@ -127,7 +127,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
                     var fieldCount = reader.FieldCount;
                     var insert = new StringBuilder();
@@ -148,9 +148,9 @@ namespace dexih.connections.sql
 
                     var insertCommand = insert.Remove(insert.Length - 1, 1) + ") " + values.Remove(values.Length - 1, 1) + ") ";
 
-                    using (var transaction = connection.BeginTransaction())
+                    await using (var transaction = await connection.BeginTransactionAsync(cancellationToken))
                     {
-                        using (var cmd = connection.CreateCommand())
+                        await using (var cmd = connection.CreateCommand())
                         {
                             cmd.CommandText = insertCommand;
                             cmd.Transaction = transaction;
@@ -183,12 +183,12 @@ namespace dexih.connections.sql
                                 await cmd.ExecuteNonQueryAsync(cancellationToken);
                                 if (cancellationToken.IsCancellationRequested)
                                 {
-                                    transaction.Rollback();
+                                    await transaction.RollbackAsync(cancellationToken);
                                     cancellationToken.ThrowIfCancellationRequested();
                                 }
                             }
                         }
-                        transaction.Commit();
+                        await transaction.CommitAsync(cancellationToken);
                     }
                 }
             }
@@ -202,8 +202,8 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var cmd = connection.CreateCommand())
                 {
                     cmd.CommandText = $"select count(*) from {SqlTableName(table)} ";
                     var count = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -221,8 +221,8 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var command = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = $"drop table {SqlTableName(table)}";
                     await command.ExecuteNonQueryAsync();
@@ -243,7 +243,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
                     var tableExists = await TableExists(table, cancellationToken);
 
@@ -295,7 +295,7 @@ namespace dexih.connections.sql
 
                     createSql.AppendLine(")");
 
-                    using (var command = connection.CreateCommand())
+                    await using (var command = connection.CreateCommand())
                     {
                         command.CommandText = createSql.ToString();
                         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -730,7 +730,7 @@ namespace dexih.connections.sql
 
                         try
                         {
-                            using (var cmd = transaction.connection.CreateCommand())
+                            await using (var cmd = transaction.connection.CreateCommand())
                             {
                                 cmd.CommandText = insertCommand;
                                 cmd.Transaction = transaction.transaction;
@@ -766,7 +766,7 @@ namespace dexih.connections.sql
                     {
                         var autoIncrementSql =
                             $" select max({AddDelimiter(deltaColumn.Name)}) from {SqlTableName(table)}";
-                        using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = transaction.connection.CreateCommand())
                         {
                             cmd.CommandText = autoIncrementSql;
                             cmd.Transaction = transaction.transaction;
@@ -815,7 +815,7 @@ namespace dexih.connections.sql
                         sql.Remove(sql.Length - 1, 1); //remove last comma
 
                         //  Retrieving schema for columns from a single table
-                        using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = transaction.connection.CreateCommand())
                         {
                             cmd.Transaction = transaction.transaction;
 
@@ -897,7 +897,7 @@ namespace dexih.connections.sql
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = transaction.connection.CreateCommand())
                         {
                             sql.Append(BuildFiltersString(query.Filters, cmd));
 
@@ -931,11 +931,11 @@ namespace dexih.connections.sql
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     //  Retrieving schema for columns from a single table
-                    using (var cmd = connection.CreateCommand())
+                    await using (var cmd = connection.CreateCommand())
                     {
                         var sql = BuildSelectQuery(table, query, cmd);
                         cmd.CommandText = sql;
@@ -1040,9 +1040,8 @@ namespace dexih.connections.sql
         {
             try
             {
-
-                using (var connection = await NewConnection())
-                using (var cmd = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var cmd = connection.CreateCommand())
                 {
                     DbDataReader reader;
 

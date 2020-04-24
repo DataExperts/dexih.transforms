@@ -1603,7 +1603,7 @@ namespace dexih.transforms
             }
             finally
             {
-                if (_nextRow == null || (MaxOutputRows > 0 && TransformRows >= MaxOutputRows))
+                if (_nextRow == null || MaxOutputRows > 0 && TransformRows >= MaxOutputRows)
                 {
                     Close();
                 }
@@ -1618,7 +1618,7 @@ namespace dexih.transforms
 
                 //add the row to the cache
                 if (_nextRow != null && !_currentRowCached &&
-                    (CacheMethod == ECacheMethod.DemandCache))
+                    CacheMethod == ECacheMethod.DemandCache)
                     CacheTable.AddRow(_nextRow);
 
                 TransformTimer.Stop();
@@ -1873,17 +1873,12 @@ namespace dexih.transforms
         {
             var value = GetValue(i);
 
-            if (value is null)
+            return value switch
             {
-                return defaultValue;
-            }
-
-            if (value is T tValue)
-            {
-                return tValue;
-            }
-
-            return Operations.Parse<T>(value);
+                null => defaultValue,
+                T tValue => tValue,
+                _ => Operations.Parse<T>(value)
+            };
         }
 
         public override int GetValues(object[] values)

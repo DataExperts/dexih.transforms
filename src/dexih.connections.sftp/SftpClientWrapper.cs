@@ -119,11 +119,11 @@ namespace dexih.connections.sftp
                                 }
 
                                 var messageListenerCompletedField = session.GetType().GetField("_messageListenerCompleted", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                                var messageListenerCompleted = (EventWaitHandle)messageListenerCompletedField.GetValue(session);
-
-                                if (messageListenerCompleted != null)
+                                
+                                if (messageListenerCompletedField != null)
                                 {
+                                    var messageListenerCompleted = (EventWaitHandle)messageListenerCompletedField.GetValue(session);
+
                                     var waitHandleSet = messageListenerCompleted.WaitOne(0);
 
 //                                    _log.Debug($"_messageListenerCompleted was set = {waitHandleSet}");

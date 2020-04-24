@@ -339,7 +339,7 @@ namespace dexih.transforms.Mapping
             {
                 return false;
             }
-            for (int i = 0; i < x.Length; i++)
+            for (var i = 0; i < x.Length; i++)
             {
                 if (!Equals(x[i],y[i]))
                 {
@@ -351,8 +351,8 @@ namespace dexih.transforms.Mapping
 
         public int GetHashCode(object[] obj)
         {
-            int result = 17;
-            for (int i = 0; i < obj.Length; i++)
+            var result = 17;
+            for (var i = 0; i < obj.Length; i++)
             {
                 unchecked
                 {

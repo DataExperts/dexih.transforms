@@ -190,7 +190,7 @@ namespace dexih.connections.azure
                 while (await targetFile.ExistsAsync())
                 {
                     version++;
-                    var newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                    var newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                     targetFile = cloudToDirectory.GetBlockBlobReference(newFileName);
                 }
                 await targetFile.StartCopyAsync(sourceFile.Uri);

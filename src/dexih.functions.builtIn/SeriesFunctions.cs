@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using dexih.functions.Exceptions;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.BuiltIn
@@ -147,7 +148,7 @@ namespace dexih.functions.BuiltIn
         public SeriesResult<T> HighestSinceResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
         {
             var i = index - 1;
-            var currentSeries = ((SeriesValue<T>) _cacheSeries[index]);
+            var currentSeries = (SeriesValue<T>) _cacheSeries[index];
             var currentValue = currentSeries.Result();
             while (i > 0)
             {
@@ -182,7 +183,7 @@ namespace dexih.functions.BuiltIn
         public SeriesResult<T> LowestSinceResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
         {
             var i = index - 1;
-            var currentSeries = ((SeriesValue<T>) _cacheSeries[index]);
+            var currentSeries = (SeriesValue<T>) _cacheSeries[index];
             var currentValue = currentSeries.Result();
             while (i > 0)
             {
@@ -221,7 +222,7 @@ namespace dexih.functions.BuiltIn
                 return default;
             }
             
-            var value = ((SeriesValue<T>)_cacheSeries[index-count]);
+            var value = (SeriesValue<T>)_cacheSeries[index-count];
             return new PreviousSeriesResult<T>()
             {
                 Value = value.Result(),
@@ -239,7 +240,13 @@ namespace dexih.functions.BuiltIn
         public PreviousSeriesResult<T> PreviousSeriesValueNullResult([TransformFunctionVariable(EFunctionVariable.Index)]int index)
         {
             var i = index - 1;
-            var currentSeries = ((SeriesValue<T>) _cacheSeries[index]);
+            
+            if (_cacheSeries.Count == 0)
+            {
+                throw new FunctionException("Cannot get the previous value as there are no rows processed.  ");    
+            }
+
+            var currentSeries = (SeriesValue<T>) _cacheSeries[index];
             var currentValue = currentSeries.Result();
 
             if (!EqualityComparer<T>.Default.Equals(currentValue, default(T)))

@@ -169,7 +169,7 @@ namespace dexih.functions
         {
             if (methodInfo == null) return null;
             
-            ParameterInfo parameterInfo = methodInfo.ReturnParameter;
+            var parameterInfo = methodInfo.ReturnParameter;
             
             if (parameterInfo == null || parameterInfo.ParameterType == typeof(void)) return new FunctionParameter[0];
 
@@ -214,8 +214,8 @@ namespace dexih.functions
                     var propertyAttribute = property.GetCustomAttribute<TransformFunctionParameterAttribute>();
                     
                     var isGeneric = 
-                        (property.PropertyType.IsArray && property.PropertyType.GetElementType().IsGenericParameter) || 
-                        (property.PropertyType.IsGenericParameter);
+                        property.PropertyType.IsArray && property.PropertyType.GetElementType().IsGenericParameter || 
+                        property.PropertyType.IsGenericParameter;
 
                     var linkedAttribute = property.GetCustomAttribute<TransformFunctionLinkedParameterAttribute>();
 
@@ -269,8 +269,8 @@ namespace dexih.functions
             }
             
             var isGeneric = 
-                (paramType.IsArray && paramType.GetElementType().IsGenericParameter) || 
-                (paramType.IsGenericParameter);
+                paramType.IsArray && paramType.GetElementType().IsGenericParameter || 
+                paramType.IsGenericParameter;
 
             var linkedAttribute = parameterInfo.GetCustomAttribute<TransformFunctionLinkedParameterAttribute>();
 

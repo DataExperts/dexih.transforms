@@ -48,7 +48,7 @@ namespace dexih.functions
             }
             
             //check the path starts with a / or \ or c:\
-            if (!(path.StartsWith("/") || path.StartsWith("\\") || (char.IsLetter(path[0]) && path[1] == ':')))
+            if (!(path.StartsWith("/") || path.StartsWith("\\") || char.IsLetter(path[0]) && path[1] == ':'))
             {
                 throw new ForbiddenPathException($"The path {path} is invalid as it does not start with a '/' or 'c:\\'.", path);
             }

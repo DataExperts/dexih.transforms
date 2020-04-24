@@ -189,7 +189,7 @@ namespace dexih.transforms.File
             _csvOrdinalMappings = new Dictionary<int,CsvField>();
 
             // create mappings from column name positions, to the csv field name positions.
-            if(_fileConfiguration != null && ( _fileConfiguration.MatchHeaderRecord && _fileConfiguration.HasHeaderRecord))
+            if(_fileConfiguration != null && _fileConfiguration.MatchHeaderRecord && _fileConfiguration.HasHeaderRecord)
             {
                 await _csvReader.ReadAsync();
                 _csvReader.ReadHeader();

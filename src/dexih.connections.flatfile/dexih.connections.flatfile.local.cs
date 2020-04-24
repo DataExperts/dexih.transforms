@@ -125,7 +125,7 @@ namespace dexih.connections.flatfile
                 while (File.Exists(Path.Combine(fullToDirectory, newFileName)))
                 {
                     version++;
-                    newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+                    newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
                 }
 
                 File.Move(Path.Combine(fullFromDirectory, fileName), Path.Combine(fullToDirectory, newFileName));
@@ -275,9 +275,9 @@ namespace dexih.connections.flatfile
                     var filePath = FixFileName(file, path, fileName, cancellationToken);
 	                var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
-	                await stream.CopyToAsync(newFile);
+	                await stream.CopyToAsync(newFile, cancellationToken);
 	                stream.Close();
-	                newFile.Dispose();
+	                await newFile.DisposeAsync();
 
 	                return true;
 //				}
@@ -302,7 +302,7 @@ namespace dexih.connections.flatfile
 			while (File.Exists(Path.Combine(fullPath, newFileName)))
 			{
 				version++;
-				newFileName = fileNameWithoutExtension + "_" + version.ToString() + fileNameExtension;
+				newFileName = fileNameWithoutExtension + "_" + version + fileNameExtension;
 			}
 
 			var filePath = Path.Combine(fullPath, newFileName);

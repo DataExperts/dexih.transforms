@@ -39,7 +39,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    return string.Format("{0}.  Data values: {1}", base.Message, String.Join(", ", Values));
+                    return string.Format("{0}.  Data values: {1}", base.Message, string.Join(", ", Values));
                 }
 #else
                 return base.Message;

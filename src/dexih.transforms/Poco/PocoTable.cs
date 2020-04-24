@@ -79,7 +79,7 @@ namespace dexih.transforms.Poco
                 var position = table.Columns.GetOrdinal(fieldName);
                 if(position >= 0)
                 {
-                    mappings.Add((new PocoTableMapping(propertyInfo, position, isKey)));
+                    mappings.Add(new PocoTableMapping(propertyInfo, position, isKey));
                 }
             }
             Table = table;

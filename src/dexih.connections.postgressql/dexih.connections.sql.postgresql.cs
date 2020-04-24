@@ -79,12 +79,12 @@ namespace dexih.connections.postgressql
 
                 copyCommand.Append(") FROM STDIN (FORMAT BINARY)");
 
-                using (var connection = (NpgsqlConnection) await NewConnection())
-                using (var writer = connection.BeginBinaryImport(copyCommand.ToString()))
+                await using (var connection = (NpgsqlConnection) await NewConnection())
+                await using (var writer = connection.BeginBinaryImport(copyCommand.ToString()))
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
-                        writer.StartRow();
+                        await writer.StartRowAsync(cancellationToken);
 
                         for(var i = 0; i< columns.Length; i++)
                         {
@@ -97,11 +97,11 @@ namespace dexih.connections.postgressql
 
                                     if (value == null || value == DBNull.Value)
                                     {
-                                        writer.WriteNull();
+                                        await writer.WriteNullAsync(cancellationToken);
                                     }
                                     else
                                     {
-                                        writer.Write(value, types[i]);
+                                        await writer.WriteAsync(value, types[i], cancellationToken);
                                     }
                                 }
                             }
@@ -133,8 +133,8 @@ namespace dexih.connections.postgressql
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
@@ -207,8 +207,8 @@ namespace dexih.connections.postgressql
                 createSql.Remove(createSql.Length - 1, 1);
                 createSql.Append(")");
 
-                using (var connection = await NewConnection())
-                using (var command = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
                     try
@@ -385,8 +385,8 @@ namespace dexih.connections.postgressql
             try
             {
                 DefaultDatabase = "";
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
@@ -405,9 +405,9 @@ namespace dexih.connections.postgressql
             {
                 var list = new List<string>();
 
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "SELECT datname FROM pg_database WHERE datistemplate = false order by datname"))
-                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "SELECT datname FROM pg_database WHERE datistemplate = false order by datname"))
+                await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -428,11 +428,10 @@ namespace dexih.connections.postgressql
             {
                 var tableList = new List<Table>();
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-
-                    using (var cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name, table_type from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name, table_type from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -467,7 +466,7 @@ namespace dexih.connections.postgressql
                 var schema = string.IsNullOrEmpty(originalTable.Schema) ? "public" : originalTable.Schema;
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     //The new datatable that will contain the table schema
@@ -475,7 +474,7 @@ namespace dexih.connections.postgressql
 
                     
                     // get the table type
-                    using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
+                    await using (var cmd = CreateCommand(connection, "select table_type from information_schema.tables where table_name = @NAME"))
                     {
                         cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
 
@@ -496,10 +495,10 @@ namespace dexih.connections.postgressql
                         }
                     }
 
-                    List<string> pkColumns = new List<string>();
+                    var pkColumns = new List<string>();
 
                     // get primary key columns
-                    using(var cmd = CreateCommand(connection, $@"
+                    await using(var cmd = CreateCommand(connection, $@"
 SELECT
 c.column_name
 FROM
@@ -507,7 +506,7 @@ information_schema.table_constraints tc
 JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
 JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
 where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.table_name = '{table.Name}'"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {
@@ -516,14 +515,14 @@ where constraint_type = 'PRIMARY KEY' and constraint_schema='{schema}' and tc.ta
                     }
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, $@"
+                    await using (var cmd = CreateCommand(connection, $@"
 SELECT c.column_name, c.data_type, c.character_maximum_length, c.numeric_precision_radix, c.numeric_scale, c.is_nullable, e.data_type AS element_type
 FROM information_schema.columns c LEFT JOIN information_schema.element_types e
      ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
        = (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
 WHERE c.table_schema = '{schema}' AND c.table_name = '{table.Name}'
 ORDER BY c.ordinal_position"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
 
                         while (await reader.ReadAsync(cancellationToken))
@@ -684,7 +683,7 @@ ORDER BY c.ordinal_position"))
 
                         try
                         {
-                            using (var cmd = connection.CreateCommand())
+                            await using (var cmd = connection.CreateCommand())
                             {
                                 cmd.CommandText = insertCommand;
                                 cmd.Transaction = transaction;
@@ -722,7 +721,7 @@ ORDER BY c.ordinal_position"))
                     if (deltaColumn != null)
                     {
                         var sql = $" select max({AddDelimiter(deltaColumn.Name)}) from {AddDelimiter(table.Name)}";
-                        using (var cmd = connection.CreateCommand())
+                        await using (var cmd = connection.CreateCommand())
                         {
                             cmd.CommandText = sql;
                             cmd.Transaction = transaction;
@@ -836,7 +835,7 @@ ORDER BY c.ordinal_position"))
                         sql.Remove(sql.Length - 1, 1); //remove last comma
 
                         //  Retrieving schema for columns from a single table
-                        using (var cmd = connection.CreateCommand())
+                        await using (var cmd = connection.CreateCommand())
                         {
                             sql.Append(BuildFiltersString(query.Filters, cmd) + ";");
                             

@@ -121,7 +121,7 @@ namespace dexih.transforms.File
                 // if array of single values
                 if (value.Value.Type == JTokenType.Array && value.Value.First() is JValue jValue)
                 {
-                    ETypeCode dataType = GetTypeCode(jValue.Type);
+                    var dataType = GetTypeCode(jValue.Type);
 
                     col.DataType = dataType;
                     col.Rank = 1;
@@ -187,7 +187,7 @@ namespace dexih.transforms.File
                 }
                 else
                 {
-                    ETypeCode dataType = GetTypeCode(value.Value.Type);
+                    var dataType = GetTypeCode(value.Value.Type);
                     col.DataType = dataType;
                     return new [] {col};
                 }
@@ -377,7 +377,7 @@ namespace dexih.transforms.File
                 }
                 else
                 {
-                    _jEnumerator = (new List<JToken>() {jToken}).GetEnumerator();
+                    _jEnumerator = new List<JToken>() {jToken}.GetEnumerator();
                 }
             }
             else

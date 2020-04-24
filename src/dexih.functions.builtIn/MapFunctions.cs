@@ -308,7 +308,7 @@ namespace dexih.functions.BuiltIn
             {
                 if (child.Type == JTokenType.Object || child.Type == JTokenType.Property)
                 {
-                    values.AddRange((JsonValueImportRecurse(child)));
+                    values.AddRange(JsonValueImportRecurse(child));
                 }
                 else
                 {

@@ -418,7 +418,7 @@ namespace dexih.functions.builtIn
             var quarterDays = dateValue.Subtract(currentDate).Days + 1;
 
             var weekOfQuarter = Math.DivRem(quarterDays -1, 7, out var dayOfWeek) + 1;
-            int month = (currentQuarter-1) * 3 + 1;
+            var month = (currentQuarter-1) * 3 + 1;
             var dayOfMonth = quarterDays;
             if (weekOfQuarter > 5) 
             { 

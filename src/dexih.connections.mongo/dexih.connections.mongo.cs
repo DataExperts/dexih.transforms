@@ -142,7 +142,7 @@ namespace dexih.connections.mongo
                 }
                 else
                 {
-                    array = ((IEnumerable) value);
+                    array = (IEnumerable) value;
                 }
 
                 var enumerator = array.GetEnumerator();
@@ -177,7 +177,7 @@ namespace dexih.connections.mongo
                 case ETypeCode.Double:
                     return new BsonDouble((double)convertedValue);
                 case ETypeCode.Single:
-                    return new BsonDouble((Single)convertedValue);
+                    return new BsonDouble((float)convertedValue);
                 case ETypeCode.String:
                 case ETypeCode.Text:
                     return new BsonString((string)convertedValue);
@@ -186,7 +186,7 @@ namespace dexih.connections.mongo
                 case ETypeCode.DateTime:
                     return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
                 case ETypeCode.Json:
-                    var json = ((JsonElement) convertedValue);
+                    var json = (JsonElement) convertedValue;
                     if (json.ValueKind == JsonValueKind.Array)
                     {
                         return BsonSerializer.Deserialize<BsonArray>(json.GetRawText());
@@ -223,7 +223,7 @@ namespace dexih.connections.mongo
                 var buffer = new List<object[]>();
 
                 var sk = table.GetAutoIncrementColumn();
-                int skOrdinal = -1;
+                var skOrdinal = -1;
                 if (sk != null)
                 {
                     skOrdinal = reader.GetOrdinal(sk.Name);
@@ -509,12 +509,12 @@ namespace dexih.connections.mongo
         public override async Task<List<string>> GetDatabaseList(CancellationToken cancellationToken = default)
         {
             var client = GetMongoClient();
-            List<string> dbs = new List<string>();
-            using (IAsyncCursor<string> cursor = await client.ListDatabaseNamesAsync(cancellationToken))
+            var dbs = new List<string>();
+            using (var cursor = await client.ListDatabaseNamesAsync(cancellationToken))
             {
                 while (await cursor.MoveNextAsync(cancellationToken))
                 {
-                    dbs.AddRange(cursor.Current.Select(doc => (doc)));
+                    dbs.AddRange(cursor.Current.Select(doc => doc));
                 }
             }
 
@@ -857,8 +857,8 @@ namespace dexih.connections.mongo
                 case ECompare.Like:
                     return Builders<BsonDocument>.Filter.Regex(column, new BsonRegularExpression((string) value));
                 case ECompare.IsIn:
-                    var array = (from object value2 in (Array) value select 
-                        Builders<BsonDocument>.Filter.Eq(column, value2));
+                    var array = from object value2 in (Array) value select 
+                        Builders<BsonDocument>.Filter.Eq(column, value2);
                     return Builders<BsonDocument>.Filter.Or(array);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(filterOperator), filterOperator, null);

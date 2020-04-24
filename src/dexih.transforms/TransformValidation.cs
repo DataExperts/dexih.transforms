@@ -203,7 +203,7 @@ namespace dexih.transforms
                 {
                     foreach (var mapping in Mappings.OfType<MapValidation>())
                     {
-                        if (!mapping.Validated(out string reason))
+                        if (!mapping.Validated(out var reason))
                         {
                             rejectReason.AppendLine(reason);
 

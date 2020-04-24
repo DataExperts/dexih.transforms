@@ -18,7 +18,7 @@ namespace dexih.functions
 
                 if (value == "NaN")
                 {
-                    return Double.NaN;
+                    return double.NaN;
                 }
             }
 
@@ -27,7 +27,7 @@ namespace dexih.functions
 
         public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
         {
-            if (Double.IsNaN(value))
+            if (double.IsNaN(value))
             {
                 writer.WriteStringValue("NaN");    
             }

@@ -71,10 +71,9 @@ namespace dexih.connections.sqlite
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
                     {
                         cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
@@ -166,8 +165,8 @@ namespace dexih.connections.sqlite
                         $"create index {AddDelimiter($"index_{table.Name}_nk")} on {AddDelimiter(table.Name)} ({string.Join(", ", naturalKey.Select(c => AddDelimiter(c.Name)))});");
                 }
 
-                using (var connection = await NewConnection())
-                using (var command = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
                     try
@@ -212,7 +211,7 @@ namespace dexih.connections.sqlite
                     if (column.MaxLength == null)
                         sqlType = (column.IsUnicode == true ? "n" : "") + "text";
                     else
-                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength.ToString() + ")";
+                        sqlType = (column.IsUnicode == true ? "n" : "") + "varchar(" + column.MaxLength + ")";
                     break;
                 case ETypeCode.Geometry:
 				case ETypeCode.Text:
@@ -352,7 +351,7 @@ namespace dexih.connections.sqlite
                     throw new ConnectionException($"The Sqlite connection has a state of {connection.State}.");
                 }
 
-                using (var command = new SqliteCommand())
+                await using (var command = new SqliteCommand())
                 {
                     command.Connection = connection;
                     command.CommandText = "PRAGMA journal_mode=WAL";
@@ -424,12 +423,12 @@ namespace dexih.connections.sqlite
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
                 {
                     var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-                    using (reader)
+                    await using (reader)
                     {
 
                         var tableList = new List<Table>();
@@ -459,8 +458,7 @@ namespace dexih.connections.sqlite
 
             try
             {
-
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     var table = new Table(originalTable.Name)
@@ -473,8 +471,8 @@ namespace dexih.connections.sqlite
                     table.Columns.Clear();
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {

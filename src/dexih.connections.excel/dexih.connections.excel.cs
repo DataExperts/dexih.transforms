@@ -228,7 +228,7 @@ namespace dexih.connections.excel
                         cancellationToken.ThrowIfCancellationRequested();
 
                         var columName = worksheet.Cells[ExcelHeaderRow, col].Value.ToString();
-                        if (string.IsNullOrEmpty(columName)) columName = "Column-" + col.ToString();
+                        if (string.IsNullOrEmpty(columName)) columName = "Column-" + col;
                         var column = new TableColumn(columName, ETypeCode.String)
                         {
                             AllowDbNull = true
@@ -262,7 +262,7 @@ namespace dexih.connections.excel
 	                            }
                                 else if (value.IsNumeric())
                                 {
-                                    if (Math.Abs((double)value % 1) <= (double.Epsilon * 100))
+                                    if (Math.Abs((double)value % 1) <= double.Epsilon * 100)
                                     {
                                         dataType = ETypeCode.Int64;
                                         continue;
@@ -476,9 +476,9 @@ namespace dexih.connections.excel
 //		    }
 
 		    var ticks = Convert.ToInt64(d * TimeSpan.TicksPerDay);
-		    ticks = ticks - (ticks % TimeSpan.TicksPerMillisecond); //trim sub-milliseconds as excel doesn't support
+		    ticks = ticks - ticks % TimeSpan.TicksPerMillisecond; //trim sub-milliseconds as excel doesn't support
 
-		    var theDate = (new DateTime(1899, 12, 30)) + TimeSpan.FromTicks(ticks);
+		    var theDate = new DateTime(1899, 12, 30) + TimeSpan.FromTicks(ticks);
 
 		    return theDate;
 	    }
@@ -489,7 +489,7 @@ namespace dexih.connections.excel
 			    throw new ArgumentOutOfRangeException(); // NaN or negative d not supported
 
 		    var ticks = Convert.ToInt64(d * TimeSpan.TicksPerDay);
-		    ticks = ticks - (ticks % TimeSpan.TicksPerMillisecond);  //trim sub-milliseconds as excel doesn't support
+		    ticks = ticks - ticks % TimeSpan.TicksPerMillisecond;  //trim sub-milliseconds as excel doesn't support
 
 		    return TimeSpan.FromTicks(ticks);
 	    }

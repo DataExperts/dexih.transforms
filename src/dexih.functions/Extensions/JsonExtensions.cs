@@ -51,7 +51,7 @@ namespace dexih.functions
 
         public static JsonDocument ToJsonDocument(this object content)
         {
-            byte[] utf8JsonData = JsonSerializer.SerializeToUtf8Bytes(content);
+            var utf8JsonData = JsonSerializer.SerializeToUtf8Bytes(content);
             return JsonDocument.Parse(utf8JsonData);
         }
 

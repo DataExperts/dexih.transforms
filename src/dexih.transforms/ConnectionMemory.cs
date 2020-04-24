@@ -165,7 +165,7 @@ namespace dexih.transforms
         public override async Task<object> ExecuteScalar(Table table, SelectQuery query, CancellationToken cancellationToken = default)
         {
             var t = GetTable(table.Name);
-            using var reader = new TransformQuery(new ReaderMemory(t), query);
+            await using var reader = new TransformQuery(new ReaderMemory(t), query);
             await reader.Open(cancellationToken);
             var hasRow = await reader.ReadAsync(cancellationToken);
 

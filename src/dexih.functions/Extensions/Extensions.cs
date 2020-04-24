@@ -48,10 +48,10 @@ namespace dexih.functions
             if (value.Length != pattern.Length) return false;
             for (var i = 0; i < pattern.Length; i++)
             {
-                if ((pattern[i] == '9' && !char.IsNumber(value[i])) ||
-                    (pattern[i] == 'A' && !char.IsUpper(value[i])) ||
-                    (pattern[i] == 'a' && !char.IsLower(value[i])) ||
-                    (pattern[i] == 'Z' && !char.IsLetter(value[i])))
+                if (pattern[i] == '9' && !char.IsNumber(value[i]) ||
+                    pattern[i] == 'A' && !char.IsUpper(value[i]) ||
+                    pattern[i] == 'a' && !char.IsLower(value[i]) ||
+                    pattern[i] == 'Z' && !char.IsLetter(value[i]))
                     return false;
             }
 
@@ -65,22 +65,13 @@ namespace dexih.functions
         /// <returns></returns>
         public static string DisplayValue(this object value)
         {
-            if(value is null)
+            return value switch
             {
-                return "<null>";
-            }
-
-            if(value is string valueString)
-            {
-                if(valueString == "")
-                {
-                    return "<blank>";
-                }
-
-                return valueString;
-            }
-
-            return value.ToString();
+                null => "<null>",
+                string valueString when valueString == "" => "<blank>",
+                string valueString => valueString,
+                _ => value.ToString()
+            };
         }
         
         public static string CreateSHA1(this string value)

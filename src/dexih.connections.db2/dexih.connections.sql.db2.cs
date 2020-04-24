@@ -74,7 +74,7 @@ namespace dexih.connections.db2
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     var bulkCopy = new DB2BulkCopy((DB2Connection) connection)
@@ -104,10 +104,9 @@ namespace dexih.connections.db2
         {
             try
             {
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
-
-                    using (var cmd = CreateCommand(connection,
+                    await using (var cmd = CreateCommand(connection,
                         $"select * from sysibm.SYSTABLES where {OwnerColumn} = @SCHEMA and name = @NAME and TYPE = 'T';"))
                     {
                         cmd.Parameters.Add(CreateParameter(cmd, "@SCHEMA", ETypeCode.Text, 0, ParameterDirection.Input, DefaultDatabase));
@@ -197,8 +196,8 @@ namespace dexih.connections.db2
 
                 createSql.AppendLine(")");
 
-                using (var connection = await NewConnection())
-                using (var command = connection.CreateCommand())
+                await using (var connection = await NewConnection())
+                await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
                     try
@@ -210,8 +209,6 @@ namespace dexih.connections.db2
                         throw new ConnectionException($"The create table query failed.  {ex.Message}");
                     }
                 }
-
-                return;
             }
             catch (Exception ex)
             {
@@ -347,8 +344,8 @@ namespace dexih.connections.db2
             {
                 
                 DefaultDatabase = "";
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "CREATE SCHEMA " + AddDelimiter(databaseName)))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "CREATE SCHEMA " + AddDelimiter(databaseName)))
                 {
                     
                     var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -368,9 +365,9 @@ namespace dexih.connections.db2
             {
                 var list = new List<string>();
 
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, "select schemaname from syscat.schemata"))
-                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, "select schemaname from syscat.schemata"))
+                await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -389,12 +386,12 @@ namespace dexih.connections.db2
         {
             try
             {
-                using (var connection = await NewConnection())
-                using (var cmd = CreateCommand(connection, $"select * from QSYS2.SYSTABLES where TABLE_SCHEMA like '{DefaultDatabase}' and TYPE = 'T';"))
+                await using (var connection = await NewConnection())
+                await using (var cmd = CreateCommand(connection, $"select * from QSYS2.SYSTABLES where TABLE_SCHEMA like '{DefaultDatabase}' and TYPE = 'T';"))
                 {
                     var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-                    using (reader)
+                    await using (reader)
                     {
                         var tableList = new List<Table>();
 
@@ -423,8 +420,7 @@ namespace dexih.connections.db2
 
             try
             {
-
-                using (var connection = await NewConnection())
+                await using (var connection = await NewConnection())
                 {
 
                     var table = new Table(originalTable.Name)
@@ -437,8 +433,8 @@ namespace dexih.connections.db2
                     table.Columns.Clear();
 
                     // The schema table 
-                    using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
-                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                    await using (var cmd = CreateCommand(connection, @"PRAGMA table_info('" + table.Name + "')"))
+                    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                     {
                         while (await reader.ReadAsync(cancellationToken))
                         {

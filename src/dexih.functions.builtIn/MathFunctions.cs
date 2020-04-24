@@ -61,7 +61,7 @@ namespace dexih.functions.BuiltIn
         {
             //return Math.DivRem(dividend, divisor, out remainder); Not working in DNX50
             var quotient = dividend / divisor;
-            remainder = dividend - (divisor * quotient);
+            remainder = dividend - divisor * quotient;
             return quotient;
         }
 

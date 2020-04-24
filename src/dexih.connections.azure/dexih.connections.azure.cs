@@ -182,7 +182,7 @@ namespace dexih.connections.azure
                 var buffer = new List<object[]>();
 
                 var sk = table.GetAutoIncrementColumn();
-                int skOrdinal = -1;
+                var skOrdinal = -1;
                 if (sk != null)
                 {
                     skOrdinal = reader.GetOrdinal(sk.Name);
@@ -760,7 +760,7 @@ namespace dexih.connections.azure
                     filterString = TableQuery.GenerateFilterConditionForBinary(column, operation, (byte[])value);
                     break;
                 default:
-                    throw new Exception("The data type: " + compareDataType.ToString() + " is not supported by Azure table storage.");
+                    throw new Exception("The data type: " + compareDataType + " is not supported by Azure table storage.");
             }
 
             return filterString;
@@ -898,7 +898,7 @@ namespace dexih.connections.azure
                     }
                     return new EntityProperty(((Geometry)value).AsBinary());
                 default:
-                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode.ToString() + " is not supported.");
+                    throw new Exception("Cannot create new azure entity as the data type: " + typeCode + " is not supported.");
             }
 
         }
@@ -1099,7 +1099,7 @@ namespace dexih.connections.azure
                     var tableQuery = new TableQuery
                     {
                         //select all columns
-                        SelectColumns = (new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList())
+                        SelectColumns = new[] { "PartitionKey", "RowKey" }.Concat(table.Columns.Where(c => c.Name != "PartitionKey" && c.Name != "RowKey").Select(c => c.Name)).ToList()
                     };
 
                     //the rowkey is the same as the surrogate key, so add this to the filter string if the surrogate key is used.

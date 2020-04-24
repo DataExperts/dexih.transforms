@@ -122,7 +122,7 @@ namespace dexih.functions.external
             switch (temperatureScale)
             {
                 case TemperatureScale.Fahrenheit:
-                    temperature = ((9.0 / 5.0) * (kelvin.Value - 273.15)) + 32;
+                    temperature = 9.0 / 5.0 * (kelvin.Value - 273.15) + 32;
                     break;
                 case TemperatureScale.Celsius:
                     temperature =  kelvin.Value - 273.15;
@@ -341,9 +341,9 @@ namespace dexih.functions.external
 
                 if (response.IsSuccessStatusCode)
                 {
-                    using(var stream = await response.Content.ReadAsStreamAsync())
-                    using( var output = new MemoryStream())
-                    using (var sr = new GZipStream(stream, CompressionMode.Decompress))
+                    await using(var stream = await response.Content.ReadAsStreamAsync())
+                    await using( var output = new MemoryStream())
+                    await using (var sr = new GZipStream(stream, CompressionMode.Decompress))
                     {
                         await sr.CopyToAsync(output, 81920, cancellationToken);
                         jsonString = Encoding.UTF8.GetString(output.GetBuffer(), 0, (int) output.Length);
