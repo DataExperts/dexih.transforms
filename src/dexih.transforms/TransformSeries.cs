@@ -265,12 +265,31 @@ namespace dexih.transforms
                         var isAfterStart = _seriesStart == null ? 0
                             : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
                         
+                        if (isAfterStart > 0)
+                        {
+                            _firstRecord = false;
+                            // var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
+                            //     PrimaryTransform.CurrentRow, null, cancellationToken);
+                            _seriesValue = null;
+                            continue;
+                        }
+                        
                         var isBeforeFinish = _seriesFinish == null ? 0
                             : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
+
                         
-                        if (isAfterStart > 0 || isBeforeFinish == 1)
+                        if (isBeforeFinish == 1)
                         {
-                            _seriesValue = null;
+                            if (_seriesStart != null)
+                            {
+                                var fillerRow = new object[PrimaryTransform.FieldCount];
+                                Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
+                                var (_, ignore) = await Mappings.ProcessInputData(
+                                    new FunctionVariables() {SeriesValue = _seriesValue},
+                                    fillerRow, null, cancellationToken);
+                            }
+
+                            _firstRecord = false;
                             continue;
                         }
 
@@ -359,16 +378,22 @@ namespace dexih.transforms
                 {
                     outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
 
-                    //store the last groupvalues read to start the next grouping.
+                    //store the last group values read to start the next grouping.
                     _groupValues = nextGroupValues;
 
                 }
 
                 _firstRecord = false;
 
-                if (groupChanged)
+                if (groupChanged && outputRow != null)
                 {
                     break;
+                }
+
+                if (outputRow == null)
+                {
+                    groupChanged = false;
+                    outputRow = new object[FieldCount];
                 }
 
                 currentRow = PrimaryTransform.CurrentRow;
@@ -396,8 +421,15 @@ namespace dexih.transforms
         private async Task<object[]> ProcessGroupChange(object[] outputRow, object[] previousRow, CancellationToken cancellationToken)
         {
             // if the group has changed, update all cached rows with aggregate functions.
-            if (_cachedRows != null && _cachedRows.Count > 0)
+            if (_cachedRows != null)
             {
+                // if the currentSeriesValue is between the seriesStart & seriesFinish ranges
+                var currentSeriesValue = _seriesMapping.GetOutputValue(previousRow);
+                var seriesInRange = (_seriesStart == null ||
+                                    ((IComparable) _seriesStart).CompareTo((IComparable) currentSeriesValue) <= 0) &&
+                                    (_seriesFinish == null ||
+                                    ((IComparable) _seriesFinish).CompareTo((IComparable) currentSeriesValue) >= 0);
+
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
                 Mappings.MapOutputRow(cacheRow);
@@ -408,13 +440,28 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    _cachedRows.Enqueue(cacheRow);    
+                    // if the currentSeriesValue is between the seriesStart & seriesFinish, then we can add the current row
+                    if(seriesInRange)
+                    {
+                        _cachedRows.Enqueue(cacheRow);
+                    }
                 }
 
                 // fill any remaining rows.
-                if (_seriesMapping.SeriesFill && _seriesFinish != null)
+                if (_seriesMapping.SeriesFill && _seriesFinish != null )
                 {
-                    _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
+                    // if the current row is not in the series range, then set the series value to the series start
+                    // which will just fill the entire sequence with dummy rows.
+                    // happens when data is after the start/finish range.
+                    if (!seriesInRange)
+                    {
+                        _seriesValue = _seriesStart;
+                    }
+                    else
+                    {
+                        _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);    
+                    }
+                    
                     var compareResult = ((IComparable) _seriesFinish)?.CompareTo((IComparable) _seriesValue) ?? 0;
 
                     // loop while the series value is less than the series finish.
@@ -441,7 +488,7 @@ namespace dexih.transforms
                     }
                 }
 
-               Mappings.Reset(EFunctionType.Aggregate);
+                Mappings.Reset(EFunctionType.Aggregate);
 
                 var cacheIndex = 0;
                 foreach (var row in _cachedRows)
@@ -452,8 +499,15 @@ namespace dexih.transforms
                         TransformRowsIgnored += 1;
                     }
                 }
-                
-                outputRow = _cachedRows.Dequeue();
+
+                if (_cachedRows.Count > 0)
+                {
+                    outputRow = _cachedRows.Dequeue();
+                }
+                else
+                {
+                    outputRow = null;
+                }
 
             }
             else

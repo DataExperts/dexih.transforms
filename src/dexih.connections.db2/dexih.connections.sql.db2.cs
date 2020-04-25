@@ -279,7 +279,7 @@ namespace dexih.connections.db2
                     sqlType = "clob";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"decimal ({column.Precision??29}, {column.Scale??0})";
+                    sqlType = $"decimal ({column.Precision??29}, {column.Scale??8})";
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";

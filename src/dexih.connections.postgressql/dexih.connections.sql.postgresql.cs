@@ -301,7 +301,7 @@ namespace dexih.connections.postgressql
                     sqlType = "varchar(10485760)";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType =  $"numeric ({column.Precision??29}, {column.Scale??0})";
+                    sqlType =  $"numeric ({column.Precision??29}, {column.Scale??8})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");
