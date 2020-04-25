@@ -58,6 +58,17 @@ namespace dexih.connections.postgressql
             }
         }
         
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.Decimal:
+                    return -1E+20m;
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode, length);
+            }
+        }
+        
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
         {
             try
