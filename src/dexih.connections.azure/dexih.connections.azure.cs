@@ -105,6 +105,8 @@ namespace dexih.connections.azure
                     return -1E+100;
                 case ETypeCode.Single:
                     return -1E+37F;
+                case ETypeCode.Decimal:
+                    return -1E+20;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
             }

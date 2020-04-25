@@ -77,6 +77,8 @@ namespace dexih.connections.oracle
                     return (double)-1000000000000000F;
                 case ETypeCode.Single:
                     return -1E20F;
+                case ETypeCode.Decimal:
+                    return -1E+20;
                 case ETypeCode.String:
                 case ETypeCode.Text:
                     return null;

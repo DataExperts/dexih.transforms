@@ -78,6 +78,8 @@ namespace dexih.connections.sqlserver
             {
                 case ETypeCode.DateTime:
                     return new DateTime(1753,1,1);
+                case ETypeCode.Decimal:
+                    return -1E+20;
                 default:
                     return GetDataTypeMinValue(typeCode, length);
             }
