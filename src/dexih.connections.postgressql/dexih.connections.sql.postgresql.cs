@@ -51,6 +51,8 @@ namespace dexih.connections.postgressql
                     return (ulong)long.MaxValue;
                 case ETypeCode.DateTime:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
+                case ETypeCode.Decimal:
+                    return 1E+20;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -301,7 +303,7 @@ namespace dexih.connections.postgressql
                     sqlType = "varchar(10485760)";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType =  $"numeric ({column.Precision??38}, {column.Scale??8})";
+                    sqlType =  $"numeric ({column.Precision??29}, {column.Scale??8})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");

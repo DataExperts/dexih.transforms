@@ -62,6 +62,8 @@ namespace dexih.connections.oracle
                     return (double)1000000000000000F;
                 case ETypeCode.Single:
                     return 1E20F;
+                case ETypeCode.Decimal:
+                    return 1E+20;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -252,7 +254,7 @@ namespace dexih.connections.oracle
                     sqlType = "CLOB";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"NUMBER ({column.Precision??38}, {column.Scale??8})";
+                    sqlType = $"NUMBER ({column.Precision??29}, {column.Scale??8})";
                     break;
                 case ETypeCode.Geometry:
                     sqlType = "BLOB";

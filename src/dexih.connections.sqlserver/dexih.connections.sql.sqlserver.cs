@@ -65,6 +65,8 @@ namespace dexih.connections.sqlserver
             {
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31);
+                case ETypeCode.Decimal:
+                    return 1E+20;
                 default:
                     return GetDataTypeMaxValue(typeCode, length);
             }
@@ -384,7 +386,7 @@ namespace dexih.connections.sqlserver
                     sqlType = "nvarchar(max)";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"DECIMAL ({column.Precision??38}, {column.Scale??8})";
+                    sqlType = $"DECIMAL ({column.Precision??29}, {column.Scale??8})";
                     break;
                 case ETypeCode.Geometry:
                     sqlType = "Geometry";

@@ -52,6 +52,8 @@ namespace dexih.connections.mysql
                     return 1E+100;
                 case ETypeCode.Single:
                     return 1E+37F;
+                case ETypeCode.Decimal:
+                    return 1E+20;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -323,7 +325,7 @@ namespace dexih.connections.mysql
                     sqlType = "text";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"numeric ({column.Precision??38}, {column.Scale??8})";
+                    sqlType = $"numeric ({column.Precision??29}, {column.Scale??8})";
                     break;
                 default:
                     throw new Exception($"The datatype {column.DataType} is not compatible with the create table.");

@@ -56,6 +56,8 @@ namespace dexih.connections.db2
                     return new DateTime(9999,12,31,23,59,59); 
                 case ETypeCode.Time:
                     return new TimeSpan(23, 59, 59); 
+                case ETypeCode.Decimal:
+                    return 1E+20;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -279,7 +281,7 @@ namespace dexih.connections.db2
                     sqlType = "clob";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"decimal ({column.Precision??38}, {column.Scale??8})";
+                    sqlType = $"decimal ({column.Precision??29}, {column.Scale??8})";
                     break;
                 case ETypeCode.Binary:
                     sqlType = "blob";
