@@ -66,7 +66,7 @@ namespace dexih.connections.sqlserver
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31);
                 case ETypeCode.Decimal:
-                    return 1E+20;
+                    return 1E+20d;
                 default:
                     return GetDataTypeMaxValue(typeCode, length);
             }
@@ -79,7 +79,7 @@ namespace dexih.connections.sqlserver
                 case ETypeCode.DateTime:
                     return new DateTime(1753,1,1);
                 case ETypeCode.Decimal:
-                    return -1E+20;
+                    return -1E+20d;
                 default:
                     return GetDataTypeMinValue(typeCode, length);
             }
