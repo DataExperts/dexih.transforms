@@ -384,7 +384,7 @@ namespace dexih.connections.sqlserver
                     sqlType = "nvarchar(max)";
                     break;
                 case ETypeCode.Decimal:
-                    sqlType = $"DECIMAL ({column.Precision??29}, {column.Scale??0})";
+                    sqlType = $"DECIMAL ({column.Precision??38}, {column.Scale??8})";
                     break;
                 case ETypeCode.Geometry:
                     sqlType = "Geometry";
