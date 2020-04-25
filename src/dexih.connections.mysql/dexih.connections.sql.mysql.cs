@@ -53,7 +53,7 @@ namespace dexih.connections.mysql
                 case ETypeCode.Single:
                     return 1E+37F;
                 case ETypeCode.Decimal:
-                    return 1E+20d;
+                    return 1E+20m;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -70,7 +70,7 @@ namespace dexih.connections.mysql
                 case ETypeCode.Single:
                     return -1E+37F;
                 case ETypeCode.Decimal:
-                    return -1E+20d;
+                    return -1E+20m;
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
             }

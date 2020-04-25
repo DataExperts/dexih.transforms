@@ -57,7 +57,7 @@ namespace dexih.connections.db2
                 case ETypeCode.Time:
                     return new TimeSpan(23, 59, 59); 
                 case ETypeCode.Decimal:
-                    return 1E+20d;
+                    return 1E+20m;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }

@@ -63,7 +63,7 @@ namespace dexih.connections.oracle
                 case ETypeCode.Single:
                     return 1E20F;
                 case ETypeCode.Decimal:
-                    return 1E+20d;
+                    return 1E+20m;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
@@ -78,7 +78,7 @@ namespace dexih.connections.oracle
                 case ETypeCode.Single:
                     return -1E20F;
                 case ETypeCode.Decimal:
-                    return -1E+20d;
+                    return -1E+20m;
                 case ETypeCode.String:
                 case ETypeCode.Text:
                     return null;

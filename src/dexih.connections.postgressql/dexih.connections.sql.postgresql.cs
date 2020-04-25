@@ -52,7 +52,7 @@ namespace dexih.connections.postgressql
                 case ETypeCode.DateTime:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
                 case ETypeCode.Decimal:
-                    return 1E+20d;
+                    return 1E+20m;
                 default:
                     return DataType.GetDataTypeMaxValue(typeCode, length);
             }
