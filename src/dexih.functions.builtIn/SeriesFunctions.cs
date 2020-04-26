@@ -243,7 +243,7 @@ namespace dexih.functions.BuiltIn
             
             if (_cacheSeries.Count == 0)
             {
-                throw new FunctionException("Cannot get the previous value as there are no rows processed.  ");    
+                throw new FunctionException("Cannot get the previous value as there are no rows processed.");    
             }
 
             var currentSeries = (SeriesValue<T>) _cacheSeries[index];

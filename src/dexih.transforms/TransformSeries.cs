@@ -101,7 +101,6 @@ namespace dexih.transforms
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
             object[] outputRow ;
-            var skipRead = false;
             
             if (_firstRecord)
             {
@@ -114,51 +113,44 @@ namespace dexih.transforms
                 _seriesMapping = seriesMappings[0];
                 _seriesStart = _seriesMapping.GetSeriesStart();
                 _seriesFinish = _seriesMapping.GetSeriesFinish();
-            }
-
-            //if there are records in the cache, then empty them out before getting new records.
-            if(_firstRecord)
-            {
                 _cachedRows = new Queue<object[]>();
             }
-            else if( _cachedRows.Count > 0)
+            
+            //if there are records in the cache, then empty them out before getting new records.
+            if( _cachedRows.Count > 0)
             {
                 outputRow = _cachedRows.Dequeue();
                 return outputRow;
             }
             
             //if all rows have been iterated through, reset the cache and add the stored row for the next group 
-            else if(_firstRecord == false && _lastRecord == false)
+            if(!_firstRecord && !_lastRecord)
             {
                 //reset the aggregate functions
                 Mappings.Reset(EFunctionType.Aggregate);
                 Mappings.Reset(EFunctionType.Series);
 
-                skipRead = true; // set skipRead = true, so another records is not read from the primarytransform.
-
-                //populate the parameters with the current row.
-                // Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
-                // Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue}, PrimaryTransform.CurrentRow);
-            }
-
-            outputRow = new object[FieldCount];
-
-            // used to track if the group fields have changed
-            var groupChanged = false;
-
-            if (skipRead)
-            {
-                skipRead = false;
                 if (_lastRecord && PrimaryTransform.IsClosed)
                 {
                     return null;
                 }
+                
+                //populate the parameters with the current row.
+                // Mappings.ProcessInputData(PrimaryTransform.CurrentRow);
+                // Mappings.ProcessInputData(new FunctionVariables() { SeriesValue = _seriesValue}, PrimaryTransform.CurrentRow);
             }
             else if ( await PrimaryTransform.ReadAsync(cancellationToken) == false && _lastRecord)
             {
                 return null;
             }
 
+            // set the return row
+            outputRow = new object[FieldCount];
+
+            // used to track if the group fields have changed
+            var groupChanged = false;
+
+            // retain the current row, as we read forward to check for group changes.
             var currentRow = PrimaryTransform.CurrentRow;
 
             do
@@ -171,7 +163,6 @@ namespace dexih.transforms
                 //if it's the first record then the group values are being set for the first time.
                 if (_firstRecord)
                 {
-                    groupChanged = false;
                     _groupValues = nextGroupValues;
                 }
                 else
@@ -189,11 +180,151 @@ namespace dexih.transforms
                     }
                 }
 
-                if (!groupChanged)
+                if (groupChanged)
                 {
-                    // logic for series with NO fillers.
-                    if (!_seriesMapping.SeriesFill)
+                    outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
+
+                    //store the last group values read to start the next grouping.
+                    _groupValues = nextGroupValues;
+                }
+                else
+                {
+                    // logic for series with fillers.
+                    if (_seriesMapping.SeriesFill)
                     {
+                        var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
+                        await ProcessFillers(PrimaryTransform.CurrentRow, nextSeriesValue, cancellationToken);
+                        // var startFilling = false;
+                        //
+                        // // if the first record, then load the current row.
+                        // if (_seriesValue == null)
+                        // {
+                        //     startFilling = true;
+                        //     if (_seriesStart != null)
+                        //     {
+                        //         _seriesValue = _seriesStart;
+                        //     }
+                        //     else
+                        //     {
+                        //         _seriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
+                        //     }
+                        // }
+                        //
+                        // var fillCount = 1;
+                        // var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
+                        //
+                        // //filter series start/finish
+                        // var isAfterStart = _seriesStart == null ? 0
+                        //     : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+                        //
+                        // if (isAfterStart > 0)
+                        // {
+                        //     _firstRecord = false;
+                        //     var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
+                        //         PrimaryTransform.CurrentRow, null, cancellationToken);
+                        //     _seriesValue = null;
+                        //     continue;
+                        // }
+                        //
+                        // var isBeforeFinish = _seriesFinish == null ? 0
+                        //     : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
+                        //
+                        //
+                        // if (isBeforeFinish == 1)
+                        // {
+                        //     if (_seriesStart != null)
+                        //     {
+                        //         var fillerRow = new object[PrimaryTransform.FieldCount];
+                        //         Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
+                        //         var (_, ignore) = await Mappings.ProcessInputData(
+                        //             new FunctionVariables() {SeriesValue = _seriesValue},
+                        //             fillerRow, null, cancellationToken);
+                        //     }
+                        //
+                        //     _firstRecord = false;
+                        //     continue;
+                        // }
+                        //
+                        // // loop to create filler rows.
+                        // do
+                        // {
+                        //     var compareResult = ((IComparable) _seriesValue)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+                        //
+                        //     if (compareResult > 0)
+                        //     {
+                        //         throw new TransformException(
+                        //             "The group transform failed, as the series column is not sorted.  Use a group transform prior to this group transform to first group and aggregate series values",
+                        //             _seriesValue);
+                        //     }
+                        //
+                        //     // if compare is equal
+                        //     if (compareResult == 0)
+                        //     {
+                        //         var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
+                        //             PrimaryTransform.CurrentRow, null, cancellationToken);
+                        //
+                        //         if (ignore)
+                        //         {
+                        //             TransformRowsIgnored += 1;
+                        //             continue;
+                        //         }
+                        //         else
+                        //         {
+                        //             var cacheRow = new object[outputRow.Length];
+                        //             Mappings.MapOutputRow(cacheRow);
+                        //         }
+                        //         break;
+                        //     }
+                        //
+                        //     if (!startFilling)
+                        //     {
+                        //         var cacheRow = new object[outputRow.Length];
+                        //         Mappings.MapOutputRow(cacheRow);
+                        //         var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                        //         Mappings.Reset(EFunctionType.Aggregate);
+                        //
+                        //         if (ignore)
+                        //         {
+                        //             TransformRowsIgnored += 1;
+                        //         }
+                        //         else
+                        //         {
+                        //             _cachedRows.Enqueue(cacheRow);    
+                        //         }
+                        //         
+                        //         startFilling = true;
+                        //     }
+                        //     else
+                        //     {
+                        //         // if the series is not greater then create a dummy one, and continue the loop
+                        //         var fillerRow = new object[PrimaryTransform.FieldCount];
+                        //         Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
+                        //         var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
+                        //             fillerRow, null, cancellationToken);
+                        //
+                        //         if (ignore)
+                        //         {
+                        //             TransformRowsIgnored += 1;
+                        //         }
+                        //         else
+                        //         {
+                        //             var cacheRow = new object[outputRow.Length];
+                        //             Mappings.MapOutputRow(cacheRow);
+                        //             await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                        //             _cachedRows.Enqueue(cacheRow);
+                        //         }
+                        //     }
+                        //
+                        //     _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
+                        //
+                        //     if (fillCount++ > 10000)
+                        //     {
+                        //         throw new Exception("The series continuation could not be found.");
+                        //     }
+                        //     
+                        // } while (true);
+                    }
+                    else {
                         var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
 
                         if (_seriesValue == null)
@@ -240,154 +371,19 @@ namespace dexih.transforms
                             _seriesValue = nextSeriesValue;
                         }
                     }
-                    else
-                    {
-                        var startFilling = false;
-
-                        // if the first record, then load the current row.
-                        if (_seriesValue == null)
-                        {
-                            startFilling = true;
-                            if (_seriesStart != null)
-                            {
-                                _seriesValue = _seriesStart;
-                            }
-                            else
-                            {
-                                _seriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
-                            }
-                        }
-
-                        var fillCount = 1;
-                        var nextSeriesValue = _seriesMapping.NextValue(0, PrimaryTransform.CurrentRow);
-
-                        //filter series start/finish
-                        var isAfterStart = _seriesStart == null ? 0
-                            : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
-                        
-                        if (isAfterStart > 0)
-                        {
-                            _firstRecord = false;
-                            // var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                            //     PrimaryTransform.CurrentRow, null, cancellationToken);
-                            _seriesValue = null;
-                            continue;
-                        }
-                        
-                        var isBeforeFinish = _seriesFinish == null ? 0
-                            : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
-
-                        
-                        if (isBeforeFinish == 1)
-                        {
-                            if (_seriesStart != null)
-                            {
-                                var fillerRow = new object[PrimaryTransform.FieldCount];
-                                Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
-                                var (_, ignore) = await Mappings.ProcessInputData(
-                                    new FunctionVariables() {SeriesValue = _seriesValue},
-                                    fillerRow, null, cancellationToken);
-                            }
-
-                            _firstRecord = false;
-                            continue;
-                        }
-
-                        // loop to create filler rows.
-                        do
-                        {
-                            var compareResult = ((IComparable) _seriesValue)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
-
-                            if (compareResult > 0)
-                            {
-                                throw new TransformException(
-                                    "The group transform failed, as the series column is not sorted.  Use a group transform prior to this group transform to first group and aggregate series values",
-                                    _seriesValue);
-                            }
-
-                            // if compare is equal
-                            if (compareResult == 0)
-                            {
-                                var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
-                                    PrimaryTransform.CurrentRow, null, cancellationToken);
-
-                                if (ignore)
-                                {
-                                    TransformRowsIgnored += 1;
-                                    continue;
-                                }
-                                else
-                                {
-                                    var cacheRow = new object[outputRow.Length];
-                                    Mappings.MapOutputRow(cacheRow);
-                                }
-                                break;
-                            }
-
-                            if (!startFilling)
-                            {
-                                var cacheRow = new object[outputRow.Length];
-                                Mappings.MapOutputRow(cacheRow);
-                                var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
-                                Mappings.Reset(EFunctionType.Aggregate);
-
-                                if (ignore)
-                                {
-                                    TransformRowsIgnored += 1;
-                                }
-                                else
-                                {
-                                    _cachedRows.Enqueue(cacheRow);    
-                                }
-                                
-                                startFilling = true;
-                            }
-                            else
-                            {
-                                // if the series is not greater then create a dummy one, and continue the loop
-                                var fillerRow = new object[PrimaryTransform.FieldCount];
-                                Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
-                                var (_, ignore) = await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = _seriesValue},
-                                    fillerRow, null, cancellationToken);
-
-                                if (ignore)
-                                {
-                                    TransformRowsIgnored += 1;
-                                }
-                                else
-                                {
-                                    var cacheRow = new object[outputRow.Length];
-                                    Mappings.MapOutputRow(cacheRow);
-                                    await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
-                                    _cachedRows.Enqueue(cacheRow);
-                                }
-                            }
-
-                            _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
-
-                            if (fillCount++ > 10000)
-                            {
-                                throw new Exception("The series continuation could not be found.");
-                            }
-                        } while (true);
-                    }
 
                 }
-                // when group has changed
-                else
-                {
-                    outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
-
-                    //store the last group values read to start the next grouping.
-                    _groupValues = nextGroupValues;
-
-                }
-
+                
                 _firstRecord = false;
 
                 if (groupChanged && outputRow != null)
                 {
                     break;
+                }
+
+                if (groupChanged)
+                {
+                    Mappings.Reset(EFunctionType.Series);
                 }
 
                 if (outputRow == null)
@@ -409,13 +405,154 @@ namespace dexih.transforms
             if (groupChanged == false) //if the reader has finished with no group change, write the values and set last record
             {
                 outputRow = await ProcessGroupChange(outputRow, currentRow, cancellationToken);
-
                 _lastRecord = true;
             }
             
             _firstRecord = false;
             return outputRow;
+        }
 
+        private async Task<object> ProcessFillers(object[] currentRow, object nextSeriesValue, CancellationToken cancellationToken)
+        {
+            var startFilling = false;
+
+            // if the first record, then load the current row.
+            if (_seriesValue == null)
+            {
+                startFilling = true;
+                if (_seriesStart != null)
+                {
+                    _seriesValue = _seriesStart;
+                }
+                else
+                {
+                    _seriesValue = _seriesMapping.NextValue(0, currentRow);
+                }
+            }
+
+            var fillCount = 1;
+
+            //filter series start/finish
+            var isAfterStart = _seriesStart == null
+                ? 0
+                : ((IComparable) _seriesStart)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+
+            if (isAfterStart > 0)
+            {
+                _firstRecord = false;
+                var (_, ignore) = await Mappings.ProcessInputData(
+                    new FunctionVariables() {SeriesValue = nextSeriesValue},
+                    currentRow, null, cancellationToken);
+                _seriesValue = null;
+                return nextSeriesValue;
+            }
+
+            var isBeforeFinish = _seriesFinish == null
+                ? 0
+                : ((IComparable) nextSeriesValue)?.CompareTo((IComparable) _seriesFinish) ?? 0;
+
+
+            if (isBeforeFinish == 1)
+            {
+                if (_seriesStart != null)
+                {
+                    var fillerRow = new object[PrimaryTransform.FieldCount];
+                    Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
+                    var (_, ignore) = await Mappings.ProcessInputData(
+                        new FunctionVariables() {SeriesValue = _seriesValue},
+                        fillerRow, null, cancellationToken);
+                }
+
+                _firstRecord = false;
+                return _seriesValue;
+            }
+
+            // loop to create filler rows.
+            do
+            {
+                var compareResult =
+                    ((IComparable) _seriesValue)?.CompareTo((IComparable) nextSeriesValue) ?? 0;
+
+                if (compareResult > 0)
+                {
+                    throw new TransformException(
+                        "The group transform failed, as the series column is not sorted.  Use a group transform prior to this group transform to first group and aggregate series values",
+                        _seriesValue);
+                }
+
+                // if compare is equal
+                if (compareResult == 0)
+                {
+                    var (_, ignore) = await Mappings.ProcessInputData(
+                        new FunctionVariables() {SeriesValue = nextSeriesValue},
+                        currentRow, null, cancellationToken);
+
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                        continue;
+                    }
+                    else
+                    {
+                        var cacheRow = new object[FieldCount];
+                        Mappings.MapOutputRow(cacheRow);
+                    }
+
+                    break;
+                }
+
+                if (!startFilling)
+                {
+                    var cacheRow = new object[FieldCount];
+                    Mappings.MapOutputRow(cacheRow);
+                    var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow,
+                        EFunctionType.Aggregate, cancellationToken);
+                    Mappings.Reset(EFunctionType.Aggregate);
+
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
+                    else
+                    {
+                        _cachedRows.Enqueue(cacheRow);
+                    }
+
+                    startFilling = true;
+                }
+                else
+                {
+                    // if the series is not greater then create a dummy one, and continue the loop
+                    var fillerRow = new object[PrimaryTransform.FieldCount];
+                    Mappings.CreateFillerRow(currentRow, fillerRow, _seriesValue);
+                    var (_, ignore) = await Mappings.ProcessInputData(
+                        new FunctionVariables() {SeriesValue = _seriesValue},
+                        fillerRow, null, cancellationToken);
+
+                    if (ignore)
+                    {
+                        TransformRowsIgnored += 1;
+                    }
+                    else
+                    {
+                        var cacheRow = new object[FieldCount];
+                        Mappings.MapOutputRow(cacheRow);
+                        await Mappings.ProcessFillerRow(new FunctionVariables(), cacheRow,
+                            EFunctionType.Aggregate, cancellationToken);
+                        _cachedRows.Enqueue(cacheRow);
+                    }
+                }
+
+                _seriesValue = _seriesMapping.CalculateNextValue(_seriesValue, 1);
+
+                if (fillCount++ > 10000)
+                {
+                    throw new Exception("The series continuation could not be found.");
+                }
+
+            } while (true);
+
+            return nextSeriesValue;
         }
 
         private async Task<object[]> ProcessGroupChange(object[] outputRow, object[] previousRow, CancellationToken cancellationToken)
@@ -425,15 +562,23 @@ namespace dexih.transforms
             {
                 // if the currentSeriesValue is between the seriesStart & seriesFinish ranges
                 var currentSeriesValue = _seriesMapping.GetOutputValue(previousRow);
-                var seriesInRange = (_seriesStart == null ||
-                                    ((IComparable) _seriesStart).CompareTo((IComparable) currentSeriesValue) <= 0) &&
-                                    (_seriesFinish == null ||
-                                    ((IComparable) _seriesFinish).CompareTo((IComparable) currentSeriesValue) >= 0);
+                var seriesGreaterEqualStart = (_seriesStart == null ||
+                                               ((IComparable) _seriesStart).CompareTo((IComparable) currentSeriesValue) <= 0);
+                var seriesLessEqualFinish = (_seriesFinish == null ||
+                                             ((IComparable) _seriesFinish).CompareTo((IComparable) currentSeriesValue) >= 0);
+                
+                // if there is not series finish the fillers may not have run from the Start to the current
+                if (_seriesMapping.SeriesFill && _seriesMapping.SeriesFinish == null && _cachedRows?.Count == 0)
+                {
+                    var nextSeriesValue = _seriesMapping.NextValue(0, previousRow);
+                    await ProcessFillers(previousRow, nextSeriesValue, cancellationToken);
+                }
 
                 //create a cached current row.  this will be output when the group has changed.
                 var cacheRow = new object[outputRow.Length];
                 Mappings.MapOutputRow(cacheRow);
-                var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow, EFunctionType.Aggregate, cancellationToken);
+                var (_, ignore) = await Mappings.ProcessAggregateRow(new FunctionVariables(), cacheRow,
+                    EFunctionType.Aggregate, cancellationToken);
                 if (ignore)
                 {
                     TransformRowsIgnored += 1;
@@ -441,11 +586,12 @@ namespace dexih.transforms
                 else
                 {
                     // if the currentSeriesValue is between the seriesStart & seriesFinish, then we can add the current row
-                    if(seriesInRange)
+                    if (seriesGreaterEqualStart && seriesLessEqualFinish)
                     {
                         _cachedRows.Enqueue(cacheRow);
                     }
                 }
+
 
                 // fill any remaining rows.
                 if (_seriesMapping.SeriesFill && _seriesFinish != null )
@@ -453,7 +599,7 @@ namespace dexih.transforms
                     // if the current row is not in the series range, then set the series value to the series start
                     // which will just fill the entire sequence with dummy rows.
                     // happens when data is after the start/finish range.
-                    if (!seriesInRange)
+                    if (!(seriesGreaterEqualStart && seriesLessEqualFinish))
                     {
                         _seriesValue = _seriesStart;
                     }
