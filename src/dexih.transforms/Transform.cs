@@ -1772,7 +1772,7 @@ namespace dexih.transforms
 
         public virtual bool IsOpen { get; protected set; } = false;
 
-        public override bool IsClosed => PrimaryTransform?.IsClosed??!IsReaderFinished;
+        public override bool IsClosed => !IsOpen;
 
         public override int RecordsAffected => throw new NotImplementedException();
 

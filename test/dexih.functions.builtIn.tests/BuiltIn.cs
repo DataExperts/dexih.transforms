@@ -334,7 +334,7 @@ namespace dexih.functions.builtIn.tests
                 for (var i = 0; i < data.Length; i++)
                 {
                     var result = transformFunction.RunFunction(new[] { data[i], count }, CancellationToken.None);
-                    Assert.NotNull(result);
+                    Assert.NotNull(result.returnValue);
                     Assert.Equal(Convert.ToDouble(expectedResult[i]), Convert.ToDouble(result.returnValue));
                 }
                 

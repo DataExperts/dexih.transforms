@@ -200,7 +200,7 @@ namespace dexih.transforms.tests
             Assert.Equal(11, counter);
         }
         
-   [Fact]
+        [Fact]
         public async Task SeriesTests_Fill_Fixed_Start_Finish()
         {
             var table = new Table("test", 0,
@@ -252,8 +252,8 @@ namespace dexih.transforms.tests
             string[] expectedDates = { "2015/01/04", "2015/01/05", "2015/01/06", "2015/01/04", "2015/01/05", "2015/01/06", "2015/01/04", "2015/01/05", "2015/01/06" };
             while (await transformGroup.ReadAsync())
             {
-                Assert.Equal(values[counter], transformGroup["Value"]);
                 Assert.Equal(Convert.ToDateTime(expectedDates[counter]), transformGroup["DateColumn"]);
+                Assert.Equal(values[counter], transformGroup["Value"]);
                 counter = counter + 1;
             }
             Assert.Equal(9, counter);
@@ -272,6 +272,7 @@ namespace dexih.transforms.tests
 
             // data with gaps in the date sequence.
             table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10);
+            table.AddRow("value02", 1, 2.1, Convert.ToDateTime("2015/01/03"), 9);
             table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/05"), 9);
             table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/10"), 8);
 
@@ -310,7 +311,7 @@ namespace dexih.transforms.tests
 
 
             var counter = 0;
-            int[] values = {0, 2, 0, 0, 0, 0, 0, 0, 3};
+            int[] values = {1, 2, 0, 0, 0, 0, 0, 0, 3};
             string[] expectedDates =
             {
                 "2015/01/04", "2015/01/05", "2015/01/04", "2015/01/05", "2015/01/06", "2015/01/07", "2015/01/08" ,"2015/01/09", "2015/01/10"
@@ -323,6 +324,66 @@ namespace dexih.transforms.tests
             }
 
             Assert.Equal(9, counter);
+        }
+        
+           [Fact]
+        public async Task SeriesTests_Fill_Fixed_Finish()
+        {
+            var table = new Table("test", 0,
+                new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
+                new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
+                new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
+                new TableColumn("DateColumn", ETypeCode.DateTime, EDeltaType.NaturalKey),
+                new TableColumn("SortColumn", ETypeCode.Int32, EDeltaType.TrackingField)
+            );
+
+            // data with gaps in the date sequence.
+            table.AddRow("value01", 1, 1.1, Convert.ToDateTime("2015/01/01"), 10 );
+            table.AddRow("value02", 2, 2.1, Convert.ToDateTime("2015/01/05"), 9 );
+            table.AddRow("value03", 3, 3.1, Convert.ToDateTime("2015/01/10"), 8 );
+
+            var source = new ReaderMemory(table, new Sorts() { new Sort("StringColumn") } );
+            source.Reset();
+
+            var mappings = new Mappings(false);
+
+            var fillValue = Functions.GetFunction(_seriesFunctions, nameof(SeriesFunctions<int>.PreviousSeriesValueNull), Helpers.BuiltInAssembly).GetTransformFunction(typeof(int));
+            
+            var parameters = new Parameters
+            {
+                Inputs = new Parameter[]
+                {
+                    new ParameterColumn("IntColumn", ETypeCode.Int32),
+                    new ParameterValue("Aggregate", ETypeCode.Unknown, EAggregate.Sum), 
+                },
+                ResultReturnParameters = new List<Parameter>
+                {
+                    new ParameterOutputColumn("SeriesItem", ETypeCode.DateTime),
+                    new ParameterOutputColumn("Value", ETypeCode.Int32)
+                }
+            };
+            
+            mappings.Add(new MapGroup(new TableColumn("StringColumn")));
+            mappings.Add(new MapFunction(fillValue, parameters, EFunctionCaching.NoCache));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, true, null, Convert.ToDateTime("2015/01/06")));
+            
+            var transformGroup = new TransformSeries(source, mappings);
+            await transformGroup.Open();
+            
+            Assert.Equal(4, transformGroup.FieldCount);
+
+            
+            var counter = 0;
+            int[] values = { 1, 1, 1, 1, 1, 1, 2, 2 };
+            string[] expectedDates = { "2015/01/01", "2015/01/02", "2015/01/03","2015/01/04", "2015/01/05", "2015/01/06", 
+                "2015/01/05", "2015/01/06" };
+            while (await transformGroup.ReadAsync())
+            {
+                Assert.Equal(Convert.ToDateTime(expectedDates[counter]), transformGroup["DateColumn"]);
+                Assert.Equal(values[counter], transformGroup["Value"]);
+                counter = counter + 1;
+            }
+            Assert.Equal(8, counter);
         }
     }
 }
