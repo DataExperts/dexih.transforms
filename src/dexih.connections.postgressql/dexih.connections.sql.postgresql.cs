@@ -50,6 +50,7 @@ namespace dexih.connections.postgressql
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
                 case ETypeCode.Decimal:
                     return 1E+20m;
@@ -297,6 +298,9 @@ namespace dexih.connections.postgressql
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "timestamp";
+                    break;
+                case ETypeCode.Date:
+                    sqlType = "date";
                     break;
                 case ETypeCode.Time:
                     sqlType = "time";
@@ -634,7 +638,7 @@ ORDER BY c.ordinal_position"))
                 case "money": return ETypeCode.Decimal;
                 case "bool": return ETypeCode.Boolean;
                 case "boolean": return ETypeCode.Boolean;
-                case "date": return ETypeCode.DateTime;
+                case "date": return ETypeCode.Date;
                 case "timestamp": return ETypeCode.DateTime;
                 case "timestamp without time zone": return ETypeCode.DateTime;
                 case "timestamp with time zone": return ETypeCode.DateTime;
@@ -799,6 +803,8 @@ ORDER BY c.ordinal_position"))
                     return NpgsqlDbType.Boolean;
                 case ETypeCode.DateTime:
                     return NpgsqlDbType.Timestamp;
+                case ETypeCode.Date:
+                    return NpgsqlDbType.Date;
                 case ETypeCode.Time:
                     return NpgsqlDbType.Time;
                 case ETypeCode.Guid:

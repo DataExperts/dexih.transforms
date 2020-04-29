@@ -54,6 +54,8 @@ namespace dexih.connections.db2
                     return (ulong)long.MaxValue;
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31,23,59,59); 
+                case ETypeCode.Date:
+                    return new DateTime(9999,12,31); 
                 case ETypeCode.Time:
                     return new TimeSpan(23, 59, 59); 
                 case ETypeCode.Decimal:
@@ -272,6 +274,9 @@ namespace dexih.connections.db2
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "timestamp";
+                    break;
+                case ETypeCode.Date:
+                    sqlType = "date";
                     break;
                 case ETypeCode.Time:
                     sqlType = "time";
@@ -559,7 +564,7 @@ namespace dexih.connections.db2
                 case "BOOLEAN":
                     return ETypeCode.Boolean;
                 case "DATE":
-                    return ETypeCode.DateTime;
+                    return ETypeCode.Date;
                 case "DATETIME":
                     return ETypeCode.DateTime;
             }

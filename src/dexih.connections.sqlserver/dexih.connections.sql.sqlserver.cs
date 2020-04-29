@@ -64,6 +64,7 @@ namespace dexih.connections.sqlserver
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(9999,12,31);
                 case ETypeCode.Decimal:
                     return 1E+20m;
@@ -77,6 +78,7 @@ namespace dexih.connections.sqlserver
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(1753,1,1);
                 case ETypeCode.Decimal:
                     return -1E+20m;
@@ -368,6 +370,9 @@ namespace dexih.connections.sqlserver
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "datetime";
+                    break;
+                case ETypeCode.Date:
+                    sqlType = "date";
                     break;
                 case ETypeCode.Time:
                     sqlType = "time(7)";
@@ -691,7 +696,7 @@ namespace dexih.connections.sqlserver
                 case "binary": return ETypeCode.Binary;
                 case "bit": return ETypeCode.Boolean;
                 case "char": return ETypeCode.String;
-                case "date": return ETypeCode.DateTime;
+                case "date": return ETypeCode.Date;
                 case "datetime": return ETypeCode.DateTime;
                 case "datetime2": return ETypeCode.DateTime;
                 case "datetimeoffset": return ETypeCode.Time;
@@ -873,6 +878,8 @@ namespace dexih.connections.sqlserver
                     return SqlDbType.Bit;
                 case ETypeCode.DateTime:
                     return SqlDbType.DateTime;
+                case ETypeCode.Date:
+                    return SqlDbType.Date;
                 case ETypeCode.Time:
                     return SqlDbType.Time;
                 case ETypeCode.Guid:

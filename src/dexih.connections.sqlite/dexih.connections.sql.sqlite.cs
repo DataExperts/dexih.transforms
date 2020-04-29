@@ -235,6 +235,9 @@ namespace dexih.connections.sqlite
                 case ETypeCode.DateTime:
                     sqlType = "datetime";
                     break;
+                case ETypeCode.Date:
+                    sqlType = "date";
+                    break;
                 case ETypeCode.Time:
                     sqlType = "text"; //sqlite doesn't have a time type.
                     break;
@@ -593,7 +596,7 @@ namespace dexih.connections.sqlite
                 case "BOOLEAN":
                     return ETypeCode.Boolean;
                 case "DATE":
-                    return ETypeCode.DateTime;
+                    return ETypeCode.Date;
                 case "DATETIME":
                     return ETypeCode.DateTime;
             }

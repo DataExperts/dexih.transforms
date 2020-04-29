@@ -45,6 +45,7 @@ namespace dexih.connections.mysql
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(9999,12,31);
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1); //mysql doesn't support milliseconds
@@ -64,6 +65,7 @@ namespace dexih.connections.mysql
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(1000,1,1);
                 case ETypeCode.Double:
                     return -1E+100;
@@ -311,6 +313,9 @@ namespace dexih.connections.mysql
                 case ETypeCode.DateTime:
                     sqlType = "DateTime";
                     break;
+                case ETypeCode.Date:
+                    sqlType = "Date";
+                    break;
                 case ETypeCode.Time:
                     sqlType = "time";
                     break;
@@ -384,6 +389,12 @@ namespace dexih.connections.mysql
                         returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(time.ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     else
 						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                    break;
+                case ETypeCode.Date:
+                    if (value is DateTime dateTime)
+                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(dateTime.ToString("yyyy-MM-dd")) + "', '%Y-%m-%d')";
+                    else
+                        returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d')";
                     break;
                 case ETypeCode.Time:
                     if (value is TimeSpan span)
@@ -661,6 +672,7 @@ namespace dexih.connections.mysql
 				case "boolean": 
 				    return ETypeCode.Boolean;
 				case "date":
+                    return ETypeCode.Date;
 				case "datetime":
 				case "timestamp":
 				    return ETypeCode.DateTime;

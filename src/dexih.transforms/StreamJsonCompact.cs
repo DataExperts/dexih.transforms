@@ -173,7 +173,7 @@ using System.Threading.Tasks;
                             {
                                 _valuesArray[i] = geometry.AsText();
                             }
-
+                            
                             if (_valuesArray[i] is string valueString && _maxFieldSize >= 0 &&
                                 valueString.Length > _maxFieldSize)
                             {

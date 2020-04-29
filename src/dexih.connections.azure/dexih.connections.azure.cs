@@ -100,6 +100,7 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
                 case ETypeCode.Double:
                     return -1E+100;
@@ -115,6 +116,7 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return DateTime.MaxValue.ToUniversalTime();
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
@@ -745,6 +747,7 @@ namespace dexih.connections.azure
                     filterString = TableQuery.GenerateFilterConditionForLong(column, operation, (long)value);
                     break;
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     filterString = TableQuery.GenerateFilterConditionForDate(column, operation, (DateTime)value);
                     break;
                 case ETypeCode.Time:
@@ -880,6 +883,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Boolean:
                     return new EntityProperty((bool?)returnValue);
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return new EntityProperty((DateTime?)returnValue);
                 case ETypeCode.Guid:
                     return new EntityProperty((Guid?)returnValue);
@@ -930,6 +934,7 @@ namespace dexih.connections.azure
                 case ETypeCode.Single:
                     return Convert.ToSingle(value);
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:

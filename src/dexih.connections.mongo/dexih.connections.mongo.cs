@@ -185,6 +185,8 @@ namespace dexih.connections.mongo
                     return new BsonBoolean((bool) convertedValue);
                 case ETypeCode.DateTime:
                     return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
+                case ETypeCode.Date:
+                    return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
                 case ETypeCode.Json:
                     var json = (JsonElement) convertedValue;
                     if (json.ValueKind == JsonValueKind.Array)

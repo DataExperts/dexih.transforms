@@ -877,6 +877,8 @@ namespace dexih.transforms
                     return reader.GetBoolean(ordinal);
                 case ETypeCode.DateTime:
                     return reader.GetDateTime(ordinal);
+                case ETypeCode.Date:
+                    return reader.GetDateTime(ordinal);
                 case ETypeCode.Guid:
                     return reader.GetGuid(ordinal);
                 case ETypeCode.Geometry:

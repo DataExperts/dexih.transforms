@@ -55,6 +55,8 @@ namespace dexih.connections.oracle
             {
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31, 23, 59, 59, 0);
+                case ETypeCode.Date:
+                    return new DateTime(9999,12,31);
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 //TODO Oracle driver giving error when converting any numeric with scientific number 
@@ -241,6 +243,7 @@ namespace dexih.connections.oracle
                     sqlType = "NUMBER(1,0)";
                     break;
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     sqlType = "DATE";
                     break;
                 case ETypeCode.Time:
@@ -754,6 +757,7 @@ ORDER BY cols.table_name, cols.position"))
                 case ETypeCode.Boolean:
                     return OracleDbType.Byte;
                 case ETypeCode.DateTime:
+                case ETypeCode.Date:
                     return OracleDbType.Date;
                 case ETypeCode.Time:
                     return OracleDbType.Varchar2;

@@ -5,6 +5,7 @@ using dexih.functions;
 using System.Threading;
 using dexih.functions.Exceptions;
 using dexih.functions.Query;
+using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
@@ -119,7 +120,10 @@ namespace dexih.transforms
 						Column = column,
 						Direction = sort.Direction
 					};
-					mappedSorts.Add(newSort, sort);
+					if (!mappedSorts.TryAdd(newSort, sort))
+					{
+						throw new TransformException($"The column {column.Name} is duplicated in the sort.  Check sorts and groups and avoid duplicate keys.");
+					}
 					newSorts.Add(newSort);
 				}
 

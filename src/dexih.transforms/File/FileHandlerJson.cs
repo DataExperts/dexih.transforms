@@ -293,6 +293,7 @@ namespace dexih.transforms.File
                     case ETypeCode.Boolean:
                         return jToken.Value<bool>();
                     case ETypeCode.DateTime:
+                    case ETypeCode.Date:
                         return jToken.Value<DateTime>();
                     case ETypeCode.Time:
                         return jToken.Value<TimeSpan>();

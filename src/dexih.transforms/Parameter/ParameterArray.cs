@@ -68,6 +68,7 @@ namespace dexih.functions.Parameter
 				    case ETypeCode.Boolean:
 					    return Parameters.Select(c => (bool) c.Value).ToArray();
 				    case ETypeCode.DateTime:
+				    case ETypeCode.Date:
 					    return Parameters.Select(c => (DateTime) c.Value).ToArray();
 				    case ETypeCode.Time:
 					    return Parameters.Select(c => (DateTime) c.Value).ToArray();
