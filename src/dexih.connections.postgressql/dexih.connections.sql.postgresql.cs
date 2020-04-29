@@ -50,8 +50,9 @@ namespace dexih.connections.postgressql
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 case ETypeCode.DateTime:
-                case ETypeCode.Date:
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
+                case ETypeCode.Date:
+                    return new DateTime(9999, 12, 31);
                 case ETypeCode.Decimal:
                     return 1E+20m;
                 default:
