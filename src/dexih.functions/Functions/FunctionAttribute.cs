@@ -58,6 +58,12 @@ namespace dexih.functions
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] ListOfValues { get; set; }
+
+        /// <summary>
+        ///  Override the ETypeCode for the parameter.
+        /// Mostly used for datetime = time/date/datetime.
+        /// </summary>
+        public ETypeCode Type { get; set; } = ETypeCode.Unknown;
     }
 
     /// <summary>

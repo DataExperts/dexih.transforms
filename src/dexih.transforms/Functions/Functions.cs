@@ -164,6 +164,21 @@ namespace dexih.functions
 
             return null;
         }
+        
+        private static ETypeCode GetTypeRank(TransformFunctionParameterAttribute parameterAttribute,
+            Type type, out int paramRank)
+        {
+            var typeCode = DataType.GetTypeCode(type, out paramRank);
+
+            if (parameterAttribute == null || parameterAttribute.Type == ETypeCode.Unknown)
+            {
+                return typeCode;
+            }
+            else
+            {
+                return parameterAttribute.Type;
+            }
+        }
 
         private static FunctionParameter[] GetResultParameters(MethodInfo methodInfo, string name = null)
         {
@@ -203,6 +218,7 @@ namespace dexih.functions
                 paramType != typeof(string) && 
                 paramType != typeof(decimal) && 
                 paramType != typeof(DateTime) && 
+                paramType != typeof(TimeSpan) && 
                 !paramType.IsEnum && 
                 !paramType.IsArray &&
                 paramType != typeof(Geometry))
@@ -225,9 +241,9 @@ namespace dexih.functions
                         Name = propertyAttribute?.Name ?? property.Name,
                         Description = propertyAttribute?.Description,
                         IsGeneric = isGeneric,
-                        DataType = DataType.GetTypeCode(property.PropertyType, out var paramRank),
+                        DataType = GetTypeRank(propertyAttribute, property.PropertyType, out var paramRank),
+                        Rank =  paramRank,
                         AllowNull = Nullable.GetUnderlyingType(property.PropertyType) != null,
-                        Rank = paramRank,
                         LinkedName = linkedAttribute?.Name,
                         LinkedDescription = linkedAttribute?.Description,
                         IsLabel = property.GetCustomAttribute<TransformParameterLabelAttribute>() != null,
@@ -280,7 +296,7 @@ namespace dexih.functions
                 Name = parameterAttribute?.Name ?? parameterInfo.Name ?? name,
                 Description = parameterAttribute?.Description,
                 IsGeneric = isGeneric,
-                DataType = DataType.GetTypeCode(paramType, out var paramRank),
+                DataType = GetTypeRank(parameterAttribute, paramType, out var paramRank),
                 AllowNull = Nullable.GetUnderlyingType(paramType) != null,
                 Rank = paramRank,
                 LinkedName = linkedAttribute?.Name,

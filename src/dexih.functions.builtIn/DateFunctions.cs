@@ -1,13 +1,13 @@
 using System;
 using System.Globalization;
+using Dexih.Utils.DataType;
 
 namespace dexih.functions.builtIn
 {
     public class DateFunctions
     {
-          [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date",
-            Description =
-                "Converts the string value to a date/time")]
+      [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date",
+        Description = "Converts the string value to a date/time")]
         public DateTime ToDate(string value)
         {
             var canParse = DateTime.TryParse(value, out var result);
@@ -186,11 +186,19 @@ namespace dexih.functions.builtIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Only",
             Description = "Extract Date Only from a date/time field")]
-        public DateTime DateOnly(DateTime dateValue)
+        [TransformFunctionParameter(Type = ETypeCode.Date)]
+        public DateTime DateOnly( DateTime dateValue)
         {
             return dateValue.Date;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Now",
+            Description = "Current time of the day")]
+        public TimeSpan TimeNow()
+        {
+            return DateTime.Now.TimeOfDay;
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Only",
             Description = "Extract Time from a date/time field")]
         public TimeSpan TimeOnly(DateTime dateValue)
@@ -249,20 +257,22 @@ namespace dexih.functions.builtIn
             Description = "The current Universal Coordinated Time (UCT/GMT) (no time component). ")]
         public DateTime DateTimeNowUtc()
         {
-            return DateTime.UtcNow.Date;
+            return DateTime.UtcNow;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Now", Description = "The local date (no time component)")]
+        [TransformFunctionParameter(Type = ETypeCode.Date)]
         public DateTime DateNow()
         {
             return DateTime.Now.Date;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Now UTC",
-            Description = "The current Universal Coordinated Time (UCT/GMT). ")]
+            Description = "The current Universal Coordinated Date (UCT/GMT) (no time). ")]
+        [TransformFunctionParameter(Type = ETypeCode.Date)]
         public DateTime DateNowUtc()
         {
-            return DateTime.UtcNow;
+            return DateTime.UtcNow.Date;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Days Between",
@@ -270,6 +280,20 @@ namespace dexih.functions.builtIn
         public double DaysBetween(DateTime startDate, DateTime endDate)
         {
             return (endDate - startDate).TotalDays;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Between Dates",
+            Description = "The time between the start and end date.")]
+        public TimeSpan TimeBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            return (endDate - startDate);
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Between Times",
+            Description = "The time between the start and end date.")]
+        public TimeSpan TimeBetweenTimes(TimeSpan startTime, TimeSpan endTime)
+        {
+            return (endTime - startTime);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Hours Between",
@@ -336,7 +360,8 @@ namespace dexih.functions.builtIn
             public int WeekOfQuarter { get; set; }
             public int Year { get; set; }
         }
-
+        
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Components",
             Description = "Splits a date into it's components such as day, month, year etc.")]
         public DateComponentsClass DateComponents(DateTime dateValue)
@@ -362,6 +387,27 @@ namespace dexih.functions.builtIn
             };
         }
 
+        public class TimeComponentsClass
+        {
+            public int Hours { get; set; }
+            public int Minutes { get; set; }
+            public int Seconds { get; set; }
+            public int MilliSeconds { get; set; }
+        }
+        
+        
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Time Components",
+            Description = "Splits a time into it's components such as hour, minute, second.")]
+        public TimeComponentsClass TimeComponents(TimeSpan timeValue)
+        {
+            return new TimeComponentsClass()
+            {
+                Hours = timeValue.Hours,
+                Minutes = timeValue.Minutes,
+                Seconds =  timeValue.Seconds,
+                MilliSeconds = timeValue.Milliseconds,
+            };
+        }
         public enum ECalendarType
         {
             Calendar,
@@ -370,7 +416,10 @@ namespace dexih.functions.builtIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Fiscal Date Components",
             Description = "Splits a fiscal date into it's components such as day, month, year etc.")]
-        public DateComponentsClass FiscalDateComponents(DateTime dateValue, ECalendarType calendarType, DateTime calendarStart)
+        public DateComponentsClass FiscalDateComponents(
+            [TransformFunctionParameter(Type = ETypeCode.Date)] DateTime dateValue, 
+            ECalendarType calendarType, 
+            [TransformFunctionParameter(Type = ETypeCode.Date)] DateTime calendarStart)
         {
             if (calendarType == ECalendarType.Calendar)
             {
