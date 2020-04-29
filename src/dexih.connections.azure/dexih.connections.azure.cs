@@ -116,8 +116,9 @@ namespace dexih.connections.azure
             switch (typeCode)
             {
                 case ETypeCode.DateTime:
-                case ETypeCode.Date:
                     return DateTime.MaxValue.ToUniversalTime();
+                case ETypeCode.Date:
+                    return DateTime.MaxValue.ToUniversalTime().Date;
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 case ETypeCode.Double:
