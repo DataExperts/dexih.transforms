@@ -8,6 +8,7 @@ using System.Threading.Tasks;
  using dexih.functions;
  using dexih.functions.Query;
  using dexih.transforms.Exceptions;
+ using dexih.transforms.View;
  using NetTopologySuite.Geometries;
 
 
@@ -33,18 +34,18 @@ using System.Threading.Tasks;
         private object[] _valuesArray;
         private readonly int _maxFieldSize;
         private readonly SelectQuery _selectQuery;
-        private readonly object _chartConfig;
+        private readonly ViewConfig _viewConfig;
         private readonly string _name;
         private readonly bool _showTransformProperties;
 
-        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, object chartConfig = null, bool showTransformProperties = true)
+        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, ViewConfig viewConfig = null, bool showTransformProperties = true)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
             _streamWriter = new StreamWriter(_memoryStream) {AutoFlush = true};
             _position = 0;
             _name = name;
-            _chartConfig = chartConfig;
+            _viewConfig = viewConfig;
             _selectQuery = selectQuery;
             _showTransformProperties = showTransformProperties;
 
@@ -83,9 +84,9 @@ using System.Threading.Tasks;
                 {
                     _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(_name) + "\"");
 
-                    if (_chartConfig != null)
+                    if (_viewConfig != null)
                     {
-                        _streamWriter.Write(", \"chartConfig\":" + _chartConfig.Serialize());
+                        _streamWriter.Write(", \"viewConfig\":" + _viewConfig.Serialize());
                     }
 
                     _streamWriter.Write(", \"columns\": ");

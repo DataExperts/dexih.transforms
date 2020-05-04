@@ -357,7 +357,7 @@ namespace dexih.functions.BuiltIn
             _cacheCount++;
         }
 
-        public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, ESortDirection sortSortDirection)
+        public int RankResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, ESortDirection sortSortDirection = ESortDirection.Descending)
         {
             if (_cacheArray == null)
             {
@@ -371,18 +371,27 @@ namespace dexih.functions.BuiltIn
                 }
                 else
                 {
-                    rank = _sortedRowsDictionary.Count;
+                    // starting rank is the total number of values.
+                    rank = _sortedRowsDictionary.Sum(c =>((object[])c.Value).Length) + 1;
                     increment = -1;
                 }
                 
                 foreach (var item in _sortedRowsDictionary)
                 {
+                    if (increment < 0)
+                    {
+                        rank += increment * item.Value.Length;
+                    }
+                    
                     foreach (var value in item.Value)
                     {
                         _cacheArray[(int) value] = rank;    
                     }
                     
-                    rank += increment * item.Value.Length;
+                    if (increment > 0)
+                    {
+                        rank += increment * item.Value.Length;
+                    }
                 }
             }
 

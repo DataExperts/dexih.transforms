@@ -6,6 +6,7 @@ using System.Threading;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
+using Dexih.Utils.CopyProperties;
 
 namespace dexih.transforms
 {
@@ -61,7 +62,8 @@ namespace dexih.transforms
             {
                 SelectQuery.Rows = _selectQuery.Rows < requestQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : requestQuery.Rows;
 
-                SelectQuery.Filters = requestQuery.Filters;
+                SelectQuery.Filters = requestQuery.Filters.CloneProperties();
+                
                 if (_selectQuery?.Filters != null)
                 {
                     SelectQuery.Filters.AddRange(_selectQuery.Filters);
@@ -73,7 +75,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Sorts = requestQuery.Sorts;
+                    SelectQuery.Sorts = requestQuery.Sorts.CloneProperties();
                 }
 
                 if (_selectQuery?.Groups != null && _selectQuery.Groups.Count > 0)
@@ -82,7 +84,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Groups = requestQuery.Groups;
+                    SelectQuery.Groups = requestQuery.Groups.CloneProperties();
                 }
                 
                 if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
@@ -91,7 +93,7 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    SelectQuery.Columns = requestQuery.Columns;
+                    SelectQuery.Columns = requestQuery.Columns.CloneProperties();
                 }
             }
             

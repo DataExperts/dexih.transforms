@@ -91,9 +91,11 @@ namespace dexih.transforms
 						CompareDataType = filter.CompareDataType
 					};
 
-					mappedFilters.Add(newFilter, filter);
-					newFilters.Add(newFilter);
-				}
+					if (mappedFilters.TryAdd(newFilter, filter))
+					{
+						newFilters.Add(newFilter);
+					}
+                }
 
                 newSelectQuery.Filters = newFilters;
 			}

@@ -49,10 +49,9 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
 
-            requestQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
-            
+            requestQuery = new SelectQuery {Columns = new SelectColumns(Mappings.GetRequiredColumns())};
+
             // get only the required columns
-            requestQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());
 
             var requiredSorts = RequiredSortFields();
 
