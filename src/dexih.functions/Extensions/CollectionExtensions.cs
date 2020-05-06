@@ -134,6 +134,19 @@ namespace dexih.functions
                 return !e2.MoveNext();
             }
         }
+        
+        /// <summary>
+        /// adds an item to the list only if it is not null (or default value)
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="item"></param>
+        /// <typeparam name="T"></typeparam>
+        public static void AddIfNotNull<T>(this ICollection<T> list, T item)
+        {
+            if(!EqualityComparer<T>.Default.Equals(item, default(T))) {
+                list.Add(item);
+            }
+        }
 
         /// <summary>
         /// Adds an item to the collection if it doesn't already exist.

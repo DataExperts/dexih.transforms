@@ -1,21 +1,20 @@
-﻿﻿using System;
- using System.Collections.Generic;
- using System.Data.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
- using dexih.functions;
- using dexih.functions.Query;
- using dexih.transforms.Exceptions;
- using dexih.transforms.View;
- using NetTopologySuite.Geometries;
+using dexih.functions;
+using dexih.functions.Query;
+using dexih.transforms.Exceptions;
+using dexih.transforms.View;
+using Dexih.Utils.MessageHelpers;
+using NetTopologySuite.Geometries;
 
 
- namespace dexih.transforms
+namespace dexih.transforms
 {
-    
-
     /// <summary>
     /// Writes out a simple json stream containing the headers and data for the reader.
     /// This stream is compacted by placing the column names at the top, and each row containing an array.
@@ -38,7 +37,8 @@ using System.Threading.Tasks;
         private readonly string _name;
         private readonly bool _showTransformProperties;
 
-        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null, int maxFieldSize = -1, ViewConfig viewConfig = null, bool showTransformProperties = true)
+        public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null,
+            int maxFieldSize = -1, ViewConfig viewConfig = null, bool showTransformProperties = true)
         {
             _reader = reader;
             _memoryStream = new MemoryStream(BufferSize);
@@ -66,7 +66,11 @@ using System.Threading.Tasks;
 
         public override long Length => -1;
 
-        public override long Position { get => _position; set => throw new NotSupportedException("The position cannot be set."); }
+        public override long Position
+        {
+            get => _position;
+            set => throw new NotSupportedException("The position cannot be set.");
+        }
 
         public override void Flush()
         {
@@ -77,9 +81,11 @@ using System.Threading.Tasks;
             return AsyncHelper.RunSync(() => ReadAsync(buffer, offset, count, CancellationToken.None));
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count,
+            CancellationToken cancellationToken)
         {
-            try {
+            try
+            {
                 if (_first)
                 {
                     _streamWriter.Write("{\"name\": \"" + System.Web.HttpUtility.JavaScriptStringEncode(_name) + "\"");
@@ -97,19 +103,23 @@ using System.Threading.Tasks;
                         if (!transform.IsOpen)
                         {
                             var openReturn = await transform.Open(_selectQuery, cancellationToken);
-                            
-                            if (!openReturn) 
+
+                            if (!openReturn)
                             {
                                 throw new TransformException("Failed to open the transform.");
                             }
                         }
-                        
+
                         object ColumnObject(IEnumerable<TableColumn> columns)
                         {
-                            return columns?.Select(c => new {name = c.Name, logicalName = c.LogicalName, dataType = c.DataType, childColumns = ColumnObject(c.ChildColumns)});
+                            return columns?.Select(c => new
+                            {
+                                name = c.Name, logicalName = c.LogicalName, dataType = c.DataType,
+                                childColumns = ColumnObject(c.ChildColumns)
+                            });
                         }
-                
-                        var columnSerializeObject = ColumnObject( transform.CacheTable.Columns).Serialize();
+
+                        var columnSerializeObject = ColumnObject(transform.CacheTable.Columns).Serialize();
                         _streamWriter.Write(columnSerializeObject);
                     }
                     else
@@ -117,10 +127,13 @@ using System.Threading.Tasks;
                         for (var j = 0; j < _reader.FieldCount; j++)
                         {
                             var colName = _reader.GetName(j);
-                            _streamWriter.Write(new {name = colName, logicalName = colName, dataType = _reader.GetDataTypeName(j)}.Serialize() + ",");
+                            _streamWriter.Write(new
+                            {
+                                name = colName, logicalName = colName, dataType = _reader.GetDataTypeName(j)
+                            }.Serialize() + ",");
                         }
                     }
-            
+
                     _valuesArray = new object[_reader.FieldCount];
 
                     _streamWriter.Write(", \"data\": [");
@@ -157,8 +170,7 @@ using System.Threading.Tasks;
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
-                            _reader.Close();
-                            return 0;
+                            throw new OperationCanceledException();
                         }
 
                         _reader.GetValues(_valuesArray);
@@ -174,11 +186,12 @@ using System.Threading.Tasks;
                             {
                                 _valuesArray[i] = geometry.AsText();
                             }
-                            
+
                             if (_valuesArray[i] is string valueString && _maxFieldSize >= 0 &&
                                 valueString.Length > _maxFieldSize)
                             {
-                                _valuesArray[i] = valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
+                                _valuesArray[i] =
+                                    valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
                             }
                         }
 
@@ -197,11 +210,40 @@ using System.Threading.Tasks;
                         {
                             await _streamWriter.WriteAsync("]");
 
-                            if (_reader is Transform transform && _showTransformProperties)
+                            ReturnValue status = null;
+
+                            if (_reader is Transform transform)
                             {
-                                var properties = transform.GetTransformProperties(true);
-                                var propertiesSerialized = properties.Serialize();
-                                await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                                if (_showTransformProperties)
+                                {
+                                    var properties = transform.GetTransformProperties(true);
+                                    var propertiesSerialized = properties.Serialize();
+                                    await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                                }
+
+                                status = transform.GetTransformStatus();
+                            }
+
+                            if (_hasRows)
+                            {
+                                var message = new ReturnValue(false,
+                                    $"The rows were truncated to the maximum rows {_maxRows}.\"", null);
+                                if (status != null)
+                                {
+                                    var newStatus = new ReturnValueMultiple();
+                                    newStatus.Add(status);
+                                    newStatus.Add(message);
+                                    status = newStatus;
+                                }
+                                else
+                                {
+                                    status = message;
+                                }
+                            }
+
+                            if (status != null)
+                            {
+                                await _streamWriter.WriteAsync($", \"status\":" + status.Serialize());
                             }
 
                             await _streamWriter.WriteAsync("}");
@@ -222,7 +264,11 @@ using System.Threading.Tasks;
             }
             catch
             {
-                _reader.Close();
+                try
+                {
+                    _reader.Close();
+                } catch {}
+
                 throw;
             }
         }
@@ -241,7 +287,7 @@ using System.Threading.Tasks;
         {
             throw new NotSupportedException("The Write function is not supported.");
         }
-        
+
         public override void Close()
         {
             _streamWriter?.Close();
@@ -250,5 +296,4 @@ using System.Threading.Tasks;
             base.Close();
         }
     }
-    
 }

@@ -128,6 +128,42 @@ namespace dexih.transforms
 
         private Dictionary<SelectQuery, ICollection<object[]>> _lookupCache;
 
+        /// <summary>
+        /// Any messages logged by the transform
+        /// </summary>
+        public ReturnValue TransformStatus { get; set; }
+
+        public ReturnValue GetTransformStatus()
+        {
+            if (IsReader)
+            {
+                return TransformStatus;
+            }
+
+            var statusList = new List<ReturnValue>();
+            statusList.AddIfNotNull(TransformStatus);
+            statusList.AddIfNotNull(PrimaryTransform?.GetTransformStatus());
+            statusList.AddIfNotNull(ReferenceTransform?.GetTransformStatus());
+
+            if (statusList.Count == 0)
+            {
+                return null;
+            } else if (statusList.Count == 1)
+            {
+                return statusList[0];
+            }
+            else
+            {
+                var multiple = new ReturnValueMultiple();
+                foreach (var item in statusList)
+                {
+                    multiple.Add(item);
+                }
+
+                return multiple;
+            }
+        }
+
         public object GetMaxIncrementalValue()
         {
             return IsReader ? _maxIncrementalValue : PrimaryTransform.GetMaxIncrementalValue();
@@ -2049,7 +2085,7 @@ namespace dexih.transforms
             }
         }
 
-        public override bool HasRows => PrimaryTransform?.HasRows??IsReaderFinished;
+        public override bool HasRows => PrimaryTransform?.HasRows??!IsReaderFinished;
 
 #if NET462
         public override DataTable GetSchemaTable()

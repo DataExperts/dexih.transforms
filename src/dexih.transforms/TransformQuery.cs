@@ -7,6 +7,7 @@ using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 using dexih.transforms.Mapping;
 using Dexih.Utils.CopyProperties;
+using Dexih.Utils.MessageHelpers;
 
 namespace dexih.transforms
 {
@@ -213,11 +214,7 @@ namespace dexih.transforms
 
                 } while (await PrimaryTransform.ReadAsync(cancellationToken));
             }
-            else
-            {
-                showRecord = true;
-            }
-
+            
             object[] newRow;
 
             if (showRecord)
@@ -229,7 +226,13 @@ namespace dexih.transforms
                 }
             }
             else
+            {
+                if (PrimaryTransform.HasRows)
+                {
+                    TransformStatus = new ReturnValue(false, $"The rows were truncated to the maximum rows {SelectQuery.Rows}.", null);
+                }
                 newRow = null;
+            }
 
             return newRow;
         }
