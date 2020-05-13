@@ -35,7 +35,7 @@ namespace dexih.transforms
             _rejectRows = new TableCache();
         }
 
-        public override Task<int> StartTransaction(int transactionReference = -1)
+        public override Task<int> StartTransaction(int transactionReference = -1, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(-1);
         }

@@ -131,7 +131,7 @@ namespace dexih.connections.sqlserver
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     var bulkCopy = new SqlBulkCopy((SqlConnection) connection)
@@ -162,7 +162,7 @@ namespace dexih.connections.sqlserver
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "select name from sys.tables where object_id = OBJECT_ID(@NAME)"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.String,0, ParameterDirection.Input, SqlTableName(table)));
@@ -202,7 +202,7 @@ namespace dexih.connections.sqlserver
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table);
+                    var dropResult = await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -231,7 +231,7 @@ namespace dexih.connections.sqlserver
                 if (key != null)
                     createSql.Append("ALTER TABLE " + SqlTableName(table) + " ADD CONSTRAINT [PK_" + AddEscape(table.Name) + "] PRIMARY KEY CLUSTERED ([" + AddEscape(key.Name) + "])");
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = connection.CreateCommand())
                     {
@@ -406,7 +406,7 @@ namespace dexih.connections.sqlserver
         }
 
 
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             SqlConnection connection = null;
 
@@ -426,7 +426,7 @@ namespace dexih.connections.sqlserver
                 }
 
                 connection = new SqlConnection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 State = (EConnectionState)connection.State;
 
                 if (connection.State != ConnectionState.Open)
@@ -438,8 +438,7 @@ namespace dexih.connections.sqlserver
             }
             catch (Exception ex)
             {
-                if(connection != null)
-                    connection.Dispose();
+                connection?.Dispose();
                 throw new ConnectionException($"SqlServer connection to server {Server} and database {DefaultDatabase} failed. {ex.Message}", ex);
             }
         }
@@ -449,7 +448,7 @@ namespace dexih.connections.sqlserver
             try
             {
                 DefaultDatabase = "";
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
                     var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -469,7 +468,7 @@ namespace dexih.connections.sqlserver
             {
                 var list = new List<string>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "SELECT name FROM sys.databases where name NOT IN ('master', 'tempdb', 'model', 'msdb') order by name"))
                 await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
@@ -492,7 +491,7 @@ namespace dexih.connections.sqlserver
             {
                 var tableList = new List<Table>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var sqlversion = 0;
                     //get the sql server version.
@@ -557,7 +556,7 @@ namespace dexih.connections.sqlserver
                 var table = new Table(originalTable.Name, originalTable.Schema);
                 var tableName = SqlTableName(table);
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var sqlversion = 0;
 
@@ -753,7 +752,7 @@ namespace dexih.connections.sqlserver
                 long identityValue = 0;
                 long autoIncrementValue = 0;
 
-                var transactionConnection = await GetTransaction(transactionReference);
+                var transactionConnection = await GetTransaction(transactionReference, cancellationToken);
                 var connection = (SqlConnection) transactionConnection.connection;
                 var transaction = (SqlTransaction) transactionConnection.transaction;
 
@@ -897,7 +896,7 @@ namespace dexih.connections.sqlserver
         {
             try
             {
-                var transactionConnection = await GetTransaction(transactionReference);
+                var transactionConnection = await GetTransaction(transactionReference, cancellationToken);
                 var connection = (SqlConnection) transactionConnection.connection;
                 var transaction = (SqlTransaction) transactionConnection.transaction;
 

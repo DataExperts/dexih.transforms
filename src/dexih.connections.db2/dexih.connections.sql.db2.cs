@@ -80,7 +80,7 @@ namespace dexih.connections.db2
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     var bulkCopy = new DB2BulkCopy((DB2Connection) connection)
@@ -110,7 +110,7 @@ namespace dexih.connections.db2
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection,
                         $"select * from sysibm.SYSTABLES where {OwnerColumn} = @SCHEMA and name = @NAME and TYPE = 'T';"))
@@ -157,7 +157,7 @@ namespace dexih.connections.db2
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    await DropTable(table);
+                    await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -202,7 +202,7 @@ namespace dexih.connections.db2
 
                 createSql.AppendLine(")");
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
@@ -311,7 +311,7 @@ namespace dexih.connections.db2
 
 
     
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             try
             {
@@ -330,7 +330,7 @@ namespace dexih.connections.db2
                 }
 
                 var connection = new DB2Connection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 State = (EConnectionState) connection.State;
 
                 if (connection.State != ConnectionState.Open)
@@ -353,7 +353,7 @@ namespace dexih.connections.db2
             {
                 
                 DefaultDatabase = "";
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "CREATE SCHEMA " + AddDelimiter(databaseName)))
                 {
                     
@@ -374,7 +374,7 @@ namespace dexih.connections.db2
             {
                 var list = new List<string>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "select schemaname from syscat.schemata"))
                 await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
@@ -395,7 +395,7 @@ namespace dexih.connections.db2
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, $"select * from QSYS2.SYSTABLES where TABLE_SCHEMA like '{DefaultDatabase}' and TYPE = 'T';"))
                 {
                     var reader = await cmd.ExecuteReaderAsync(cancellationToken);
@@ -429,7 +429,7 @@ namespace dexih.connections.db2
 
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     var table = new Table(originalTable.Name)

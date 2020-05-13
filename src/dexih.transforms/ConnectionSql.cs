@@ -86,7 +86,7 @@ namespace dexih.connections.sql
          protected string AddEscape(string value) => value.Replace("'", "''");
 
 
-        public abstract Task<DbConnection> NewConnection();
+        public abstract Task<DbConnection> NewConnection(CancellationToken cancellationToken);
 
         protected abstract string GetSqlType(TableColumn column);
         // protected abstract string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value);
@@ -127,7 +127,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var fieldCount = reader.FieldCount;
                     var insert = new StringBuilder();
@@ -202,7 +202,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = connection.CreateCommand())
                 {
                     cmd.CommandText = $"select count(*) from {SqlTableName(table)} ";
@@ -217,15 +217,15 @@ namespace dexih.connections.sql
             }
         }
 
-        public virtual async Task<bool> DropTable(Table table)
+        public virtual async Task<bool> DropTable(Table table, CancellationToken cancellationToken)
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = $"drop table {SqlTableName(table)}";
-                    await command.ExecuteNonQueryAsync();
+                    await command.ExecuteNonQueryAsync(cancellationToken);
                     return true;
                 }
             }
@@ -243,7 +243,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var tableExists = await TableExists(table, cancellationToken);
 
@@ -256,7 +256,7 @@ namespace dexih.connections.sql
                     //if table exists, then drop it.
                     if (tableExists)
                     {
-                        await DropTable(table);
+                        await DropTable(table, cancellationToken);
                     }
 
                     var createSql = new StringBuilder();
@@ -350,10 +350,10 @@ namespace dexih.connections.sql
             return $"{agg}({selectColumn})";
         }
 
-        public override async Task<int> StartTransaction()
+        public override async Task<int> StartTransaction(CancellationToken cancellationToken)
         {
             var key = Interlocked.Increment(ref _currentTransactionKey);
-            var connection = await NewConnection();
+            var connection = await NewConnection(cancellationToken);
             var transaction = connection.BeginTransaction();
             if(!_transactions.TryAdd(key, (connection, transaction) ))
             {
@@ -654,7 +654,7 @@ namespace dexih.connections.sql
         /// <param name="transactionReference"></param>
         /// <returns></returns>
         /// <exception cref="ConnectionException"></exception>
-        protected async Task<(DbConnection connection, DbTransaction transaction)> GetTransaction(int transactionReference)
+        protected async Task<(DbConnection connection, DbTransaction transaction)> GetTransaction(int transactionReference, CancellationToken cancellationToken)
         {
             if (transactionReference > 0)
             {
@@ -667,7 +667,7 @@ namespace dexih.connections.sql
             }
             else
             {
-                var connection = await NewConnection();
+                var connection = await NewConnection(cancellationToken);
                 var transaction = connection.BeginTransaction();
                 return (connection, transaction);
             }
@@ -695,7 +695,7 @@ namespace dexih.connections.sql
             {
                 long identityValue = 0;
 
-                var transaction = await GetTransaction(transactionReference);
+                var transaction = await GetTransaction(transactionReference, cancellationToken);
 
                 try
                 {
@@ -793,7 +793,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                var transaction = await GetTransaction(transactionReference);
+                var transaction = await GetTransaction(transactionReference, cancellationToken);
                 try
                 {
 
@@ -885,7 +885,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                var transaction = await GetTransaction(transactionReference);
+                var transaction = await GetTransaction(transactionReference, cancellationToken);
                 try
                 {
                     var sql = new StringBuilder();
@@ -931,7 +931,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     //  Retrieving schema for columns from a single table
@@ -971,7 +971,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                var transaction = await GetTransaction(transactionReference);
+                var transaction = await GetTransaction(transactionReference, cancellationToken);
                 
                 try
                 {
@@ -991,7 +991,7 @@ namespace dexih.connections.sql
                         {
                             if(transaction.transaction.Connection == null)
                             {
-                                transaction = await GetTransaction(transactionReference);
+                                transaction = await GetTransaction(transactionReference, cancellationToken);
                             }
                             cmd = transaction.connection.CreateCommand();
                             cmd.Transaction = transaction.transaction;
@@ -1040,7 +1040,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = connection.CreateCommand())
                 {
                     DbDataReader reader;

@@ -115,7 +115,7 @@ namespace dexih.connections.oracle
 //            return value;
 //        }
         
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             OracleConnection connection = null;
 
@@ -151,7 +151,7 @@ namespace dexih.connections.oracle
                 }
 
                 connection = new OracleConnection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
 
                 State = (EConnectionState)connection.State;
 
@@ -166,7 +166,7 @@ namespace dexih.connections.oracle
                 {
                     await using (var cmd = CreateCommand(connection, $"ALTER SESSION SET CURRENT_SCHEMA={AddDelimiter(DefaultDatabase)}"))
                     {
-                        await cmd.ExecuteNonQueryAsync();
+                        await cmd.ExecuteNonQueryAsync(cancellationToken);
                     }
 
                 }
@@ -361,7 +361,7 @@ namespace dexih.connections.oracle
             {
                 DefaultDatabase = "";
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection,
                         $"create user {AddDelimiter(databaseName)} identified by {AddDelimiter(databaseName)} CONTAINER=CURRENT"))
@@ -397,7 +397,7 @@ namespace dexih.connections.oracle
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var tableExists = await TableExists(table, cancellationToken);
 
@@ -410,7 +410,7 @@ namespace dexih.connections.oracle
                     //if table exists, then drop it.
                     if (tableExists)
                     {
-                        await DropTable(table);
+                        await DropTable(table, cancellationToken);
                     }
 
                     var createSql = new StringBuilder();
@@ -479,7 +479,7 @@ namespace dexih.connections.oracle
             {
                 var list = new List<string>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "select USERNAME from USER_USERS"))
                 await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
@@ -502,7 +502,7 @@ namespace dexih.connections.oracle
             {
                 var tableList = new List<Table>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection,
                         "select object_name from USER_OBJECTS where object_type = 'TABLE'"))
@@ -603,7 +603,7 @@ namespace dexih.connections.oracle
 				var schema = string.IsNullOrEmpty(originalTable.Schema) ? "public" : originalTable.Schema;
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     // table table comment if exists
                     await using (var cmd = CreateCommand(connection,
@@ -877,7 +877,7 @@ ORDER BY cols.table_name, cols.position"))
                  long identityValue = 0;
                  long autoIncrementValue = 0;
 
-                 var transactionConnection = await GetTransaction(transactionReference);
+                 var transactionConnection = await GetTransaction(transactionReference, cancellationToken);
                  var connection = (OracleConnection) transactionConnection.connection;
                  var transaction = (OracleTransaction) transactionConnection.transaction;
 
@@ -1052,7 +1052,7 @@ ORDER BY cols.table_name, cols.position"))
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "select object_name from all_objects where object_type = 'TABLE' and OBJECT_NAME = :NAME and OWNER = :SCHEMA"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));

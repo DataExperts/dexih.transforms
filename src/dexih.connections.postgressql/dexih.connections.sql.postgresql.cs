@@ -94,7 +94,7 @@ namespace dexih.connections.postgressql
 
                 copyCommand.Append(") FROM STDIN (FORMAT BINARY)");
 
-                await using (var connection = (NpgsqlConnection) await NewConnection())
+                await using (var connection = (NpgsqlConnection) await NewConnection(cancellationToken))
                 await using (var writer = connection.BeginBinaryImport(copyCommand.ToString()))
                 {
                     while (await reader.ReadAsync(cancellationToken))
@@ -148,7 +148,7 @@ namespace dexih.connections.postgressql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "select table_name from information_schema.tables where table_name = @NAME"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
@@ -182,7 +182,7 @@ namespace dexih.connections.postgressql
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    await DropTable(table);
+                    await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -222,7 +222,7 @@ namespace dexih.connections.postgressql
                 createSql.Remove(createSql.Length - 1, 1);
                 createSql.Append(")");
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
@@ -334,7 +334,7 @@ namespace dexih.connections.postgressql
         }
 
 
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             NpgsqlConnection connection = null;
 
@@ -379,14 +379,13 @@ namespace dexih.connections.postgressql
                 }
 
                 connection = new NpgsqlConnection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 State = (EConnectionState)connection.State;
 
                 if (connection.State != ConnectionState.Open)
                 {
                     connection.Dispose();
                     throw new ConnectionException($"Postgres connection status is {connection.State}.");
-
                 }
 
                 return connection;
@@ -403,7 +402,7 @@ namespace dexih.connections.postgressql
             try
             {
                 DefaultDatabase = "";
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -423,7 +422,7 @@ namespace dexih.connections.postgressql
             {
                 var list = new List<string>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "SELECT datname FROM pg_database WHERE datistemplate = false order by datname"))
                 await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
@@ -446,7 +445,7 @@ namespace dexih.connections.postgressql
             {
                 var tableList = new List<Table>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection, "select table_catalog, table_schema, table_name, table_type from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')"))
                     await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
@@ -484,7 +483,7 @@ namespace dexih.connections.postgressql
                 var schema = string.IsNullOrEmpty(originalTable.Schema) ? "public" : originalTable.Schema;
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     //The new datatable that will contain the table schema
@@ -667,7 +666,7 @@ ORDER BY c.ordinal_position"))
                 long identityValue = 0;
                 long autoIncrementValue = 0;
 
-                var transactionConnection = await GetTransaction(transactionReference);
+                var transactionConnection = await GetTransaction(transactionReference, cancellationToken);
                 var connection = (NpgsqlConnection) transactionConnection.connection;
                 var transaction = (NpgsqlTransaction) transactionConnection.transaction;
 
@@ -828,7 +827,7 @@ ORDER BY c.ordinal_position"))
         {
             try
             {
-                var transactionConnection = await GetTransaction(transactionReference);
+                var transactionConnection = await GetTransaction(transactionReference, cancellationToken);
                 var connection = (NpgsqlConnection) transactionConnection.connection;
                 var transaction = (NpgsqlTransaction) transactionConnection.transaction;
 

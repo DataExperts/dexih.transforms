@@ -30,7 +30,7 @@ namespace dexih.transforms
             DbAutoIncrementOrdinal = targetTable?.GetOrdinal(EDeltaType.DbAutoIncrement)??-1;
         }
 
-        public abstract Task<int> StartTransaction(int transactionReference = -1);
+        public abstract Task<int> StartTransaction(int transactionReference = -1, CancellationToken cancellationToken = default);
         public abstract void CommitTransaction();
         
         public abstract void RollbackTransaction();

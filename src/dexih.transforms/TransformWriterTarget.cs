@@ -626,7 +626,7 @@ namespace dexih.transforms
 
             try
             {
-                var transaction = await _transformWriterTask.StartTransaction(transactionReference);
+                var transaction = await _transformWriterTask.StartTransaction(transactionReference, cancellationToken);
 
                 var currentKey = await _transformWriterTask.AddRecord(operation, row, cancellationToken);
 

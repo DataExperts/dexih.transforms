@@ -79,7 +79,7 @@ namespace dexih.connections.sql
                     }
                 }
                 
-                _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection();
+                _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection(cancellationToken);
                 _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, requestQuery, cancellationToken);
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();

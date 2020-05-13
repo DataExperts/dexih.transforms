@@ -145,7 +145,7 @@ namespace dexih.transforms
 
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
 
-        public virtual Task<int> StartTransaction()
+        public virtual Task<int> StartTransaction(CancellationToken cancellationToken)
         {
             throw new ConnectionException($"The current connection {Name} does not support transactions.");
         }

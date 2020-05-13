@@ -13,7 +13,7 @@ namespace dexih.transforms
     {
         private int _transactionReference = -1;
         
-        public override async Task<int> StartTransaction(int transactionReference = -1)
+        public override async Task<int> StartTransaction(int transactionReference = -1, CancellationToken cancellationToken = default)
         {
             if (transactionReference > -1)
             {
@@ -21,7 +21,7 @@ namespace dexih.transforms
                 return transactionReference;
             }
             
-            _transactionReference = await TargetConnection.StartTransaction();
+            _transactionReference = await TargetConnection.StartTransaction(cancellationToken);
             return _transactionReference;
         }
 

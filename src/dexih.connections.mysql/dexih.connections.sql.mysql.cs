@@ -83,7 +83,7 @@ namespace dexih.connections.mysql
             try
             {
                 Stopwatch.StartNew();
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     var row = new StringBuilder();
                     
@@ -170,7 +170,7 @@ namespace dexih.connections.mysql
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "SHOW TABLES LIKE @NAME"))
                 {
                     cmd.Parameters.Add(CreateParameter(cmd, "@NAME", ETypeCode.Text, 0, ParameterDirection.Input, table.Name));
@@ -203,7 +203,7 @@ namespace dexih.connections.mysql
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    await DropTable(table);
+                    await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -233,7 +233,7 @@ namespace dexih.connections.mysql
                 createSql.Append(")");
 
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
 				{
 					command.CommandText = createSql.ToString();
@@ -412,7 +412,7 @@ namespace dexih.connections.mysql
             return returnValue;
         }
 
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             MySqlConnection connection = null;
 
@@ -448,7 +448,7 @@ namespace dexih.connections.mysql
                 }
 
                 connection = new MySqlConnection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 State = (EConnectionState)connection.State;
 
                 if (connection.State != ConnectionState.Open)
@@ -460,7 +460,7 @@ namespace dexih.connections.mysql
 				// update the maximum packet size supported by this mysql database.
                 await using (var cmd = CreateCommand(connection, @" SELECT @@max_allowed_packet"))
 				{
-					var result = await cmd.ExecuteScalarAsync();
+					var result = await cmd.ExecuteScalarAsync(cancellationToken);
 					if(result != DBNull.Value && result != null)
 					{
 						MaxSqlSize = Convert.ToInt64(result);	
@@ -482,7 +482,7 @@ namespace dexih.connections.mysql
             {
                 DefaultDatabase = "";
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
                     await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -502,7 +502,7 @@ namespace dexih.connections.mysql
             {
                 var list = new List<string>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "SHOW DATABASES"))
                 await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
                 {
@@ -525,7 +525,7 @@ namespace dexih.connections.mysql
             {
                 var tableList = new List<Table>();
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection, "SHOW TABLES"))
                     await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
@@ -560,7 +560,7 @@ namespace dexih.connections.mysql
             {
                 var table = new Table(originalTable.Name, originalTable.Schema);
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     //The new datatable that will contain the table schema

@@ -71,7 +71,7 @@ namespace dexih.connections.sqlite
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
                     await using (var cmd = CreateCommand(connection,
                         "SELECT name FROM sqlite_master WHERE type = 'table' and name = @NAME;"))
@@ -107,7 +107,7 @@ namespace dexih.connections.sqlite
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table);
+                    var dropResult = await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -165,7 +165,7 @@ namespace dexih.connections.sqlite
                         $"create index {AddDelimiter($"index_{table.Name}_nk")} on {AddDelimiter(table.Name)} ({string.Join(", ", naturalKey.Select(c => AddDelimiter(c.Name)))});");
                 }
 
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
                     command.CommandText = createSql.ToString();
@@ -330,7 +330,7 @@ namespace dexih.connections.sqlite
 //        }
 
 
-        public override async Task<DbConnection> NewConnection()
+        public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
             try
             {
@@ -345,7 +345,7 @@ namespace dexih.connections.sqlite
                 }
 
                 var connection = new SqliteConnection(connectionString);
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
                 State = (EConnectionState) connection.State;
 
                 if (connection.State != ConnectionState.Open)
@@ -358,7 +358,7 @@ namespace dexih.connections.sqlite
                 {
                     command.Connection = connection;
                     command.CommandText = "PRAGMA journal_mode=WAL";
-                    await command.ExecuteNonQueryAsync();
+                    await command.ExecuteNonQueryAsync(cancellationToken);
                 }
 
                 return connection;
@@ -426,7 +426,7 @@ namespace dexih.connections.sqlite
         {
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "SELECT name FROM sqlite_master WHERE type='table';"))
                 {
                     var reader = await cmd.ExecuteReaderAsync(cancellationToken);
@@ -461,7 +461,7 @@ namespace dexih.connections.sqlite
 
             try
             {
-                await using (var connection = await NewConnection())
+                await using (var connection = await NewConnection(cancellationToken))
                 {
 
                     var table = new Table(originalTable.Name)
