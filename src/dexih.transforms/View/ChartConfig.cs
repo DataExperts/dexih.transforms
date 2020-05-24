@@ -32,7 +32,8 @@ namespace dexih.repository
         Cards,
         Gauge,
         LinearGauge,
-        Map
+        Map,
+        BarLineCombo
     }
     
     [DataContract]
@@ -92,8 +93,8 @@ namespace dexih.repository
         [DataMember(Order = 16)]
         public bool ShowLegend { get; set; }
 
-        [DataMember(Order = 17)]
-        public string LegendPosition { get; set; }
+        [DataMember(Order = 17)] 
+        public string LegendPosition { get; set; } = "below";
 
         [DataMember(Order = 18)]
         public bool ShowXAxisLabel { get; set; } = true;
@@ -131,5 +132,24 @@ namespace dexih.repository
 
         [DataMember(Order = 29)]
         public bool Doughnut { get; set; }
+        
+        /// <summary>
+        /// Include a separate axis for combo charts.
+        /// </summary>
+        [DataMember(Order = 30)]
+        public bool SeparateAxis { get; set; }
+
+        [DataMember(Order = 31)] 
+        public int BarPadding { get; set; } = 3;
+
+        [DataMember(Order = 32)] 
+        public bool RoundEdges { get; set; } = false;
+        
+        [DataMember(Order = 33)] 
+        public bool ShowDataLabel { get; set; } = false;
+
+        [DataMember(Order = 34)] 
+        public bool SingleBarColor { get; set; } = true;
     }
+    
 }
