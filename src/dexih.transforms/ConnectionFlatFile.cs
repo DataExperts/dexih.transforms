@@ -285,17 +285,31 @@ namespace dexih.transforms
             try
             {
                 var flatFile = (FlatFile)originalTable;
+                Stream stream = null;
 
                 if (flatFile.FileSample == null)
                 {
-                    throw new ConnectionException($"The properties have not been set to import the flat files structure.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
+                    var count = 0;
+                    var getFileShares = GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern, cancellationToken);
+                    await foreach(var fileShare in getFileShares.WithCancellation(cancellationToken))
+                    {
+                        stream = await GetReadFileStream(flatFile, EFlatFilePath.Incoming, fileShare.FileName, cancellationToken);
+                        break;
+                    }
+                    if (stream == null)
+                    {
+                        throw new ConnectionException($"The properties have not been set to import the flat files structure, and there are no matching files in the source directory.  Required properties are (FileFormat)FileFormat and (Stream)FileSample.");
+                    }
+                }
+                else
+                {
+                    stream = new MemoryStream();
+                    var writer = new StreamWriter(stream);
+                    await writer.WriteAsync(flatFile.FileSample);
+                    await writer.FlushAsync();
+                    stream.Position = 0;
                 }
 
-                var stream = new MemoryStream();
-                var writer = new StreamWriter(stream);
-                await writer.WriteAsync(flatFile.FileSample);
-                await writer.FlushAsync();
-                stream.Position = 0;
 
                 FileHandlerBase fileHandler = null;
 

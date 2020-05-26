@@ -24,14 +24,14 @@ namespace dexih.functions
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            // if (value.Kind == DateTimeKind.Unspecified)
-            // {
-            //     writer.WriteStringValue(DateTime.SpecifyKind(value, DateTimeKind.Utc));
-            // }
-            // else
-            // {
+            if (value.Kind == DateTimeKind.Unspecified)
+            {
+                writer.WriteStringValue(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+            }
+            else
+            {
                 writer.WriteStringValue(value);
-            // }
+            }
         }
     }
 }
