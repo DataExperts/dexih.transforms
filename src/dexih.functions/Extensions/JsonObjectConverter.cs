@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,34 +13,67 @@ namespace dexih.functions
     {
         public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.True)
+            switch (reader.TokenType)
             {
-                return true;
-            }
+                case JsonTokenType.None:
+                    break;
+                case JsonTokenType.StartObject:
+                    break;
+                case JsonTokenType.EndObject:
+                    break;
+                case JsonTokenType.StartArray:
+                    var elements = new List<object>();
 
-            if (reader.TokenType == JsonTokenType.False)
-            {
-                return false;
-            }
+                    if (!reader.Read())
+                    {
+                        throw new JsonException();
+                    }
+                    
+                    while (reader.TokenType != JsonTokenType.EndArray)
+                    {
+                        elements.Add(JsonSerializer.Deserialize<object>(ref reader, options));
 
-            if (reader.TokenType == JsonTokenType.Number)
-            {
-                if (reader.TryGetInt64(out var l))
-                {
-                    return l;
-                }
+                        if (!reader.Read())
+                        {
+                            throw new JsonException();
+                        }
+                    }
 
-                return reader.GetDouble();
-            }
+                    return elements.ToArray();
+                    break;
+                case JsonTokenType.EndArray:
+                    throw new JsonException();
+                    break;
+                case JsonTokenType.PropertyName:
+                    break;
+                case JsonTokenType.Comment:
+                    break;
+                case JsonTokenType.String:
+                    if (reader.TryGetDateTime(out var datetime))
+                    {
+                        return datetime;
+                    }
 
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                if (reader.TryGetDateTime(out var datetime))
-                {
-                    return datetime;
-                }
-
-                return reader.GetString();
+                    return reader.GetString();
+                    break;
+                case JsonTokenType.Number:
+                    if (reader.TryGetInt64(out var l))
+                    {
+                        return l;
+                    }
+                    return reader.GetDouble();
+                    break;
+                case JsonTokenType.True:
+                    return true;
+                    break;
+                case JsonTokenType.False:
+                    return false;
+                    break;
+                case JsonTokenType.Null:
+                    return null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             
             // Use JsonElement as fallback.
@@ -48,6 +82,7 @@ namespace dexih.functions
             {
                 return document.RootElement.Clone();
             }
+            
         }
 
         public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)

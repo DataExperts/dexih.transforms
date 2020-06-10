@@ -283,6 +283,15 @@ namespace dexih.functions.Query
                                 }
 
                                 break;
+                            case "ni":
+                            case "notin":
+                                op = ECompare.IsNotIn;
+                                if (childValue.Value.ValueKind == JsonValueKind.Array)
+                                {
+                                    value = childValue.Value.EnumerateArray().Select(c => c.GetString()).ToArray();
+                                }
+
+                                break;
                             default:
                                 throw new Exception(
                                     $"The operator \"{childValue.Name} is not recognized.");
@@ -327,7 +336,7 @@ namespace dexih.functions.Query
                 {
                     var name = item.Name;
                     var value = item.Value.ToString();
-                    inputParameters.Add(name, value);
+                    inputParameters.Add(name, value, 0);
                 }
                 else
                 {
@@ -347,8 +356,8 @@ namespace dexih.functions.Query
             
             foreach (var filter in Filters)
             {
-                filter.Value1 = inputParameters.SetParameters(filter.Value1);
-                filter.Value2 = inputParameters.SetParameters(filter.Value2);
+                filter.Value1 = inputParameters.SetParameters(filter.Value1, 0);
+                filter.Value2 = inputParameters.SetParameters(filter.Value2, filter.RankValue2());
             }
         }
     }

@@ -289,7 +289,6 @@ namespace dexih.transforms
 
                 if (flatFile.FileSample == null)
                 {
-                    var count = 0;
                     var getFileShares = GetFileEnumerator(flatFile, EFlatFilePath.Incoming, flatFile.FileMatchPattern, cancellationToken);
                     await foreach(var fileShare in getFileShares.WithCancellation(cancellationToken))
                     {

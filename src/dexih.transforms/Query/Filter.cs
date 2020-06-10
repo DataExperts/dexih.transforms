@@ -136,6 +136,15 @@ namespace dexih.functions.Query
             return typeCode;
         }
 
+        /// <summary>
+        /// Indicates if value2 should be an array (1) or not (0)
+        /// </summary>
+        /// <returns>0 = value2 is not array, 1 = value 2 is array</returns>
+        public int RankValue2()
+        {
+            return (Operator == ECompare.IsIn || Operator == ECompare.IsNotIn) ? 1 : 0;
+        }
+
         public bool Evaluate(object column1Value, object column2Value)
         {
             var value1 = Column1 == null ? Value1 : column1Value;

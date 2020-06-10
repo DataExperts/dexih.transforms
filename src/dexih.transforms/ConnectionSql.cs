@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -320,6 +321,7 @@ namespace dexih.connections.sql
                 case ECompare.LessThanEqual: return "<=";
                 case ECompare.NotEqual: return "!=";
                 case ECompare.IsIn: return "IN";
+                case ECompare.IsNotIn: return "NOT IN";
                 case ECompare.IsNull: return "is null";
                 case ECompare.IsNotNull: return "is not null";
                 case ECompare.Like: return "like";
@@ -582,12 +584,31 @@ namespace dexih.connections.sql
                         }
                     else
                     {
-                        if (filter.Value2 != null && filter.Value2.GetType().IsArray)
+                        var value2 = filter.Value2;
+
+                        if (value2 is JsonElement jsonElement)
                         {
-                            var array = (from object value in (Array) filter.Value2 select value.ToString()).ToList();
+                            if (jsonElement.ValueKind == JsonValueKind.Array)
+                            {
+                                value2 = jsonElement.ToObject<string[]>();
+                            }
+                            else
+                            {
+                                value2 = jsonElement.ToObject<string>();
+                            }
+                        }
+                        
+                        if (value2 != null && value2.GetType().IsArray)
+                        {
+                            var array = (from object value in (Array) value2 select value?.ToString()).ToList();
 
                             var index1 = index;
-                            sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
+                            if (array.Count == 0)
+                            {
+                                sql.Append("(null)");
+                            }
+                            else {
+                                sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
                                        {
                                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
                                            if (cmd != null)
@@ -606,20 +627,21 @@ namespace dexih.connections.sql
                                            return $"{parameterName}";
                                        })) +
                                    ") ");
+                            }
                         }
                         else
                         {
                             var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
                             if (cmd != null)
                             {
-                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
-                                    filter.Value2);
+                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(), filter.RankValue2(), ParameterDirection.Input,
+                                    value2);
                                 //var param = cmd.CreateParameter();
                                 //param.ParameterName = parameterName;
                                 //param.Direction = ParameterDirection.Input;
                                 //param.DbType = GetDbType(filter.BestDataType());
                                 //param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
-                                //    filter.Value2);
+                                //    value2);
                                 cmd.Parameters.Add(param);
                             }
 

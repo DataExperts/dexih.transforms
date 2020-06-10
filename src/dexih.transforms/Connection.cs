@@ -807,6 +807,10 @@ namespace dexih.transforms
 
                     return (ETypeCode.String, null);
                 default:
+                    if (rank == 1 || value is string)
+                    {
+                        return (typeCode, value);
+                    }
                     return (typeCode, Operations.Parse(typeCode, rank, value));
             }
         }

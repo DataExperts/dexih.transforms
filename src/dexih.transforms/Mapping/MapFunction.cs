@@ -257,8 +257,13 @@ namespace dexih.transforms.Mapping
             
             var compare = (ECompare) Function.Compare;
 
-            if (compare == ECompare.IsIn)
+            if (compare == ECompare.IsIn || compare == ECompare.IsNotIn)
             {
+                if (Function.NotCondition)
+                {
+                    compare = compare == ECompare.IsIn ? ECompare.IsNotIn : ECompare.IsIn;
+                }
+                
                 var filter = new Filter()
                 {
                     Column1 = inputsArray[0] is ParameterColumn parameterColumn1 ? parameterColumn1.Column : null,
@@ -273,7 +278,7 @@ namespace dexih.transforms.Mapping
 
                 return filter;
 
-            }
+            } else
             {
                 var filter = new Filter
                 {

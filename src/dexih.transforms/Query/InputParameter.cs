@@ -10,7 +10,10 @@ namespace dexih.functions.Query
         public string Name { get; set; }
 
         [DataMember(Order = 1)]
-        public string Value { get; set; }
+        public object Value { get; set; }
+        
+        [DataMember(Order = 2)]
+        public int Rank { get; set; }
    
     }
 }

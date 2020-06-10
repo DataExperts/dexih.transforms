@@ -403,7 +403,7 @@ namespace dexih.transforms
             }
             else
             {
-                ProcessAggregate(seriesValue, cancellationToken);
+                await ProcessAggregate(seriesValue, cancellationToken);
             }
         }
 

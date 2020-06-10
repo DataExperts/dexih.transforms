@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Dexih.Utils.DataType;
@@ -121,6 +124,58 @@ namespace dexih.functions
             if (value is JsonElement jsonElement)
             {
                 return jsonElement.ToObject<T>();
+            }
+
+            if (value is Array valueArray)
+            {
+                var type1 = typeof(T);
+                if (type1.IsArray)
+                {
+                    var elementType = type1.GetElementType();
+                    var array = Array.CreateInstance(elementType, valueArray.Length);
+                    for(var i = 0; i < valueArray.Length; i++)
+                    {
+                        var v = valueArray.GetValue(i);
+
+                        if (v.GetType() == elementType)
+                        {
+                            array.SetValue(v, i);
+                        }
+                        else if (v is JsonElement jsonElementItem)
+                        {
+                            array.SetValue(jsonElementItem.ToObject(elementType), i);
+                        }
+                        else
+                        {
+                            array.SetValue(Operations.Parse(elementType, value), i);
+                        }
+                    }
+                    return (T)(object) array;
+                }
+
+                if (typeof(ICollection).IsAssignableFrom(type1))
+                {
+                    var collection = (ICollection) Activator.CreateInstance(type1);
+                    var elementType = type1.GetProperty("Item").PropertyType;
+                    var add = type1.GetMethod("Add", new Type[] {elementType});
+                    foreach (var v in valueArray)
+                    {
+                        if (v.GetType() == elementType)
+                        {
+                            add.Invoke(collection, new object[] {v});
+                        }
+                        else if (v is JsonElement jsonElementItem)
+                        {
+                            add.Invoke(collection, new object[] {jsonElementItem.ToObject(elementType)});
+                        }
+                        else
+                        {
+                            add.Invoke(collection, new object[] {Operations.Parse(elementType, value)});
+                        }
+                    }
+                    
+                    return (T) collection;
+                }
             }
 
             if (value is null)

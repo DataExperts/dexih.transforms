@@ -61,7 +61,9 @@ namespace dexih.transforms
             }
             else if(requestQuery != null)
             {
-                SelectQuery.Rows = _selectQuery.Rows < requestQuery.Rows && _selectQuery.Rows >= 0 ? _selectQuery.Rows : requestQuery.Rows;
+                var rows1 = _selectQuery?.Rows ?? -1;
+                var rows2 = requestQuery.Rows;
+                SelectQuery.Rows = rows1 < rows2 && rows1 >= 0 ? rows1 : rows2;
 
                 SelectQuery.Filters = requestQuery.Filters.CloneProperties();
                 

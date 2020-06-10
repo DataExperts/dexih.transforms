@@ -26,7 +26,19 @@ namespace dexih.functions
             var json = document.RootElement.GetRawText();
             return JsonSerializer.Deserialize<T>(json, SerializerOptions);
         }
-        
+
+        public static object ToObject(this JsonElement element, Type returnType)
+        {
+            var json = element.GetRawText();
+            return JsonSerializer.Deserialize(json, returnType, SerializerOptions);
+        }
+
+        public static object ToObject(this JsonDocument document, Type returnType)
+        {
+            var json = document.RootElement.GetRawText();
+            return JsonSerializer.Deserialize(json, returnType, SerializerOptions);
+        }
+
         public static string Serialize<T>(this T value)
         {
             return JsonSerializer.Serialize(value, SerializerOptions);
