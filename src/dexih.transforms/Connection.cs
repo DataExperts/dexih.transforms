@@ -807,7 +807,7 @@ namespace dexih.transforms
 
                     return (ETypeCode.String, null);
                 default:
-                    if (rank == 1 || value is string)
+                    if (rank == 1) // || value is string) // not sure why I added this
                     {
                         return (typeCode, value);
                     }
