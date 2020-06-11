@@ -22,6 +22,12 @@ environment:
 test_script:
 - dotnet test .\test\dexih.functions.tests\dexih.functions.tests.csproj
 - dotnet test .\test\dexih.functions.tests.async\dexih.functions.tests.async.csproj
+- dotnet test .\test\dexih.functions.builtin.tests\dexih.functions.builtin.tests.csproj
+- dotnet test .\test\dexih.functions.ml.tests\dexih.functions.ml.tests.csproj
+- dotnet test .\test\dexih.standard.function.tests\dexih.standard.function.tests.csproj
+- dotnet test .\test\dexih.functions.builtin.tests\dexih.functions.builtin.tests.csproj
+- dotnet test .\test\dexih.transforms.tests\dexih.transforms.tests.csproj
+- dotnet test .\test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj
 - cd test\dexih.connections.azure.tests
 - '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 

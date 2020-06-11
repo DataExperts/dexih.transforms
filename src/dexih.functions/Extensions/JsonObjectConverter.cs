@@ -40,10 +40,8 @@ namespace dexih.functions
                     }
 
                     return elements.ToArray();
-                    break;
                 case JsonTokenType.EndArray:
                     throw new JsonException();
-                    break;
                 case JsonTokenType.PropertyName:
                     break;
                 case JsonTokenType.Comment:
@@ -55,23 +53,18 @@ namespace dexih.functions
                     }
 
                     return reader.GetString();
-                    break;
                 case JsonTokenType.Number:
                     if (reader.TryGetInt64(out var l))
                     {
                         return l;
                     }
                     return reader.GetDouble();
-                    break;
                 case JsonTokenType.True:
                     return true;
-                    break;
                 case JsonTokenType.False:
                     return false;
-                    break;
                 case JsonTokenType.Null:
                     return null;
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
