@@ -317,8 +317,6 @@ namespace dexih.functions.builtIn.tests
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRow), 2, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {null, null, null, 1, 2, null, 3})]
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowChange), 1, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {0, 1, 1, -2, 3, 1, 1})]
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowChange), 2, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {0, 1, 2, -1, 1, 4, 2})]
-        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 1, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 2, 0, 0, 2, 0.5})]
-        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 2, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 0, 0, 1.5, 0, 1})]
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowIfNull), 0, new object[] {null, 1, 2, null, 3, 4, 5}, new object[] {null, 1, 2, 2, 3, 4, 5})]
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowIfNull), 0, new object[] {1, null, 2, null, 3, 4, 5, null}, new object[] {1, 1, 2, 2, 3, 4, 5, 5})]
         [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.RunningAverage), 0, new object[] {1, 2, 3, 4, 5}, new object[] {1,1.5,2,2.5,3})]
@@ -334,6 +332,27 @@ namespace dexih.functions.builtIn.tests
                 for (var i = 0; i < data.Length; i++)
                 {
                     var result = transformFunction.RunFunction(new[] { data[i], count }, CancellationToken.None);
+                    Assert.NotNull(result.returnValue);
+                    Assert.Equal(Convert.ToDouble(expectedResult[i]), Convert.ToDouble(result.returnValue));
+                }
+                
+                transformFunction.Reset();
+            }
+        }
+        
+        [Theory]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 1, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 2, 0, 0, 2, 0.5})]
+        [InlineData(typeof(CacheFunctions<>), nameof(CacheFunctions<int>.PreviousRowRatio), 2, new object[] {null, 1, 2, null, 3, 6, 3}, new object[] {0, 0, 0, 0, 1.5, 0, 1})]
+        public void PreviousRowRatioTests(Type type, string methodName, int count, object[] data, object[] expectedResult)
+        {
+            var function = Functions.GetFunction(type.FullName, methodName, BuiltInAssembly);
+            var transformFunction = function.GetTransformFunction(typeof(double));
+
+            for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
+            {
+                for (var i = 0; i < data.Length; i++)
+                {
+                    var result = transformFunction.RunFunction(new[] { data[i], count, null }, CancellationToken.None);
                     Assert.NotNull(result.returnValue);
                     Assert.Equal(Convert.ToDouble(expectedResult[i]), Convert.ToDouble(result.returnValue));
                 }
@@ -435,14 +454,14 @@ namespace dexih.functions.builtIn.tests
             var function = Functions.GetFunction(type.FullName, methodName, BuiltInAssembly);
             var transformFunction = function.GetTransformFunction(typeof(int));
 
-            var data1 = new object[] {"val1", "val2", "val3"};
-            var data2 = new object[] {1, 2, 3};
+            var data1 = new string[] {"val1", "val2", "val3"};
+            var data2 = new int[] {1, 2, 3};
 
             for (var a = 0; a < 2; a++) // run all tests twice to ensure reset functions are working
             {
                 for (var i = 0; i < data1.Length; i++)
                 {
-                    transformFunction.RunFunction(new[] { data1[i], data2[i], data1 }, CancellationToken.None);
+                    transformFunction.RunFunction(new object[] { data1[i], data2[i], data1 }, CancellationToken.None);
                 }
 
                 var aggregateResult = transformFunction.RunResult(null, out var outputs, CancellationToken.None).returnValue;
