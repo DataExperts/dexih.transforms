@@ -150,6 +150,9 @@ namespace dexih.repository
 
         [DataMember(Order = 34)] 
         public bool SingleBarColor { get; set; } = true;
+
+        [DataMember(Order = 35)]
+        public string MultiGridColumn { get; set; } // column when laying out a grid of charts
     }
     
 }
