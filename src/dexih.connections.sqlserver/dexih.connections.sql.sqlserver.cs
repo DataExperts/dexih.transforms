@@ -34,7 +34,8 @@ namespace dexih.connections.sqlserver
         AllowsUserPassword = true,
         AllowsWindowsAuth = true,
         RequiresDatabase = true,
-        RequiresLocalStorage = false
+        RequiresLocalStorage = false,
+        DefaultSchema = "dbo"
     )]
     public class ConnectionSqlServer : ConnectionSql
     {

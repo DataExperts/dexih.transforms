@@ -97,11 +97,13 @@ namespace dexih.transforms
         public bool RequiresDatabase { get; set; }
 
         /// <summary>
-        /// Requires access tothe local file system.
+        /// Requires access to the local file system.
         /// </summary>
         [DataMember(Order = 14)]
         public bool RequiresLocalStorage { get; set; }
         
+        [DataMember(Order=15)]
+        public string DefaultSchema { get; set; }
     }
 
 }

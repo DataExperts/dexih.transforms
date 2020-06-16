@@ -153,6 +153,9 @@ namespace dexih.repository
 
         [DataMember(Order = 35)]
         public string MultiGridColumn { get; set; } // column when laying out a grid of charts
+        
+        [DataMember(Order = 36)]
+        public string YAxisLabelRight { get; set; }
     }
     
 }

@@ -32,7 +32,8 @@ namespace dexih.connections.postgressql
         AllowsUserPassword = true,
         AllowsWindowsAuth = true,
         RequiresDatabase = true,
-        RequiresLocalStorage = false
+        RequiresLocalStorage = false,
+        DefaultSchema = "public"
     )]
     public class ConnectionPostgreSql : ConnectionSql
     {

@@ -31,7 +31,8 @@ namespace dexih.connections.mysql
         AllowsUserPassword = true,
         AllowsWindowsAuth = true,
         RequiresDatabase = true,
-        RequiresLocalStorage = false
+        RequiresLocalStorage = false,
+        DefaultSchema = "mydb"
         )]
     public class ConnectionMySql : ConnectionSql
     {
