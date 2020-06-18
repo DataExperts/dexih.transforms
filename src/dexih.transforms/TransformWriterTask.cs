@@ -32,15 +32,9 @@ namespace dexih.transforms
 
         public abstract Task<int> StartTransaction(int transactionReference = -1, CancellationToken cancellationToken = default);
         public abstract void CommitTransaction();
-        
         public abstract void RollbackTransaction();
-        
-        
-        
         public abstract Task<long> AddRecord(char operation, object[] row, CancellationToken cancellationToken = default);
-
         public abstract Task FinalizeWrites(CancellationToken cancellationToken = default);
-
         public abstract void Dispose();
     }
 }
