@@ -20,16 +20,18 @@ namespace dexih.connections.github
     [Connection(
         ConnectionCategory = EConnectionCategory.File,
         Name = "GitHub Flat File", 
-        Description = "Flat files from a github repository",
+        Description = "Flat files from a github repository.  [Create a GitHub oAuth Token](https://docs.cachethq.io/docs/github-oauth-token#:~:text=Generate%20a%20new%20token,list%20of%20tokens%20from%20before.) to improve rate limits.",
         DatabaseDescription = "Sub Directory",
-        ServerDescription = "Github Repository.  Use format owner/repo (e.g. DataExperts/TestRepository",
+        ServerDescription = "Github Repository.",
+        ServerHelp = "Use format owner/repo (e.g. DataExperts/TestRepository",
         AllowsConnectionString = false,
         AllowsSql = false,
         AllowsFlatFiles = true,
         AllowsManagedConnection = false,
         AllowsSourceConnection = true,
         AllowsTargetConnection = true,
-        AllowsUserPassword = true,
+        AllowsUserPassword = false,
+        AllowsToken = true,
         AllowsWindowsAuth = false,
         RequiresDatabase = false,
         RequiresLocalStorage = false
@@ -67,9 +69,32 @@ namespace dexih.connections.github
             return path + "/" + filename;
         }
 
-        private Uri BaseUri => new Uri($"https://api.github.com/repos/{Server}/");
-        private Uri RawUri => new Uri($"https://raw.githubusercontent.com/{Server}/master");
+        private Uri BaseUri => new Uri($"https://api.github.com/repos/{GetServer()}/");
+        private Uri RawUri => new Uri($"https://raw.githubusercontent.com/{GetServer()}/master");
 
+        private string GetServer()
+        {
+            var server = Server;
+            if (string.IsNullOrWhiteSpace(server))
+            {
+                throw new ConnectionException("The github repository is not specified.");
+            }
+
+            if (server.StartsWith("https://github.com/"))
+            {
+                server = server.Substring(19);
+            }
+
+            var ownerRepo = server.Split('/');
+
+            if (ownerRepo.Length != 2)
+            {
+                throw new ConnectionException($"The github repository {Server} is not in the format owner/repo.");
+            }
+
+            return ownerRepo[0].Trim() + "/" + ownerRepo[1].Trim();
+        }
+        
         public async Task<JsonDocument> GitHubAction(string uri, HttpMethod method, object data, CancellationToken cancellationToken)
         {
             HttpRequestMessage request;
@@ -109,8 +134,7 @@ namespace dexih.connections.github
                 throw new ConnectionException($"There was an issue connecting to github: {response.ReasonPhrase}.");
             }
 
-            var error = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(),
-                cancellationToken: cancellationToken);
+            var error = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(), cancellationToken: cancellationToken);
 
             if (error != null)
             {
@@ -123,11 +147,11 @@ namespace dexih.connections.github
             throw new ConnectionException($"There was an issue connecting to github: {response.ReasonPhrase}.");
         }
 
-        private async Task<List<string>> GetDirectories(string directory)
+        private async Task<List<string>> GetDirectories(string directory, CancellationToken cancellationToken)
         {
             try
             {
-                var directories = await GitHubAction("contents/" + directory, HttpMethod.Get, null, CancellationToken.None);
+                var directories = await GitHubAction("contents/" + directory, HttpMethod.Get, null, cancellationToken);
 
                 var values = new List<string>();
 
@@ -164,7 +188,7 @@ namespace dexih.connections.github
 
         public override Task<List<string>> GetFileShares(CancellationToken cancellationToken)
         {
-            return GetDirectories(DefaultDatabase);
+            return GetDirectories(DefaultDatabase, cancellationToken);
         }
         
         public override Task<bool> CreateDirectory(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
@@ -183,13 +207,11 @@ namespace dexih.connections.github
             throw new ConnectionException($"Deleting files not supported");
         }
 
-        private async IAsyncEnumerable<DexihFileProperties> GetFiles(FlatFile file, EFlatFilePath path,
-            string searchPattern,[EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<DexihFileProperties> GetFiles(FlatFile file, EFlatFilePath path, string searchPattern,[EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var fullDirectory = GetFullPath(file, path);
 
-            var gitHubFiles =
-                await GitHubAction("contents/" + fullDirectory, HttpMethod.Get, null, CancellationToken.None);
+            var gitHubFiles = await GitHubAction("contents/" + fullDirectory, HttpMethod.Get, null, cancellationToken);
 
             foreach (var item in gitHubFiles.RootElement.EnumerateArray())
             {
@@ -207,11 +229,9 @@ namespace dexih.connections.github
                                 ContentType = ""
                             };
 
-                            var commit = await GitHubAction("commits?path=" + HttpUtility.HtmlEncode(DefaultDatabase),
-                                HttpMethod.Get, null, CancellationToken.None);
+                            var commit = await GitHubAction("commits?path=" + HttpUtility.HtmlEncode(DefaultDatabase), HttpMethod.Get, null, cancellationToken);
                             var commitItem = commit.RootElement.EnumerateArray().First();
-                            var date = commitItem.GetProperty("commit").GetProperty("committer").GetProperty("date")
-                                .GetDateTime();
+                            var date = commitItem.GetProperty("commit").GetProperty("committer").GetProperty("date").GetDateTime();
                             properties.LastModified = date;
 
                             yield return properties;
@@ -231,12 +251,7 @@ namespace dexih.connections.github
         {
             return GetFiles(file, path, searchPattern, cancellationToken);
         }
-
-        // public override IAsyncEnumerable<DexihFileProperties> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
-        // {
-        //     return GetFiles(file, path, null, cancellationToken);
-        // }
-
+        
         public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {
             try
@@ -252,7 +267,7 @@ namespace dexih.connections.github
                     request.Headers.Authorization = new AuthenticationHeaderValue("Token", Password);
                 }
 
-                var response = await HttpClient.SendAsync(request, CancellationToken.None);
+                var response = await HttpClient.SendAsync(request, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -305,7 +320,7 @@ namespace dexih.connections.github
 				var flatFile = (FlatFile)table;
                 var fullPath = CombinePath(DefaultDatabase, flatFile.FileRootPath ?? "");
 
-                var directories = await GetDirectories(fullPath);
+                var directories = await GetDirectories(fullPath, cancellationToken);
                 return directories.Contains(table.Name);
             }
             catch(Exception ex)

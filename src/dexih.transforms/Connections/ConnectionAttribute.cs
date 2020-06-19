@@ -43,66 +43,78 @@ namespace dexih.transforms
         public string ServerDescription { get; set; }
 
         /// <summary>
-        /// Allows for a connection string to use for credentials
+        /// Note for the server property (such as how to format the server name.)
         /// </summary>
         [DataMember(Order = 5)]
+        public string ServerHelp { get; set; }
+
+        /// <summary>
+        /// Allows for a connection string to use for credentials
+        /// </summary>
+        [DataMember(Order = 6)]
         public bool AllowsConnectionString { get; set; }
 
         /// <summary>
         /// Allows Sql Entry
         /// </summary>
-        [DataMember(Order = 6)]
+        [DataMember(Order = 7)]
         public bool AllowsSql { get; set; }
 
         /// <summary>
         /// Uses files which can be managed (such as moving from incoming/processed directories.
         /// </summary>
-        [DataMember(Order = 7)]
+        [DataMember(Order = 8)]
         public bool AllowsFlatFiles { get; set; }
 
         /// <summary>
         /// Can be used as a managed connection, supporting read/write and table create functions.
         /// </summary>
-        [DataMember(Order = 8)]
+        [DataMember(Order = 9)]
         public bool AllowsManagedConnection { get; set; }
 
         /// <summary>
         /// Can be used a s source connection
         /// </summary>
-        [DataMember(Order = 9)]
+        [DataMember(Order = 10)]
         public bool AllowsSourceConnection { get; set; }
 
         /// <summary>
         /// Can be used as a target connection
         /// </summary>
-        [DataMember(Order = 10)]
+        [DataMember(Order = 11)]
         public bool AllowsTargetConnection { get; set; }
 
         /// <summary>
         /// Can use a username/password combination.
         /// </summary>
-        [DataMember(Order = 11)]
+        [DataMember(Order = 12)]
         public bool AllowsUserPassword { get; set; }
 
         /// <summary>
+        /// Can use a secure token.
+        /// </summary>
+        [DataMember(Order = 13)]
+        public bool AllowsToken { get; set; }
+        
+        /// <summary>
         /// Can use windows authentication
         /// </summary>
-        [DataMember(Order = 12)]
+        [DataMember(Order = 14)]
         public bool AllowsWindowsAuth { get; set; }
 
         /// <summary>
         /// Requires a database to be specified
         /// </summary>
-        [DataMember(Order = 13)]
+        [DataMember(Order = 15)]
         public bool RequiresDatabase { get; set; }
 
         /// <summary>
         /// Requires access to the local file system.
         /// </summary>
-        [DataMember(Order = 14)]
+        [DataMember(Order = 16)]
         public bool RequiresLocalStorage { get; set; }
         
-        [DataMember(Order=15)]
+        [DataMember(Order=17)]
         public string DefaultSchema { get; set; }
     }
 

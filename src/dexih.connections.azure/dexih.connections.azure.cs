@@ -26,7 +26,7 @@ namespace dexih.connections.azure
         AllowsConnectionString = true,
         AllowsSql = false,
         AllowsFlatFiles = false,
-        AllowsManagedConnection = true,
+        AllowsManagedConnection = false,
         AllowsSourceConnection = true,
         AllowsTargetConnection = true,
         AllowsUserPassword = true,
