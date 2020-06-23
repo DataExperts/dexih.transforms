@@ -120,7 +120,7 @@ namespace dexih.transforms
         public long TotalRowsRejected => TransformRowsRejected + PrimaryTransform?.TotalRowsRejected ?? 0 + ReferenceTransform?.TotalRowsRejected ?? 0;
         public long TotalRowsFiltered => TransformRowsFiltered + PrimaryTransform?.TotalRowsFiltered ?? 0 + ReferenceTransform?.TotalRowsFiltered ?? 0;
         public long TotalRowsReadPrimary => (IsReader ? TransformRows : 0) + (PrimaryTransform?.TotalRowsReadPrimary ?? 0);
-        public long TotalRowsReadReference => TransformRows + ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TotalRowsReadPrimary ?? 0;
+        public long TotalRowsReadReference => ReferenceTransform?.TotalRowsReadReference ?? 0 + ReferenceTransform?.TotalRowsReadPrimary ?? 0;
 
         private object _maxIncrementalValue = null;
         private int _incrementalColumnIndex = -1;
@@ -230,7 +230,7 @@ namespace dexih.transforms
                 SelectQuery = SelectQuery, 
                 Properties = TransformProperties(),
                 Rows = TransformRows,
-                Seconds = TransformTimerTicks().TotalSeconds
+                Seconds = TransformTimeSpan().TotalSeconds
             };
             
             if (recurse)
@@ -923,14 +923,14 @@ namespace dexih.transforms
         /// The number of timer ticks specifically for this transform.
         /// </summary>
         /// <returns></returns>
-        public TimeSpan TransformTimerTicks()
+        public TimeSpan TransformTimeSpan()
         {
-            var ticks = TimerTicks();
+            var ticks = AccumulatedTimeSpan();
 
             if (PrimaryTransform != null)
-                ticks = ticks - PrimaryTransform.TimerTicks();
+                ticks = ticks - PrimaryTransform.AccumulatedTimeSpan();
             if (ReferenceTransform != null)
-                ticks = ticks - ReferenceTransform.TimerTicks();
+                ticks = ticks - ReferenceTransform.AccumulatedTimeSpan();
 
             return ticks;
         }
@@ -939,13 +939,13 @@ namespace dexih.transforms
         /// The aggregates the number of timer ticks for any underlying base readers.  This provides a view of how long database/read operations are taking.
         /// </summary>
         /// <returns></returns>
-        public TimeSpan ReaderTimerTicks()
+        public TimeSpan ReaderTimeSpan()
         {
             if (IsReader)
-                return TransformTimer.Elapsed;
+                return AccumulatedTimeSpan();
             else
             {
-				var ticks = PrimaryTransform?.ReaderTimerTicks()??TimeSpan.FromTicks(0) + ReferenceTransform?.ReaderTimerTicks()??TimeSpan.FromTicks(0);
+				var ticks = PrimaryTransform?.ReaderTimeSpan()??TimeSpan.FromTicks(0) + ReferenceTransform?.ReaderTimeSpan()??TimeSpan.FromTicks(0);
                 return ticks;
             }
         }
@@ -954,16 +954,16 @@ namespace dexih.transforms
         /// The aggregates the number of timer ticks for this and underlying transforms, excluding the time taken for base readers. 
         /// </summary>
         /// <returns></returns>
-        public TimeSpan ProcessingTimerTicks()
+        public TimeSpan ProcessingTimeSpan()
         {
-            return TransformTimer.Elapsed - ReaderTimerTicks();
+            return AccumulatedTimeSpan() - ReaderTimeSpan();
         }
 
         /// <summary>
         /// The total timer ticks for this transform.  This includes any underlying processing.
         /// </summary>
         /// <returns></returns>
-        public TimeSpan TimerTicks() => TransformTimer.Elapsed;
+        public TimeSpan AccumulatedTimeSpan() => TransformTimer.Elapsed;
 
 
         public List<TransformPerformance> PerformanceSummary()
@@ -979,7 +979,7 @@ namespace dexih.transforms
                 performance = new List<TransformPerformance>();
             }
 
-            var timeSpan = TransformTimerTicks();
+            var timeSpan = TransformTimeSpan();
 
             var details = TransformName;
             if(ReferenceTransform != null)
