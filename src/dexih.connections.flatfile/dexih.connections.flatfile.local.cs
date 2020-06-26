@@ -56,7 +56,7 @@ namespace dexih.connections.flatfile
                 foreach (var directoryName in directories)
                 {
                     var directoryComponents = directoryName.Split(Path.DirectorySeparatorChar);
-                    fileShares.Add(directoryComponents[directoryComponents.Length - 1]);
+                    fileShares.Add(directoryComponents[^1]);
                 }
 
                 return Task.FromResult(fileShares);

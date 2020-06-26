@@ -64,6 +64,16 @@ namespace dexih.transforms
 
         public static ConnectionReference GetConnection(Type type)
         {
+            // ConnectionFlatFile doesn't have attribute as it's only used when importing flat files into non-flatfile connections
+            // so return a dummy ConnectionReference.
+            if (type == typeof(ConnectionFlatFile))
+            {
+                return new ConnectionReference()
+                {
+                    ConnectionCategory = Connection.EConnectionCategory.File,
+                    AllowsFlatFiles = true,
+                };
+            }
             var attribute = type.GetCustomAttribute<ConnectionAttribute>();
             if (attribute != null)
             {

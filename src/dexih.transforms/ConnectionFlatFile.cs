@@ -25,12 +25,12 @@ namespace dexih.transforms
         public abstract Task<bool> MoveFile(FlatFile file, EFlatFilePath fromPath, EFlatFilePath toPath, string fileName, CancellationToken cancellationToken);
         public abstract Task<bool> DeleteFile(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
         public abstract IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken);
-        // public abstract Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken);
         public abstract Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
         public abstract Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken);
         public abstract Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName, Stream fileStream, CancellationToken cancellationToken);
         public abstract Task<bool> TestFileConnection(CancellationToken cancellationToken);
         public abstract string GetFullPath(FlatFile file, EFlatFilePath path);
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
@@ -80,7 +80,7 @@ namespace dexih.transforms
             return returnValue;
         }
         
-        /// <summary>
+                /// <summary>
         /// Saves the stream to the path.
         /// If the file is a zip or gz, they will be decompressed and saved.
         /// </summary>
@@ -130,6 +130,7 @@ namespace dexih.transforms
             }
         }
         
+        
         /// <summary>
         /// Adds a guid to the file name and moves it to the Incoming directory.
         /// </summary>
@@ -142,17 +143,7 @@ namespace dexih.transforms
         {
             return await MoveFile(flatFile, fromDirectory, toDirectory, fileName, cancellationToken);
         }
-
-        // public async Task<bool> SaveIncomingFile(FlatFile flatFile, string fileName, Stream fileStream, CancellationToken cancellationToken)
-        // {
-        //     return await SaveFileStream(flatFile, EFlatFilePath.Incoming, fileName, fileStream, cancellationToken);
-        // }
-
-        // public async Task<List<DexihFileProperties>> GetFiles(FlatFile flatFile, EFlatFilePath path, CancellationToken cancellationToken)
-        // {
-        //     return await GetFileList(flatFile, path, cancellationToken);
-        // }
-
+        
         public async Task<Stream> DownloadFiles(FlatFile flatFile, EFlatFilePath path, string[] fileNames, bool zipFiles, CancellationToken cancellationToken)
         {
             
@@ -241,10 +232,10 @@ namespace dexih.transforms
         {
             try
             {
-                var oridinals = new int[table.Columns.Count];
+                var ordinals = new int[table.Columns.Count];
                 for(var i = 0; i < table.Columns.Count; i++)
                 {
-                    oridinals[i] = reader.GetOrdinal(table.Columns[i].Name);
+                    ordinals[i] = reader.GetOrdinal(table.Columns[i].Name);
                 }
                 
                 while(await reader.ReadAsync(cancellationToken))
@@ -254,7 +245,7 @@ namespace dexih.transforms
                         throw new ConnectionException("Insert bulk operation cancelled.");
                     }
 
-                    foreach(var ordinal in oridinals)
+                    foreach(var ordinal in ordinals)
                     {
                         if (ordinal == -1)
                         {
