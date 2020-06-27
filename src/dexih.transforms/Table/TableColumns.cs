@@ -274,6 +274,24 @@ namespace dexih.functions
             return returnValue;
         }
 
+        public bool Remove(EDeltaType deltaType)
+        {
+            var columns = _tableColumns.Where(c => c.DeltaType == deltaType).ToArray();
+            if (columns.Any())
+            {
+                foreach (var column in columns)
+                {
+                    if (!_tableColumns.Remove(column))
+                    {
+                        return false;
+                    }
+                }
+                RebuildOrdinals();
+            }
+
+            return true;
+        }
+
         public void RemoveAt(int index)
         {
             _tableColumns.RemoveAt(index);
