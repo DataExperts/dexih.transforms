@@ -43,6 +43,7 @@ namespace dexih.connections.github.tests
             var tables =  connection.GetFileEnumerator(new FlatFile(), EFlatFilePath.None, "", CancellationToken.None);
             var tablesEnum = tables.GetAsyncEnumerator();
             Assert.True(await tablesEnum.MoveNextAsync());
+            await tablesEnum.Current.LoadAttributes();
             Assert.Equal("sample_data.csv", tablesEnum.Current.FileName);
             Assert.Equal(new DateTime(2020, 3, 23), tablesEnum.Current.LastModified.Date);
             

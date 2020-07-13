@@ -229,7 +229,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override async Task<object[]> GetRow(FileProperties fileProperties)
+        public override async Task<object[]> GetRow(FileProperties fileProperties = null)
         {
             try
             {
@@ -283,19 +283,22 @@ namespace dexih.transforms.File
                         }
                     }
 
-                    if (_fileRowNumberOrdinal >= 0)
+                    if (fileProperties != null)
                     {
-                        row[_fileRowNumberOrdinal] = _currentFileRowNumber;
-                    }
-                    
-                    if (_fileNameOrdinal >= 0)
-                    {
-                        row[_fileNameOrdinal] = fileProperties.FileName;
-                    }
-                    
-                    if (_fileDateOrdinal >= 0)
-                    {
-                        row[_fileDateOrdinal] = fileProperties.LastModified;
+                        if (_fileRowNumberOrdinal >= 0)
+                        {
+                            row[_fileRowNumberOrdinal] = _currentFileRowNumber;
+                        }
+
+                        if (_fileNameOrdinal >= 0)
+                        {
+                            row[_fileNameOrdinal] = fileProperties.FileName;
+                        }
+
+                        if (_fileDateOrdinal >= 0)
+                        {
+                            row[_fileDateOrdinal] = fileProperties.LastModified;
+                        }
                     }
 
                     if (SelectQuery == null || SelectQuery.EvaluateRowFilter(row, _table))

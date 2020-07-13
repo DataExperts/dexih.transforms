@@ -152,6 +152,11 @@ namespace dexih.transforms
             {
                 var file = _files.Current;
 
+                if (query?.Filters == null || query.Filters.Count == 0)
+                {
+                    return file;
+                }
+
                 foreach (var filter in query.Filters)
                 {
                     if (!string.IsNullOrEmpty(_fileNameColumn))

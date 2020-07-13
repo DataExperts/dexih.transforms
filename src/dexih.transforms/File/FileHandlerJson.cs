@@ -393,7 +393,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override Task<object[]> GetRow(FileProperties fileProperties)
+        public override Task<object[]> GetRow(FileProperties fileProperties = null)
         {
             if (_jEnumerator == null || !_jEnumerator.MoveNext()) return Task.FromResult((object[]) null);
             
@@ -419,15 +419,18 @@ namespace dexih.transforms.File
                 var value = _jEnumerator.Current.SelectToken(path);
                 row[column.Ordinal] = GetValue(value, column.column);
             }
-            
-            if (_fileNameOrdinal >= 0)
+
+            if (fileProperties != null)
             {
-                row[_fileNameOrdinal] = fileProperties.FileName;
-            }
-                    
-            if (_fileDateOrdinal >= 0)
-            {
-                row[_fileDateOrdinal] = fileProperties.LastModified;
+                if (_fileNameOrdinal >= 0)
+                {
+                    row[_fileNameOrdinal] = fileProperties.FileName;
+                }
+
+                if (_fileDateOrdinal >= 0)
+                {
+                    row[_fileDateOrdinal] = fileProperties.LastModified;
+                }
             }
 
             return Task.FromResult(row);
