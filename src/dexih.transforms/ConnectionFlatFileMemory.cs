@@ -45,12 +45,12 @@ namespace dexih.transforms
             return Task.FromResult(false);
         }
 
-        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var files = _files.Where(c => c.Key.path == path).Select(c => c.Key.fileName).ToArray();
             foreach (var fileName in files)
             {
-                yield return new DexihFileProperties()
+                yield return new FileProperties()
                 {
                     FileName = fileName,
                 };

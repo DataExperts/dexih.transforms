@@ -122,13 +122,18 @@ namespace dexih.connections.dexih
                 await _fileHandler.SetStream(responseStream, null);
                 _isFirst = false;
             }
+
+            var fileProperties = new FileProperties()
+            {
+                FileName = CacheTable.Name
+            };
             
             while (true)
             {
                 object[] row;
                 try
                 {
-                    row = await _fileHandler.GetRow();
+                    row = await _fileHandler.GetRow(fileProperties);
                 }
                 catch (Exception ex)
                 {

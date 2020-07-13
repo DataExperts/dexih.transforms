@@ -20,18 +20,18 @@ namespace dexih.transforms.File
 
         public abstract Task SetStream(Stream stream, SelectQuery selectQuery);
 
-        public abstract Task<object[]> GetRow();
+        public abstract Task<object[]> GetRow(FileProperties fileProperties);
 
-        public async Task<ICollection<object[]>> GetAllRows()
+        public async Task<ICollection<object[]>> GetAllRows(FileProperties fileProperties)
         {
             var rows = new List<object[]>();
 
-            var row = await GetRow();
+            var row = await GetRow(fileProperties);
 
             while (row != null)
             {
                 rows.Add(row);
-                row = await GetRow();
+                row = await GetRow(fileProperties);
             }
 
             return rows;

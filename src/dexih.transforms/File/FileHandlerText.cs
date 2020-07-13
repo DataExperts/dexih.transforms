@@ -20,6 +20,9 @@ namespace dexih.transforms.File
         private Stream _stream;
 
         private readonly int _fileRowNumberOrdinal;
+        private readonly int _fileNameOrdinal;
+        private readonly int _fileDateOrdinal;
+        
         private readonly int _responseDataOrdinal;
         private readonly int _fieldCount;
 
@@ -79,6 +82,8 @@ namespace dexih.transforms.File
             }
             
             _fileRowNumberOrdinal = table.GetOrdinal(EDeltaType.FileRowNumber);
+            _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
+            _fileDateOrdinal = table.GetOrdinal(EDeltaType.FileDate);
             _responseDataOrdinal = _table.GetOrdinal(EDeltaType.ResponseData);
         }
 
@@ -224,7 +229,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override async Task<object[]> GetRow()
+        public override async Task<object[]> GetRow(FileProperties fileProperties)
         {
             try
             {
@@ -281,6 +286,16 @@ namespace dexih.transforms.File
                     if (_fileRowNumberOrdinal >= 0)
                     {
                         row[_fileRowNumberOrdinal] = _currentFileRowNumber;
+                    }
+                    
+                    if (_fileNameOrdinal >= 0)
+                    {
+                        row[_fileNameOrdinal] = fileProperties.FileName;
+                    }
+                    
+                    if (_fileDateOrdinal >= 0)
+                    {
+                        row[_fileDateOrdinal] = fileProperties.LastModified;
                     }
 
                     if (SelectQuery == null || SelectQuery.EvaluateRowFilter(row, _table))

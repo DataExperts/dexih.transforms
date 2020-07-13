@@ -220,7 +220,7 @@ namespace dexih.connections.azure
             }
         }
 
-        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
             string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
@@ -245,9 +245,10 @@ namespace dexih.connections.azure
                 var fileName = cloudFile.Name.Substring(pathLength);
                 if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
                 {
-                    var properties = new DexihFileProperties()
+                    var properties = new FileProperties()
                     {
-                        FileName = fileName, LastModified = cloudFile.Properties.LastModified.Value.DateTime,
+                        FileName = fileName, 
+                        LastModified = cloudFile.Properties.LastModified.Value.DateTime,
                         Length = cloudFile.Properties.Length
                     };
                     yield return properties;

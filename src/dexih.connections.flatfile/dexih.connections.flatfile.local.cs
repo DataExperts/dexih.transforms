@@ -152,56 +152,32 @@ namespace dexih.connections.flatfile
             }
         }
 
-        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
                 var fullDirectory = GetFullPath(file, path);
                 var filenames = await Task.Run(() => string.IsNullOrEmpty(searchPattern) ? Directory.GetFiles(fullDirectory) : Directory.GetFiles(fullDirectory, searchPattern), cancellationToken);
                 foreach (var fileName in filenames)
                 {
-                    var fileInfo = new FileInfo(fileName);
-                    var properties = new DexihFileProperties() { FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length };
+                    var properties = new FileProperties()
+                    {
+                        FileName = fileName,
+                    };
+                    
+                    var hasLoaded = false;
+                    properties.LoadAttributes = async () => 
+                    {
+                        if (!hasLoaded)
+                        {
+                            hasLoaded = true;
+                            var fileInfo = new FileInfo(fileName);
+                            properties.LastModified = fileInfo.LastWriteTime;
+                            properties.Length = fileInfo.Length;
+                        }
+                    };
+
                     yield return properties;
                 }
         }
-
-        // public override Task<List<DexihFileProperties>> GetFileList(FlatFile file, EFlatFilePath path, CancellationToken cancellationToken)
-        // {
-        //     try
-        //     {
-        //         var files = new List<DexihFileProperties>();
-        //
-        //         var fullDirectory = GetFullPath(file, path);
-        //
-        //         if (Directory.Exists(fullDirectory))
-        //         {
-        //             foreach (var fileName in Directory.GetFiles(fullDirectory))
-        //             {
-        //                 var fileInfo = new FileInfo(fileName);
-        //                 var
-        //                     contentType =
-        //                         ""; //MimeMapping.GetMimeMapping(FilePath + Path.DirectorySeparatorChar+ MainDirectory + Path.DirectorySeparatorChar+ SubDirectory + Path.DirectorySeparatorChar+ File); //TODO add MimeMapping
-        //                 files.Add(new DexihFileProperties()
-        //                 {
-        //                     FileName = fileInfo.Name, LastModified = fileInfo.LastWriteTime, Length = fileInfo.Length,
-        //                     ContentType = contentType
-        //                 });
-        //             }
-        //
-        //             return Task.FromResult(files);
-        //         }
-        //
-        //         throw new ConnectionException(
-        //             $"The directory {path} has not been created.  Add a file to automatically create this directory.");
-        //     }
-        //     catch (ConnectionException)
-        //     {
-        //         throw;
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         throw new ConnectionException($"Error occurred getting filelist {path}.  {ex.Message}", ex);
-        //     }
-        // }
 
         public override Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
         {

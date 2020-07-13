@@ -20,6 +20,9 @@ namespace dexih.transforms.File
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, TableColumn column)> _responseSegmentOrdinals;
 
+        private readonly int _fileNameOrdinal;
+        private readonly int _fileDateOrdinal;
+        
         public FileHandlerJson(Table table, string rowPath)
         {
             _rowPath = rowPath;
@@ -32,6 +35,9 @@ namespace dexih.transforms.File
             {
                 _responseSegmentOrdinals.Add(column.TableColumnName(), (_table.GetOrdinal(column), column));
             }
+            
+            _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
+            _fileDateOrdinal = table.GetOrdinal(EDeltaType.FileDate);
             
             InitializeNodeTransforms(_table.Columns);
 
@@ -387,7 +393,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override Task<object[]> GetRow()
+        public override Task<object[]> GetRow(FileProperties fileProperties)
         {
             if (_jEnumerator == null || !_jEnumerator.MoveNext()) return Task.FromResult((object[]) null);
             
@@ -412,6 +418,16 @@ namespace dexih.transforms.File
                            column.column.Name;
                 var value = _jEnumerator.Current.SelectToken(path);
                 row[column.Ordinal] = GetValue(value, column.column);
+            }
+            
+            if (_fileNameOrdinal >= 0)
+            {
+                row[_fileNameOrdinal] = fileProperties.FileName;
+            }
+                    
+            if (_fileDateOrdinal >= 0)
+            {
+                row[_fileDateOrdinal] = fileProperties.LastModified;
             }
 
             return Task.FromResult(row);

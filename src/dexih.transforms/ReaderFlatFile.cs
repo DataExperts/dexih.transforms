@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace dexih.transforms
 {
     public class ReaderFlatFile : Transform
     {
-        private IAsyncEnumerator<DexihFileProperties> _files;
+        private IAsyncEnumerator<FileProperties> _files;
 
         private readonly FileHandlerBase _fileHandler;
 
@@ -20,6 +21,9 @@ namespace dexih.transforms
 
         private readonly int _fileNameOrdinal;
         private readonly int _fileDateOrdinal;
+
+        private readonly string _fileNameColumn;
+        private readonly string _fileDateColumn;
 
         private readonly bool _previewMode;
 
@@ -50,6 +54,16 @@ namespace dexih.transforms
             }
             _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
             _fileDateOrdinal = table.GetOrdinal(EDeltaType.FileDate);
+
+            if (_fileNameOrdinal >= 0)
+            {
+                _fileNameColumn = table[_fileNameOrdinal].Name;
+            }
+
+            if (_fileDateOrdinal >= 0)
+            {
+                _fileDateColumn = table[_fileDateOrdinal].Name;
+            }
         }
         
         public override string TransformName { get; } = "Flat File Reader";
@@ -90,13 +104,20 @@ namespace dexih.transforms
                 _files = _fileConnection.GetFileEnumerator(CacheFlatFile, requestQuery.Path,
                     requestQuery.FileName, cancellationToken).GetAsyncEnumerator(cancellationToken);
             }
+
+            var file = await GetNextFile(requestQuery);
             
-            if (await _files.MoveNextAsync() == false)
+            if (file == null)
             {
                 throw new ConnectionException($"There are no matching files in the incoming directory.");
             }
 
-            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName, cancellationToken);
+            if (_fileDateOrdinal >= 0)
+            {
+                await file.LoadAttributes();
+            }
+
+            var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, file.FileName, cancellationToken);
 
             try
             {
@@ -120,6 +141,53 @@ namespace dexih.transforms
 
         }
 
+        /// <summary>
+        /// Evaluates filters on the file name and file date to save loading each file
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        private async Task<FileProperties> GetNextFile(SelectQuery query)
+        {
+            while (await _files.MoveNextAsync())
+            {
+                var file = _files.Current;
+
+                foreach (var filter in query.Filters)
+                {
+                    if (!string.IsNullOrEmpty(_fileNameColumn))
+                    {
+                        if (filter.Column1?.Name == _fileNameColumn && filter.Column2 == null)
+                        {
+                            if (!filter.Evaluate(file.FileName, filter.Value2)) continue;
+                        }
+
+                        if (filter.Column2?.Name == _fileNameColumn && filter.Column1 == null)
+                        {
+                            if (!filter.Evaluate(file.FileName, filter.Value1)) continue;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(_fileDateColumn))
+                    {
+                        await file.LoadAttributes();
+                        if (filter.Column1?.Name == _fileDateColumn && filter.Column2 == null)
+                        {
+                            if (!filter.Evaluate(file.LastModified, filter.Value2)) continue;
+                        }
+
+                        if (filter.Column2?.Name == _fileDateColumn && filter.Column1 == null)
+                        {
+                            if (!filter.Evaluate(file.LastModified, filter.Value1)) continue;
+                        }
+                    }
+
+                    return file;
+                }
+            }
+
+            return null;
+        }
+
         public override bool ResetTransform() => IsOpen;
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
@@ -129,7 +197,7 @@ namespace dexih.transforms
                 object[] row;
                 try
                 {
-                    row = await _fileHandler.GetRow();
+                    row = await _fileHandler.GetRow(_files.Current);
                 }
                 catch (Exception ex)
                 {
@@ -154,29 +222,36 @@ namespace dexih.transforms
                         }
                     }
 
-                    if (await _files.MoveNextAsync() == false)
+                    var file = await GetNextFile(SelectQuery);
+                    if (file == null)
                     {
                         return null;
                     }
+                    
+                    if (_fileDateOrdinal >= 0)
+                    {
+                        await file.LoadAttributes();
+                    }
+
 
                     try
                     {
-                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, _files.Current.FileName, cancellationToken);
+                        var fileStream = await _fileConnection.GetReadFileStream(CacheFlatFile, EFlatFilePath.Incoming, file.FileName, cancellationToken);
                         await _fileHandler.SetStream(fileStream, SelectQuery);
                     }
                     catch (Exception ex)
                     {
-                        throw new ConnectionException($"Failed to read the file {_files.Current.FileName}.  {ex.Message}", ex);
+                        throw new ConnectionException($"Failed to read the file {file.FileName}.  {ex.Message}", ex);
                     }
                         
                     try
                     {
-                        row = await _fileHandler.GetRow();
+                        row = await _fileHandler.GetRow(_files.Current);
 
                     }
                     catch (Exception ex)
                     {
-                        throw new ConnectionException($"Flat file reader failed during the reading the file {_files.Current.FileName}.  {ex.Message}", ex);
+                        throw new ConnectionException($"Flat file reader failed during the reading the file {file.FileName}.  {ex.Message}", ex);
                     }
                     if (row == null)
                     {
@@ -184,15 +259,15 @@ namespace dexih.transforms
                     }
                 }
                 
-                if (_fileNameOrdinal >= 0)
-                {
-                    row[_fileNameOrdinal] = _files.Current.FileName;
-                }
-
-                if (_fileDateOrdinal >= 0)
-                {
-                    row[_fileDateOrdinal] = _files.Current.LastModified;
-                }
+                // if (_fileNameOrdinal >= 0)
+                // {
+                //     row[_fileNameOrdinal] = _files.Current.FileName;
+                // }
+                //
+                // if (_fileDateOrdinal >= 0)
+                // {
+                //     row[_fileDateOrdinal] = _files.Current.LastModified;
+                // }
 
                 return row;
 

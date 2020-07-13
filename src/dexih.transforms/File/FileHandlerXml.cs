@@ -19,6 +19,8 @@ namespace dexih.transforms.File
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, ETypeCode Datatype)> _responseSegementOrdinals;
         
+        private readonly int _fileNameOrdinal;
+        private readonly int _fileDateOrdinal;
         public FileHandlerXml(Table table, string rowPath)
         {
             _table = table;
@@ -33,7 +35,9 @@ namespace dexih.transforms.File
             {
                 _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
             }
-
+            
+            _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
+            _fileDateOrdinal = table.GetOrdinal(EDeltaType.FileDate);
         }
         
         public override string FileType { get; } = "Xml";
@@ -156,7 +160,7 @@ namespace dexih.transforms.File
             return Task.CompletedTask;
         }
 
-        public override Task<object[]> GetRow()
+        public override Task<object[]> GetRow(FileProperties fileProperties)
         {
             if (_xPathNodeIterator != null && _xPathNodeIterator.MoveNext())
             {
@@ -196,6 +200,16 @@ namespace dexih.transforms.File
                             }
                         }
                     }
+                }
+                
+                if (_fileNameOrdinal >= 0)
+                {
+                    row[_fileNameOrdinal] = fileProperties.FileName;
+                }
+                    
+                if (_fileDateOrdinal >= 0)
+                {
+                    row[_fileDateOrdinal] = fileProperties.LastModified;
                 }
 
                 return Task.FromResult(row);

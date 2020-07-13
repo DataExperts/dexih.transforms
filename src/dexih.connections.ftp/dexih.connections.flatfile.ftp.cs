@@ -226,7 +226,7 @@ namespace dexih.connections.ftp
             }
         }
 
-        public override async IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
             string searchPattern, [EnumeratorCancellation]CancellationToken cancellationToken)
         {
             using (var client = await GetFtpClient(cancellationToken))
@@ -238,7 +238,7 @@ namespace dexih.connections.ftp
                     if (directoryItem.Type == FtpFileSystemObjectType.File &&
                         (string.IsNullOrEmpty(searchPattern) || FitsMask(directoryItem.Name, searchPattern)))
                     {
-                        var properties = new DexihFileProperties()
+                        var properties = new FileProperties()
                         {
                             FileName = directoryItem.Name,
                             LastModified = directoryItem.Modified,

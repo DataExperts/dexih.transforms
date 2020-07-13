@@ -405,7 +405,12 @@ namespace dexih.connections.webservice.restful
 					}
 
 					await fileHandler.SetStream(response.response, null);
-					var rows = await fileHandler.GetAllRows();
+					var fileProperties = new FileProperties()
+					{
+						FileName = table.Name
+					};
+					
+					var rows = await fileHandler.GetAllRows(fileProperties);
                     foreach(var row in rows)
                     {
                         PopulateRow(row);

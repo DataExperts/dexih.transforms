@@ -20,7 +20,7 @@ namespace dexih.connections.github
     [Connection(
         ConnectionCategory = EConnectionCategory.File,
         Name = "GitHub Flat File", 
-        Description = "Flat files from a github repository.  [Create a GitHub oAuth Token](https://docs.cachethq.io/docs/github-oauth-token#:~:text=Generate%20a%20new%20token,list%20of%20tokens%20from%20before.) to improve rate limits.",
+        Description = "Flat files from a github repository.  [Create a GitHub oAuth Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) to improve rate limits.",
         DatabaseDescription = "Sub Directory",
         ServerDescription = "Github Repository.",
         ServerHelp = "Use format owner/repo (e.g. DataExperts/TestRepository",
@@ -207,7 +207,7 @@ namespace dexih.connections.github
             throw new ConnectionException($"Deleting files not supported");
         }
 
-        private async IAsyncEnumerable<DexihFileProperties> GetFiles(FlatFile file, EFlatFilePath path, string searchPattern,[EnumeratorCancellation] CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
         {
             var fullDirectory = GetFullPath(file, path);
 
@@ -220,20 +220,34 @@ namespace dexih.connections.github
                     if (type.GetString() == "file")
                     {
                         var name = item.GetProperty("name").GetString();
+                        var filePath = item.GetProperty("path").GetString();
                         if (string.IsNullOrEmpty(searchPattern) || FitsMask(name, searchPattern))
                         {
-                            var properties = new DexihFileProperties()
+                            var properties = new FileProperties()
                             {
                                 FileName = item.GetProperty("name").GetString(),
                                 Length = item.GetProperty("size").GetInt32(),
                                 ContentType = ""
                             };
 
-                            var commit = await GitHubAction("commits?path=" + HttpUtility.HtmlEncode(DefaultDatabase), HttpMethod.Get, null, cancellationToken);
-                            var commitItem = commit.RootElement.EnumerateArray().First();
-                            var date = commitItem.GetProperty("commit").GetProperty("committer").GetProperty("date").GetDateTime();
-                            properties.LastModified = date;
-
+                            var hasLoaded = false;
+                            properties.LoadAttributes = async () => 
+                            {
+                                if (!hasLoaded)
+                                {
+                                    hasLoaded = true;
+                                    var commit = await GitHubAction("commits?page=1&per_page=1&path=" + filePath,
+                                        HttpMethod.Get, null, cancellationToken);
+                                    var commitItem = commit.RootElement.EnumerateArray().First();
+                                    var date = commitItem.GetProperty("commit").GetProperty("committer")
+                                        .GetProperty("date").GetDateTime();
+                                    properties.LastModified = date;
+                                    var owner = commitItem.GetProperty("commit").GetProperty("committer")
+                                        .GetProperty("name").GetString();
+                                    properties.Owner = owner;
+                                }
+                            };
+                            
                             yield return properties;
                         }
                     }
@@ -244,12 +258,7 @@ namespace dexih.connections.github
                         $"Github error occurred getting directories from {Server}.  The \"type\" property could not be found.",
                         new Exception("Full response: " + gitHubFiles));
                 }
-            }
-        }
-
-        public override IAsyncEnumerable<DexihFileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
-        {
-            return GetFiles(file, path, searchPattern, cancellationToken);
+            }        
         }
         
         public override async Task<Stream> GetReadFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
