@@ -164,7 +164,7 @@ namespace dexih.connections.flatfile
                     };
                     
                     var hasLoaded = false;
-                    properties.LoadAttributes = async () => 
+                    properties.LoadAttributes = () => 
                     {
                         if (!hasLoaded)
                         {
@@ -173,6 +173,8 @@ namespace dexih.connections.flatfile
                             properties.LastModified = fileInfo.LastWriteTime;
                             properties.Length = fileInfo.Length;
                         }
+                        
+                        return Task.CompletedTask;
                     };
 
                     yield return properties;

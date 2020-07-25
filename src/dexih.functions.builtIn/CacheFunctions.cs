@@ -18,7 +18,7 @@ namespace dexih.functions.BuiltIn
             return true;
         }
 
-        private T AddToQueue(T value, int count)
+        private (T value, bool found) AddToQueue(T value, int count)
         {
             if (_cacheQueue == null)
             {
@@ -33,10 +33,10 @@ namespace dexih.functions.BuiltIn
             _cacheQueue.Enqueue(value);
             if (_cacheQueue.Count > count)
             {
-                return _cacheQueue.Dequeue();
+                return (_cacheQueue.Dequeue(), true);
             }
 
-            return default;
+            return (default, false);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Group Row",
@@ -49,7 +49,7 @@ namespace dexih.functions.BuiltIn
         public T PreviousRow(T value, 
             [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
         {
-            return AddToQueue(value, preCount);
+            return AddToQueue(value, preCount).value;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
@@ -140,14 +140,19 @@ namespace dexih.functions.BuiltIn
             Description = "The change from the previous row value to the current.", ResetMethod = nameof(Reset),
             GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
         public T PreviousRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")]
-            int preCount = 1) => PreviousGroupRowChange(value, preCount);
+            int preCount = 1, [TransformFunctionParameter(Name = "Zero when no previous row")] bool zeroNoPrevious = true) => PreviousGroupRowChange(value, preCount, zeroNoPrevious);
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching", Name = "Previous Group Row Change", Description = "The change from the previous row value to the current in the group.", ResetMethod = nameof(Reset), GenericTypeDefault = ETypeCode.Decimal, GenericType = EGenericType.Numeric)]
-        public T PreviousGroupRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1)
+        public T PreviousGroupRowChange(T value, [TransformFunctionParameter(Name = "Number of rows back")] int preCount = 1, [TransformFunctionParameter(Name = "Zero when no previous row")] bool zeroNoPrevious = true)
         {
             var previousValue = AddToQueue(value, preCount);
-            var result = Operations.Subtract(value, previousValue);
-            return result;
+            if (previousValue.found)
+            {
+                var result = Operations.Subtract(value, previousValue.value);
+                return result;
+            }
+
+            return default;
         }
 
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Row Caching",
@@ -167,12 +172,12 @@ namespace dexih.functions.BuiltIn
         {
             var previousValue = AddToQueue(value, preCount);
 
-            if (Operations.Equal(previousValue, default))
+            if (!previousValue.found || Operations.Equal(previousValue.value, default))
             {
                 return defaultRatio;
             }
             
-            var result = Operations.Divide(value, previousValue);
+            var result = Operations.Divide(value, previousValue.value);
             return result;
         }
     }
