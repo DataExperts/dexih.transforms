@@ -63,7 +63,7 @@ namespace dexih.transforms
             return Task.FromResult(_files[(path, fileName)].stream);
         }
 
-        public override async Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken) => throw new InvalidOperationException();
+        public override Task<Stream> GetWriteFileStream(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken) => throw new InvalidOperationException();
 
         public override Task<bool> SaveFileStream(FlatFile file, EFlatFilePath path, string fileName,
             Stream stream, CancellationToken cancellationToken)

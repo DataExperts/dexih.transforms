@@ -207,7 +207,7 @@ namespace dexih.connections.github
             throw new ConnectionException($"Deleting files not supported");
         }
 
-        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var fullDirectory = GetFullPath(file, path);
 
