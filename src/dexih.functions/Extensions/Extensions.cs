@@ -192,5 +192,11 @@ namespace dexih.functions
                 return (T) Operations.Parse(type, value);
             }
         }
+        
+        public static string Replace(this string s, char[] oldChars, string newVal)
+        {
+            var temp = s.Split(oldChars, StringSplitOptions.RemoveEmptyEntries);
+            return String.Join( newVal, temp );
+        }
     }
 }

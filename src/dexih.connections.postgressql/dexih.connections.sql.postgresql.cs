@@ -775,7 +775,7 @@ ORDER BY c.ordinal_position"))
                 case ETypeCode.Byte:
                     return NpgsqlDbType.Smallint;
                 case ETypeCode.Char:
-                    return NpgsqlDbType.Smallint;
+                    return NpgsqlDbType.Char;
                 case ETypeCode.SByte:
                     return NpgsqlDbType.Smallint;
                 case ETypeCode.UInt16:

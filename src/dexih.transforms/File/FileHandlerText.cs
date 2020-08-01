@@ -137,13 +137,23 @@ namespace dexih.transforms.File
             for(var i = 0; i< headers.Length; i++)
             {
                 var header = headers[i];
+                var dataType = dataTypes[i].GetBestType();
+                var length = dataType == ETypeCode.String ? Convert.ToInt32(dataTypes[i].MaxLength * 1.5) : (int?) null;
+
+                if (length > 1000)
+                {
+                    dataType = ETypeCode.Text;
+                    length = null;
+                }
+
                 var col = new TableColumn()
                 {
                     //add the basic properties
                     Name = header,
                     LogicalName = header,
                     IsInput = false,
-                    DataType = dataTypes[i].GetBestType(),
+                    DataType = dataType,
+                    MaxLength = length,
                     DeltaType = EDeltaType.TrackingField,
                     Description = "",
                     AllowDbNull = true,

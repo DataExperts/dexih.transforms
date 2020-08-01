@@ -55,10 +55,10 @@ namespace dexih.connections.sql
         protected string AddDelimiter(string name)
         {
             // if it ends with ), then it's a function like max(abc), so do not delimit
-            if (name.EndsWith(")"))
-            {
-                return name;
-            }
+            // if (name.EndsWith(")"))
+            // {
+            //     return name;
+            // }
             
             var newName = AddEscape(name);
 
@@ -429,11 +429,11 @@ namespace dexih.connections.sql
             else
             {
                 columns = table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField)
-                    .ToDictionary(c => c.Name, c => c.Name);
+                    .ToDictionary(c => c.Name, c => AddDelimiter(c.Name));
             }
 
             sql.Append("select ");
-            sql.Append(string.Join(",", columns.Select(c => AddDelimiter(c.Value) + " " + AddDelimiter(c.Key))) + " ");
+            sql.Append(string.Join(",", columns.Select(c => c.Value + " " + AddDelimiter(c.Key))) + " ");
             sql.Append("from " + SqlTableName(table) + " ");
             sql.Append(" " + SqlFromAttribute(table) + " ");
             
