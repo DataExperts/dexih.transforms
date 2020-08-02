@@ -89,7 +89,7 @@ namespace dexih.transforms.tests
                 Assert.Equal(iterations, count);
             });
             
-            _output.WriteLine($"memory reader read with colunm names and check values rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
+            // _output.WriteLine($"memory reader read with colunm names and check values rows: {iterations}, time taken: {time}, iterations/ms: {iterations/time.Milliseconds}");
             
             reader.Reset();
             reader.Open();
