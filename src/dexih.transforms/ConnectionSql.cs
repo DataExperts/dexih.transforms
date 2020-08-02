@@ -551,7 +551,7 @@ namespace dexih.connections.sql
                     }
                     else
                     {
-                        sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");    
+                        sql.Append(" " + filter.Column1.Name + " ");    
                     }
                 }
                 else
@@ -599,7 +599,7 @@ namespace dexih.connections.sql
                         }
                         else
                         {
-                            sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");    
+                            sql.Append(" " + filter.Column2.Name + " ");    
                         }
                     else
                     {
