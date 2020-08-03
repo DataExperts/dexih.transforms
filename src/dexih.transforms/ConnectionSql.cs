@@ -54,27 +54,25 @@ namespace dexih.connections.sql
 
         protected string AddDelimiter(string name)
         {
-            // if it is a function, then do not delimite
-            switch (name.Substring(0, 4))
+            // if it is a function, then do not delimiter
+            if (name.Length > 4)
             {
-                case "sum(":
-                case "avg(":
-                case "min(":
-                case "max(":
-                    if (name.EndsWith(')'))
-                    {
-                        return name;
-                    }
+                switch (name.Substring(0, 4))
+                {
+                    case "sum(":
+                    case "avg(":
+                    case "min(":
+                    case "max(":
+                        if (name.EndsWith(')'))
+                        {
+                            return name;
+                        }
 
-                    break;
+                        break;
+                }
             }
 
             if (name.StartsWith("count(") && name.EndsWith(')'))
-            {
-                return name;
-            }
-            
-            if (name.EndsWith(")"))
             {
                 return name;
             }
@@ -317,8 +315,15 @@ namespace dexih.connections.sql
 
                     await using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = createSql.ToString();
-                        await command.ExecuteNonQueryAsync(cancellationToken);
+                        try
+                        {
+                            command.CommandText = createSql.ToString();
+                            await command.ExecuteNonQueryAsync(cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql.ToString()}.", ex);
+                        }
                     }
                 }
             }
