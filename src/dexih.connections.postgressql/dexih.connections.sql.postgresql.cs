@@ -226,14 +226,14 @@ namespace dexih.connections.postgressql
                 await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = createSql.ToString();
                     try
                     {
+                        command.CommandText = createSql.ToString();
                         await command.ExecuteNonQueryAsync(cancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        throw new ConnectionException($"The sql query failed [{command.CommandText}].  {ex.Message}", ex);
+                        throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql.ToString()}.", ex);
                     }
                 }
             }
