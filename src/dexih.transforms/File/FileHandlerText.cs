@@ -138,7 +138,18 @@ namespace dexih.transforms.File
             {
                 var header = headers[i];
                 var dataType = dataTypes[i].GetBestType();
-                var length = dataType == ETypeCode.String ? Convert.ToInt32(dataTypes[i].MaxLength * 1.5) : (int?) null;
+                int? length = null;
+                switch (dataType)
+                {
+                    // if char use the max length for the length
+                    case ETypeCode.CharArray:
+                        length = dataTypes[i].MaxLength;
+                        break;
+                    // if string use the max length * 1.5 to give a little wiggle room
+                    case ETypeCode.String:
+                        length = Convert.ToInt32(dataTypes[i].MaxLength * 1.5);
+                        break;
+                }
 
                 if (length > 1000)
                 {
