@@ -127,7 +127,14 @@ namespace dexih.transforms.File
                 {
                     for(var i = 0; i< headers.Length; i++)
                     {
-                        dataTypes[i].CheckValue(csv[i]);
+                        try
+                        {
+                            dataTypes[i].CheckValue(csv[i]);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw;
+                        }
                     }
                 }
             }

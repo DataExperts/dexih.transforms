@@ -28,6 +28,24 @@ namespace dexih.transforms
             Mappings = mappings;
             SetInTransform(inReader);
         }
+
+        public TransformFilter(Transform inReader, Filters filters)
+        {
+            Mappings = new Mappings();
+            foreach(var filter in filters)
+            {
+                if (filter.Column1 != null && filter.Column2 != null)
+                {
+                    Mappings.Add(new MapFilter(filter.Column1, filter.Column2, filter.Operator));
+                }
+                else if(filter.Column1 != null)
+                {
+                    Mappings.Add(new MapFilter(filter.Column1, filter.Value2, filter.Operator));
+                }
+            }
+
+            SetInTransform(inReader);
+        }
         
         public override string TransformName { get; } = "Filter";
         public override Dictionary<string, object> TransformProperties()
