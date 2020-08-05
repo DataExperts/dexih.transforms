@@ -102,6 +102,16 @@ namespace dexih.transforms
             
             _rowCount = 0;
 
+            // if there are filters, insert a filter transform
+            if (SelectQuery.Filters.Count > 0)
+            {
+                var filterTransform = new TransformFilter(PrimaryTransform, SelectQuery.Filters)
+                {
+                    Name = "Internal Filter"
+                };
+                PrimaryTransform = filterTransform;
+            }
+            
             // if there are sorts, insert a sort transform.
             if (SelectQuery.Sorts.Count > 0)
             {
@@ -138,7 +148,9 @@ namespace dexih.transforms
                 PrimaryTransform = groupTransform;
             }
 
-            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
+            var pushQuery = SelectQuery.CloneProperties();
+            pushQuery.Rows = -1;
+            var returnValue = await PrimaryTransform.Open(auditKey, pushQuery, cancellationToken);
             
             if (_selectQuery?.Columns != null && _selectQuery.Columns.Count > 0)
             {
