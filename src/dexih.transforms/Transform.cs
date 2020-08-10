@@ -1622,7 +1622,7 @@ namespace dexih.transforms
                 {
                     try
                     {
-                        var compareResult = Operations.GreaterThan(_incrementalColumnType,
+                        var compareResult =_maxIncrementalValue == null || Operations.GreaterThan(_incrementalColumnType,
                             _nextRow[_incrementalColumnIndex], _maxIncrementalValue);
                         if (compareResult)
                         {
