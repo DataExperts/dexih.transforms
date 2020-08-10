@@ -151,7 +151,7 @@ namespace dexih.transforms
                     {
                         sortFields[i] = PrimaryTransform[_sortFields[i].Column];
                     }
-                    sortFields[sortFields.Length-1] = rowcount; //add row count as last key field to ensure matching rows remain in original order.
+                    sortFields[^1] = rowcount; //add row count as last key field to ensure matching rows remain in original order.
 
                     _sortedDictionary.Add(sortFields, values);
                     rowcount++;

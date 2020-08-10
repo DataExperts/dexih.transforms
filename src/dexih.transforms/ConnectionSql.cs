@@ -530,6 +530,8 @@ namespace dexih.connections.sql
                     throw new ConnectionException("The filter has no values or columns specified for the primary value.");
                 }
 
+                sql.Append("( ");
+
                 if (filter.Column1 != null)
                 {
                     if (filter.Column1.IsInput && filter.Value2 == null)
@@ -674,13 +676,25 @@ namespace dexih.connections.sql
                     }
                 }
 
+                if (filter.AllowNull)
+                {
+                    if (filter.Column1 != null)
+                    {
+                        sql.Append($" or ${AddDelimiter(filter.Column1.Name) is null} ");
+                    }
+                    if (filter.Column2 != null)
+                    {
+                        sql.Append($" or ${AddDelimiter(filter.Column2.Name) is null} ");
+                    }
+                }
+
                 switch (filter.AndOr)
                 {
                     case EAndOr.And:
-                        sql.Append("and");
+                        sql.Append(") and");
                         break;
                     case EAndOr.Or:
-                        sql.Append("or");
+                        sql.Append(") or");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

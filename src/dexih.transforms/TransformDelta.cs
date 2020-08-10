@@ -513,7 +513,8 @@ namespace dexih.transforms
                 {
                     foreach (var ordinal in _naturalKeyOrdinals)
                     {
-                        filters.Add(new Filter(CacheTable.Columns[ordinal.ordinal], ECompare.GreaterThanEqual, PrimaryTransform[ordinal.primaryOrdinal]));
+                        var filter = new Filter(CacheTable.Columns[ordinal.ordinal], ECompare.GreaterThanEqual,
+                            PrimaryTransform[ordinal.primaryOrdinal]) {AllowNull = true};
                     }
                 }
 

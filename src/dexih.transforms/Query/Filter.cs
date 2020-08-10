@@ -117,6 +117,12 @@ namespace dexih.functions.Query
         [DataMember(Order = 6)] 
         public EAndOr AndOr { get; set; } = EAndOr.And;
 
+        /// <summary>
+        /// When either value is null return true
+        /// </summary>
+        [DataMember(Order = 7)] 
+        public bool AllowNull { get; set; } = false;
+        
         public ETypeCode BestDataType()
         {
             var typeCode = ETypeCode.String;
