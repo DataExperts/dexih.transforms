@@ -41,10 +41,17 @@ namespace dexih.functions
         {
             for (var i = 0; i < x.Length; i++)
             {
-                if ((x[i] == null || x[i] is DBNull) && (y[i] == null || y[i] is DBNull))
-                {
-                    continue;
-                }
+                // if (x[i] == null || x[i] is DBNull)
+                // {
+                //     if(y[i] == null || y[i] is DBNull)
+                //         continue;
+                //
+                //     return 1;
+                // }
+                // if (y[i] == null || y[i] is DBNull)
+                // {
+                //     return -1;
+                // }
 
                 var compareResult = Operations.Compare(x[i], y[i]); 
 
