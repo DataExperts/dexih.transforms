@@ -212,7 +212,7 @@ namespace dexih.transforms
                 switch (JoinNotFoundStrategy)
                 {
                     case EJoinNotFoundStrategy.Abend:
-                        throw new JoinNotFoundException($"The lookup transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To continue, set the join not found strategy to continue.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                        throw new JoinNotFoundException($"The lookup transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\".", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
                     case EJoinNotFoundStrategy.Filter:
                         return null;
                 }

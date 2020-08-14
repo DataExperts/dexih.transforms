@@ -78,6 +78,7 @@ namespace dexih.transforms
         public abstract bool CanBulkLoad { get; }
         public abstract bool CanSort { get; }
         public abstract bool CanFilter { get; }
+        public abstract bool CanJoin { get; }
         public abstract bool CanUpdate { get; }
         public abstract bool CanDelete { get; }
         public abstract bool CanGroup { get; }
@@ -145,6 +146,23 @@ namespace dexih.transforms
 
         public abstract bool DynamicTableCreation { get; } //connection allows any data columns to created dynamically (vs a preset table structure).
 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Name != null ? Name.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^ (Server != null ? Server.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ UseWindowsAuth.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Username != null ? Username.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Password != null ? Password.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (DefaultDatabase != null ? DefaultDatabase.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ UseConnectionString.GetHashCode();
+                hashCode = (hashCode * 397) ^ (ConnectionString != null ? ConnectionString.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (GetType().Name.GetHashCode());
+                return hashCode;
+            }
+        }
+        
         public virtual Task<int> StartTransaction(CancellationToken cancellationToken)
         {
             throw new ConnectionException($"The current connection {Name} does not support transactions.");

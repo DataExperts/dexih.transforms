@@ -564,9 +564,7 @@ namespace dexih.functions
 
         public void AddColumn(string columnName, ETypeCode dataType = ETypeCode.String, EDeltaType deltaType = EDeltaType.TrackingField, byte arrayDimensions = 0)
         {
-            if (Columns == null)
-                Columns = new TableColumns();
-
+            Columns ??= new TableColumns();
             Columns.Add(new TableColumn(columnName, dataType, deltaType, arrayDimensions, Name));
         }
 
@@ -598,6 +596,7 @@ namespace dexih.functions
         }
 
         public int GetOrdinal(string schemaColumnName) => Columns.GetOrdinal(schemaColumnName);
+        public int GetOrdinal(string schemaColumnName, string referenceTable) => Columns.GetOrdinal(schemaColumnName, referenceTable);
         public int GetOrdinal(TableColumn column, bool groupMustMatch = false) => Columns.GetOrdinal(column, groupMustMatch);
 //         public int GetOrdinal(string tableName, string columnGroup) => Columns.GetOrdinal(tableName, columnGroup);
 

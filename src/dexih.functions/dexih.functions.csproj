@@ -26,11 +26,8 @@
   </ItemGroup>-->
   <ItemGroup>
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="1.0.97" />
-    <PackageReference Include="Dexih.Utils.DataType" Version="1.0.148" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.6" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dexih.utils.datatype\src\Dexih.Utils.DataType\Dexih.Utils.DataType.csproj" />
+    <PackageReference Include="Dexih.Utils.DataType" Version="1.0.149" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.7" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

@@ -115,7 +115,7 @@ namespace dexih.transforms.Mapping
                     // ReSharper disable once VSTHRD103
                     (ReturnValue, IgnoreRow) = Function.RunFunction(functionVariables, parameters, out Outputs, cancellationToken);
                 }
-
+                
                 if (FunctionCaching == EFunctionCaching.EnableCache)
                 {
                     _cache.Add(parameters, (ReturnValue, Outputs));
@@ -129,6 +129,10 @@ namespace dexih.transforms.Mapping
             
             if (ReturnValue is bool boolReturn)
             {
+                if (Function.NotCondition)
+                {
+                    return !boolReturn;
+                }
                 return boolReturn;
             }
 
@@ -196,8 +200,12 @@ namespace dexih.transforms.Mapping
                 }
                 else
                 {
-                    // ReSharper disable once VSTHRD103
                     (ResultReturnValue, IgnoreRow) = Function.RunResult(functionVariables, parameters, out _resultOutputs, cancellationToken);    
+                }
+
+                if (Function.NotCondition && ResultReturnValue is bool boolValue)
+                {
+                    ResultReturnValue = !boolValue;
                 }
                 
                 Parameters.SetResultFunctionResult(ResultReturnValue, _resultOutputs, row);

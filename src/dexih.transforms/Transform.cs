@@ -49,7 +49,7 @@ namespace dexih.transforms
 		/// </summary>
 		/// <value>The name.</value>
 		public string Name { get; set; }
-
+        
         /// <summary>
         /// The main source of data.
         /// </summary>
@@ -72,6 +72,7 @@ namespace dexih.transforms
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
         public EJoinNotFoundStrategy? JoinNotFoundStrategy { get; set; } = EJoinNotFoundStrategy.NullJoin;
 
+        public string TableAlias { get; set; } //used as an alias current table
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
@@ -94,6 +95,8 @@ namespace dexih.transforms
 
         public Sorts SortFields => GeneratedQuery?.Sorts ?? new Sorts();
         public Filters Filters => GeneratedQuery?.Filters ?? new Filters();
+        
+        public Joins Joins => GeneratedQuery?.Joins ?? new Joins();
 
         /// <summary>
         /// Ignores the SelectQuery specified in the open statement.
@@ -339,7 +342,7 @@ namespace dexih.transforms
                     MaxOutputRows = selectQuery.Rows;
                 }
 
-                SelectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+                SelectQuery = selectQuery.CloneProperties(true);
                 if (resetRows)
                 {
                     selectQuery.Rows = -1;
@@ -585,6 +588,14 @@ namespace dexih.transforms
                     if (requestQuery.Groups != null)
                     {
                         columns.AddIfNotExists(requestQuery.Groups.Select(c => new SelectColumn(c)));
+                    }
+                }
+
+                if (ReferenceConnection.CanJoin)
+                {
+                    foreach (var join in requestQuery.Joins)
+                    {
+                        generatedQuery.Joins.Add(join);
                     }
                 }
 
@@ -1616,7 +1627,6 @@ namespace dexih.transforms
                 {
                     throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
                 }
-
 
                 if (IsReader && _incrementalColumnIndex != -1 && _nextRow != null)
                 {

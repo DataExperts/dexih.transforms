@@ -29,7 +29,7 @@ namespace dexih.connections.sql
         
         public override Dictionary<string, object> TransformProperties()
         {
-            if (ReferenceConnection != null && CacheTable != null)
+            if (ReferenceConnection != null && CacheTable != null && SelectQuery != null)
             {
                 return new Dictionary<string, object>()
                 {
@@ -47,8 +47,7 @@ namespace dexih.connections.sql
             _sqlConnection?.Close();
             _sqlConnection?.Dispose();
         }
-
-
+        
         public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)
@@ -69,13 +68,21 @@ namespace dexih.connections.sql
 
                 SelectQuery = requestQuery;
                 GeneratedQuery = GetGeneratedQuery(requestQuery);
-
+                
                 if (GeneratedQuery?.Columns?.Count > 0)
                 {
                     CacheTable.Columns.Clear();
                     foreach (var column in GeneratedQuery.Columns)
                     {
                         CacheTable.Columns.Add(column.OutputColumn?? column.Column);
+                    }
+
+                    foreach (var join in GeneratedQuery.Joins)
+                    {
+                        foreach (var column in join.JoinTable.Columns)
+                        {
+                            CacheTable.Columns.Add(column);
+                        }
                     }
                 }
                 
@@ -87,7 +94,25 @@ namespace dexih.connections.sql
                 for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
-                    var ordinal = CacheTable.GetOrdinal(fieldName);
+                    var field = fieldName.Split('-', 2);
+                    int ordinal;
+                    if (field.Length == 1)
+                    {
+                        ordinal = CacheTable.GetOrdinal(field[0]);
+                    }
+                    else
+                    {
+                        ordinal = CacheTable.GetOrdinal(field[0], field[1]);
+                        if (ordinal < 0)
+                        {
+                            ordinal = CacheTable.GetOrdinal(fieldName);
+                            if(ordinal < 0 && field[0] == "T")
+                            {
+                                ordinal = CacheTable.GetOrdinal(fieldName.Substring(2));
+                            }
+                        }
+                    }
+                    
                     if (ordinal < 0)
                     {
                         throw new ConnectionException($"The reader could not be opened as column {fieldName} could not be found in the table {CacheTable.Name}.");

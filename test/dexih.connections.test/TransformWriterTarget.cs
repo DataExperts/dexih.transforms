@@ -141,11 +141,11 @@ namespace dexih.connections.test
 
             var childTable = DataSets.CreateChildTable();
             childTable.AddAuditColumns("child_key");
-            childTable.AddColumn("parent_key", ETypeCode.Int64);
+            childTable.Columns.Add(new TableColumn("parent_key", ETypeCode.Int64));
 
             var grandChildTable = DataSets.CreateGrandChildTable();
             grandChildTable.AddAuditColumns("grandChild_key");
-            grandChildTable.AddColumn("child_key", ETypeCode.Int64);
+            grandChildTable.Columns.Add(new TableColumn("child_key", ETypeCode.Int64));
 
             if (useDbAutoIncrement)
             {

@@ -20,8 +20,10 @@ namespace dexih.functions.Query
             Groups = new List<TableColumn>();
             Rows = -1; //-1 means show all rows.
             GroupFilters = new Filters();
-            // Joins = new List<Join>();
+            Joins = new Joins();
         }
+
+        private string _alias;
 
         [DataMember(Order = 0)]
         public SelectColumns Columns { get; set; }
@@ -41,24 +43,30 @@ namespace dexih.functions.Query
         [DataMember(Order = 5)]
         public Filters GroupFilters { get; set; }
         
-        // [DataMember(Order = 6)]
-        // public List<Join> Joins { get; set; }
+        [DataMember(Order = 6)]
+        public Joins Joins { get; set; }
 
-        [DataMember(Order = 6)] 
+        [DataMember(Order = 7)] 
         public int Rows { get; set; }
 
-        [DataMember(Order = 7)]
+        [DataMember(Order = 8)]
         public List<TableColumn> InputColumns { get; set; }
 
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
-        [DataMember(Order = 8)]
+        [DataMember(Order = 9)]
         public string FileName { get; set; }
 
-        [DataMember(Order = 9)] 
+        [DataMember(Order = 10)] 
         public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
-        
+
+        [DataMember(Order = 11)] 
+        public string Alias { 
+            get => _alias ?? "T";
+            set => _alias = value;
+        }
+
         /// <summary>
         /// Tests is a row should be filtered based on the filters provided.  
         /// </summary>

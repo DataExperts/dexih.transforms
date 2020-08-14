@@ -18,6 +18,7 @@ namespace dexih.transforms
         public override bool CanBulkLoad => false;
         public override bool CanSort => false;
         public override bool CanFilter => false;
+        public override bool CanJoin => false;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;

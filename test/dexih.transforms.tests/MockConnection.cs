@@ -11,6 +11,7 @@ namespace dexih.transforms.tests
     {
         public override bool CanBulkLoad { get; } = true;
         public override bool CanSort { get; } = true;
+        public override bool CanJoin { get; } = true;
         public override bool CanFilter { get; } = true;
         public override bool CanUpdate { get; } = true;
         public override bool CanDelete { get; } = true;

@@ -117,6 +117,13 @@ namespace dexih.functions
             return -1;
         }
 
+        public int GetOrdinal(string columnName, string referenceTable)
+        {
+            if (_columnOrdinals.TryGetValue(columnName + "." + referenceTable, out var ordinal))
+                return ordinal;
+            return -1;
+        }
+
 //        public int GetOrdinal(string columnName, string columnGroup)
 //        {
 //            var name = (string.IsNullOrWhiteSpace(columnGroup) ? "" : columnGroup + ".") + columnName;

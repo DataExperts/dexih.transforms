@@ -219,7 +219,7 @@ namespace dexih.connections.test
             var mappings = new Mappings
             {
                 new MapJoinNode(childrenColumn, child.CacheTable),
-                new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
+                new MapJoin(parent.CacheTable["parent_id"], child.CacheTable["parent_id"])
             };
 
             var parentTransform = new TransformJoin(parent, child, mappings, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join")

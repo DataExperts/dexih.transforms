@@ -48,7 +48,8 @@ namespace dexih.functions
         //this is the max length of the non-encrypted data type.
         private int? _baseMaxLength;
 
-
+        private string _referenceTable;
+        
         [DataMember(Order = 0)]
         public string ReferenceTable { get; set; }
 
@@ -164,7 +165,18 @@ namespace dexih.functions
             {
                 return ColumnGroup + "." + Name;
             }
+            
             return Name;
+        }
+
+        public string ReferenceTableName()
+        {
+            if (!string.IsNullOrEmpty(ReferenceTable))
+            {
+                return ReferenceTable + "." + Name;
+            }
+
+            return "T." + Name;
         }
 
         /// <summary>

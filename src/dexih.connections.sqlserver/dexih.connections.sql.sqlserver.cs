@@ -926,7 +926,7 @@ namespace dexih.connections.sqlserver
                         //  Retrieving schema for columns from a single table
                         await using (var cmd = connection.CreateCommand())
                         {
-                            sql.Append(BuildFiltersString(query.Filters, cmd) + ";");
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where", false) + ";");
 
                             cmd.Transaction = transaction;
                             cmd.CommandText = sql.ToString();
