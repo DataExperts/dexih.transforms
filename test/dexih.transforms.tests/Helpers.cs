@@ -15,7 +15,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateSortedTestData()
         {
-            var table = new Table("test", 0,
+            var table = new Table("sorted_test", 0,
                 new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
                 new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Double, EDeltaType.NaturalKey),
@@ -43,7 +43,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateUnSortedTestData()
         {
-            var table = new Table("test", 0, 
+            var table = new Table("unsorted_test", 0, 
                 new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
                 new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
@@ -70,7 +70,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateSortedJoinData()
         {
-            var table = new Table("Join", 0);
+            var table = new Table("sorted_join", 0);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
@@ -92,7 +92,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateSortedJoinDataMissingRows()
         {
-            var table = new Table("Join", 0);
+            var table = new Table("sorted_join2", 0);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
@@ -112,7 +112,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateUnSortedJoinData()
         {
-            var table = new Table("Join", 0);
+            var table = new Table("unsorted_join", 0);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
@@ -134,7 +134,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateDuplicatesJoinData()
         {
-            var table = new Table("Join", 0);
+            var table = new Table("join_duplicates", 0);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
@@ -158,7 +158,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateValidDatesSourceData()
         {
-            var table = new Table("Source", 0);
+            var table = new Table("valid_dates_source", 0);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("ValidFrom", ETypeCode.DateTime, EDeltaType.ValidFromDate);
@@ -175,7 +175,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateValidDatesJoinData()
         {
-            var table = new Table("Join", 0);
+            var table = new Table("valid_dates_join", 0);
             table.AddColumn("StringColumn", ETypeCode.String);
             table.AddColumn("IntColumn", ETypeCode.Int32);
             table.AddColumn("LookupValue", ETypeCode.String);
@@ -196,7 +196,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateValidationTestData()
         {
-            var table = new Table("test", 0,
+            var table = new Table("validation_test", 0,
                 new TableColumn("StringColumn", ETypeCode.String, EDeltaType.NaturalKey),
                 new TableColumn("IntColumn", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("DecimalColumn", ETypeCode.Decimal, EDeltaType.NaturalKey),
@@ -304,7 +304,7 @@ namespace dexih.transforms.tests
                 new MapJoin(child.CacheTable["parent_id"], child.CacheTable["parent_id"])
             };
 
-            var parentTransform = new TransformJoin(parent, child, mappings, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join")
+            var parentTransform = new TransformJoin(parent, child, mappings, EJoinStrategy.Auto, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join")
             {
                 Name = "Join Child",
                 JoinDuplicateStrategy = EDuplicateStrategy.All
@@ -329,7 +329,7 @@ namespace dexih.transforms.tests
 
         public static ReaderMemory CreateLargeTable(int rows)
         {
-            var table = new Table("test");
+            var table = new Table("large_table");
 
             for (var i = 0; i < 10; i++)
                 table.Columns.Add(new TableColumn("column" + i, ETypeCode.Int32, EDeltaType.NaturalKey));

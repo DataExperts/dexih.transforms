@@ -132,15 +132,15 @@ namespace dexih.connections.oracle
                         throw new ConnectionException("There was no server name specified for the oracle connection.");
                     }
                     
-                    connectionString = $"Data Source={Server}; Connection Timeout={ConnectionTimeout}";
+                    connectionString = $"Data Source={Server}; Connection Timeout={ConnectionTimeout}; ";
 
                     if (UseWindowsAuth)
                     {
-                        connectionString += $" User Id={Username}; Password={Password}";
+                        connectionString += "; Integrated Security=yes";    
                     }
                     else
                     {
-                        connectionString += "Integrated Security=yes";    
+                        connectionString += $"User Id={Username}; Password={Password}; ";
                     }
                     
 

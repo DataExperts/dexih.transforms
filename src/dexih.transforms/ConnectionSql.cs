@@ -368,9 +368,9 @@ namespace dexih.connections.sql
             }
         }
 
-        protected string AggregateFunction(SelectColumn column)
+        protected string AggregateFunction(SelectColumn column, string alias)
         {
-            var selectColumn = $"{AddDelimiter(column.Column.ReferenceTable ?? "T")}.{AddDelimiter(column.Column.Name)}";
+            var selectColumn = $"{AddDelimiter(column.Column.ReferenceTable ?? alias)}.{AddDelimiter(column.Column.Name)}";
 
             if (column.Aggregate == EAggregate.None)
             {
@@ -454,28 +454,29 @@ namespace dexih.connections.sql
             return true;
         }
         
-        private string GetDelimitedColumn(TableColumn column) => $" {AddDelimiter(column.ReferenceTable ?? "T")}.{AddDelimiter(column.Name)} ";
-        private string GetOutputName(SelectColumn column) => column.OutputColumn?.Name == null ? AddDelimiter(column.Column.ReferenceTable ?? "T" + "-" + column.Column.Name) : AddDelimiter(column.Column.ReferenceTable ?? "T" + "-" + column.OutputColumn?.Name);
-
-        private string GetFieldName(TableColumn column) => AddDelimiter($"{column.ReferenceTable?? "T"}-{column.Name}");
+        private string GetDelimitedColumn(TableColumn column, string alias) => $" {AddDelimiter(column.ReferenceTable ?? alias)}.{AddDelimiter(column.Name)} ";
+        private string GetOutputName(SelectColumn column, string alias) => column.OutputColumn?.Name == null ? AddDelimiter(column.Column.ReferenceTable ?? alias + "-" + column.Column.Name) : AddDelimiter(column.Column.ReferenceTable ?? alias + "-" + column.OutputColumn?.Name);
+        private string GetFieldName(TableColumn column, string alias) => AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
         
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
             var sql = new StringBuilder();
+
+            // if the query contains a join, we will need to add alias' to all the table/column names to ensure they are unique 
+            // across joins.
+            var alias = query?.Alias ?? table.Name;
             
             //if the query doesn't have any columns, then use all columns from the table.
             Dictionary<string, (string name, string alias)> columns;
             if (query?.Columns?.Count > 0)
             {
-                columns = query.Columns.ToDictionary(GetOutputName, c => (AggregateFunction(c),  GetOutputName(c)));
+                columns = query.Columns.ToDictionary(c => GetOutputName(c, alias), c => (AggregateFunction(c, alias),  GetOutputName(c, alias)));
             }
             else
             {
                 columns = table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField)
-                    .ToDictionary(GetFieldName, c => (GetDelimitedColumn(c),  GetFieldName(c)));
+                    .ToDictionary(c => GetFieldName(c, alias), c => (GetDelimitedColumn(c, alias),  GetFieldName(c, alias)));
             }
-            
-            var alias = query == null ? "T" : AddDelimiter(query.Alias);
             
             sql.Append("select ");
             sql.Append(string.Join(",", columns.Select(c => c.Value.name + " " + c.Value.alias )) + " ");
@@ -496,7 +497,7 @@ namespace dexih.connections.sql
 
                     sql.Append(
                         $" {joinType} join {SqlTableName(join.JoinTable)} {AddDelimiter(join.Alias)} {SqlFromAttribute(join.JoinTable)} on ");
-                    sql.Append(BuildFiltersString(join.JoinFilters, cmd, "", true));
+                    sql.Append(BuildFiltersString(join.JoinFilters, cmd, "", alias));
                 }
             }
 
@@ -514,39 +515,39 @@ namespace dexih.connections.sql
                 filters.Add(filter);
             }
 
-            sql.Append(BuildFiltersString(filters, cmd, "where", true));
+            sql.Append(BuildFiltersString(filters, cmd, "where", alias));
 
             if (query?.Groups?.Count > 0)
             {
                 sql.Append(" group by ");
-                sql.Append(string.Join(",", query.Groups.Select(GetDelimitedColumn).ToArray()));
+                sql.Append(string.Join(",", query.Groups.Select(c => GetDelimitedColumn(c, alias)).ToArray()));
             }
 
             if (query?.GroupFilters?.Count > 0)
             {
                 var groupFilters = query.GroupFilters.Select(c => new Filter()
                 {
-                    Column1 = c.Column1 == null ? null : new TableColumn(columns[GetFieldName(c.Column1)].name, c.Column1.DataType, c.Column1.DeltaType, c.Column1.Rank),
-                    Column2 = c.Column2 == null ? null :new TableColumn(columns[GetFieldName(c.Column2)].name, c.Column2.DataType, c.Column2.DeltaType, c.Column2.Rank),
+                    Column1 = c.Column1 == null ? null : new TableColumn(columns[GetFieldName(c.Column1, alias)].name, c.Column1.DataType, c.Column1.DeltaType, c.Column1.Rank),
+                    Column2 = c.Column2 == null ? null :new TableColumn(columns[GetFieldName(c.Column2, alias)].name, c.Column2.DataType, c.Column2.DeltaType, c.Column2.Rank),
                     Value1 =  c.Value1,
                     Value2 = c.Value2,
                     Operator = c.Operator,
                     CompareDataType = c.CompareDataType
                 }).ToList();
 
-                sql.Append(BuildFiltersString(groupFilters, cmd, "having", true));
+                sql.Append(BuildFiltersString(groupFilters, cmd, "having", alias));
             }
 
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append(" order by ");
-                sql.Append(string.Join(",", query.Sorts.Select(c => GetDelimitedColumn(c.Column) + " " + (c.Direction == ESortDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(string.Join(",", query.Sorts.Select(c => GetDelimitedColumn(c.Column, alias) + " " + (c.Direction == ESortDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
         }
         
-        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd, string prefix, bool useReference)
+        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd, string prefix, string alias = null)
         {
             if (filters == null || filters.Count == 0)
                 return "";
@@ -554,6 +555,11 @@ namespace dexih.connections.sql
             var sql = new StringBuilder();
             sql.Append(" " + prefix + " ");
 
+            string GetColumn(TableColumn column)
+            {
+                return (alias != null ? GetDelimitedColumn(column, alias) : AddDelimiter(column.Name));
+            }
+            
             var index = 0;
             foreach (var filter in filters)
             {
@@ -597,7 +603,7 @@ namespace dexih.connections.sql
                         }
                         else
                         {
-                            sql.Append($" {(useReference ? GetDelimitedColumn(filter.Column1) : AddDelimiter(filter.Column1.Name))} ");    
+                            sql.Append($" {GetColumn(filter.Column1)} ");    
                         }
                     }
                 }
@@ -645,7 +651,7 @@ namespace dexih.connections.sql
                                 }
                                 else
                                 {
-                                    sql.Append($" {(useReference ? GetDelimitedColumn(filter.Column2) : AddDelimiter(filter.Column2.Name))} ");    
+                                    sql.Append($" {GetColumn(filter.Column2)} ");    
                                 }
                             }
                         else
@@ -712,11 +718,11 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1 != null)
                     {
-                        sql.Append($" or ${GetDelimitedColumn(filter.Column1) is null} ");
+                        sql.Append($" or ${GetColumn(filter.Column1)} is null ");
                     }
                     if (filter.Column2 != null)
                     {
-                        sql.Append($" or ${GetDelimitedColumn(filter.Column2) is null} ");
+                        sql.Append($" or ${GetColumn(filter.Column2)} is null ");
                     }
                 }
 
@@ -945,7 +951,7 @@ namespace dexih.connections.sql
                                 parameters[i] = param;
                             }
 
-                            sql.Append(BuildFiltersString(query.Filters, cmd, "where", false));
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where"));
 
                             cmd.CommandText = sql.ToString();
 
@@ -991,7 +997,7 @@ namespace dexih.connections.sql
 
                         await using (var cmd = transaction.connection.CreateCommand())
                         {
-                            sql.Append(BuildFiltersString(query.Filters, cmd, "where", false));
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where"));
 
                             cmd.Transaction = transaction.transaction;
                             cmd.CommandText = sql.ToString();

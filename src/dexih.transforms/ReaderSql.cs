@@ -106,9 +106,9 @@ namespace dexih.connections.sql
                         if (ordinal < 0)
                         {
                             ordinal = CacheTable.GetOrdinal(fieldName);
-                            if(ordinal < 0 && field[0] == "T")
+                            if(ordinal < 0 && field[0] == CacheTable.Name)
                             {
-                                ordinal = CacheTable.GetOrdinal(fieldName.Substring(2));
+                                ordinal = CacheTable.GetOrdinal(field[1]);
                             }
                         }
                     }

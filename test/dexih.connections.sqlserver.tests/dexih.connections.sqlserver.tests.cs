@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using dexih.connections.sqlserver;
 using dexih.transforms;
+using dexih.transforms.tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -85,55 +86,39 @@ namespace dexih.connections.sql.sqlserver
 
             await new TransformWriterTargetTests(_output).ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
         }
+        
+        [Fact]
+        public async Task Sqlite_SelectQuery()
+        {
+            var database = "Test-" + Guid.NewGuid();
+            var connection = GetConnection();
 
-        //[Fact]
-        //public void TestSqlServer_Specific_Unit()
-        //{
-        //    ConnectionSqlServer connection = new ConnectionSqlServer();
+            await new SelectQueryTests(_output).SelectQuery(connection, database);
+        }
 
-        //    //test delimiter
-        //    Assert.Equal("\"table\"", connection.AddDelimiter("table"));
-        //    Assert.Equal("\"table\"", connection.AddDelimiter("\"table\""));
-        //    Assert.Equal("\"table\".\"schema\"", connection.AddDelimiter("\"table\".\"schema\""));
-        //}
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
+        }
 
-        //[Fact]
-        //public async Task SalesDetail()
-        //{
-        //    ConnectionSqlServer connection = new ConnectionSqlServer()
-        //    {
-        //        NtAuthentication = true,
-        //        ServerName = "(localdb)\\v11.0",
-        //        DefaultDatabase = "MyAdventureWorks"
-        //    };
 
-        //    var tableResult = await connection.GetSourceTableInfo("\"Sales\".\"SalesOrderDetail\"", null);
-        //    Assert.True(tableResult.Success);
-
-        //    Table salesOrder = tableResult.Value;
-
-        //    string database = "Test-" + Guid.NewGuid().ToString();
-        //    Connection targetConnection = GetConnection();
-        //    var returnValue = await targetConnection.CreateDatabase(database);
-        //    Assert.True(returnValue.Success, "New Database - Message:" + returnValue.Message);
-
-        //    var targetTable = salesOrder.Copy();
-        //    targetTable.AddAuditColumns();
-        //    targetTable.TableName = "TargetTable";
-        //    await targetConnection.CreateTable(targetTable);
-        //    Transform targetTransform = targetConnection.GetTransformReader(targetTable);
-
-        //    //count rows using reader
-        //    Transform transform = connection.GetTransformReader(salesOrder);
-        //    transform = new TransformMapping(transform, true, null, null);
-        //    transform = new TransformValidation(transform, null, true);
-        //    transform = new TransformDelta(transform, targetTransform, EUpdateStrategy.AppendUpdate, 1, 1);
-
-        //    TransformWriter writer = new TransformWriter();
-        //    TransformWriterResult writerResult = new TransformWriterResult();
-        //    var result = await writer.WriteAllRecords(writerResult, transform, targetTable, connection, null, null, CancellationToken.None);
-
-        //    Assert.Equal(121317, writerResult.RowsCreated);
-        //}
     }
 }

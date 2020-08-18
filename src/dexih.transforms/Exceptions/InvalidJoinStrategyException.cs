@@ -2,15 +2,10 @@
 
 namespace dexih.transforms.Exceptions
 {
-    public class JoinNotFoundException : Exception
+    public class InvalidJoinStrategyException : Exception
     {
-        public JoinNotFoundException(string message, string joinTableAlias, object[] keyValue) : base(message)
+        public InvalidJoinStrategyException(string message) : base(message)
         {
-            JoinTableAlias = joinTableAlias;
-            KeyValue = keyValue;
         }
-
-        public string JoinTableAlias { get; set; }
-        public object[] KeyValue { get; set; }
     }
 }

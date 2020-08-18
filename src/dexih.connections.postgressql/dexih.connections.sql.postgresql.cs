@@ -857,7 +857,7 @@ ORDER BY c.ordinal_position"))
                         //  Retrieving schema for columns from a single table
                         await using (var cmd = connection.CreateCommand())
                         {
-                            sql.Append(BuildFiltersString(query.Filters, cmd, "where", false) + ";");
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where") + ";");
                             
                             cmd.Transaction = transaction;
                             cmd.CommandText = sql.ToString();

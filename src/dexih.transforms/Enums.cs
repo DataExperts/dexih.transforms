@@ -8,6 +8,21 @@ namespace dexih.transforms
         Mapping = 1, Filter, Sort, Group, Aggregate, Series, Join, Rows, Lookup, Validation, Delta, Concatenate, Profile, Internal
     }
 
+    public enum EJoinStrategy
+    {
+        [Description("Automatic")]
+        Auto = 0,
+
+        [Description("Sorted")]
+        Sorted,
+
+        [Description("In Memory")]
+        Hash,
+
+        [Description("Database")]
+        Database,
+    }
+    
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum EDuplicateStrategy
     {

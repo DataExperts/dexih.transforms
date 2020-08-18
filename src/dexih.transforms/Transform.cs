@@ -72,6 +72,8 @@ namespace dexih.transforms
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
         public EJoinNotFoundStrategy? JoinNotFoundStrategy { get; set; } = EJoinNotFoundStrategy.NullJoin;
 
+        public EJoinStrategy? JoinStrategy { get; set; } = EJoinStrategy.Auto;
+
         public string TableAlias { get; set; } //used as an alias current table
         public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 

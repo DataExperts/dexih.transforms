@@ -61,11 +61,7 @@ namespace dexih.functions.Query
         [DataMember(Order = 10)] 
         public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
 
-        [DataMember(Order = 11)] 
-        public string Alias { 
-            get => _alias ?? "T";
-            set => _alias = value;
-        }
+        [DataMember(Order = 11)] public string Alias { get; set; }
 
         /// <summary>
         /// Tests is a row should be filtered based on the filters provided.  
