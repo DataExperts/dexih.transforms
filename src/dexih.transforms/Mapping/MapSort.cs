@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -71,15 +72,10 @@ namespace dexih.transforms.Mapping
             _rowData = null;
         }
         
-        // public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
-        // {
-        //     if (InputColumn == null)
-        //     {
-        //         return new SelectColumn[0];
-        //     }
-        //
-        //     return new[] {new SelectColumn(InputColumn)};
-        // }
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
+        {
+            yield return new SelectColumn(InputColumn);
+        }
 
         /// <summary>
         /// Note, with the sort extra checked need to be made to ensure sorts are in correct order.

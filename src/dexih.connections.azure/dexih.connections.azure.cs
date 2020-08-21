@@ -38,6 +38,7 @@ namespace dexih.connections.azure
     {
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
+        public override bool CanJoin => false;
         public override bool CanFilter => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;

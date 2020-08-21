@@ -29,7 +29,7 @@ namespace dexih.connections.sql
         
         public override Dictionary<string, object> TransformProperties()
         {
-            if (ReferenceConnection != null && CacheTable != null)
+            if (ReferenceConnection != null && CacheTable != null && SelectQuery != null)
             {
                 return new Dictionary<string, object>()
                 {
@@ -47,8 +47,7 @@ namespace dexih.connections.sql
             _sqlConnection?.Close();
             _sqlConnection?.Dispose();
         }
-
-
+        
         public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)
@@ -61,6 +60,11 @@ namespace dexih.connections.sql
                 AuditKey = auditKey;
                 IsOpen = true;
 
+                if (requestQuery != null)
+                {
+                    requestQuery.Alias = TableAlias;
+                }
+                
                 // disables push down query logic
                 if (IgnoreQuery)
                 {
@@ -69,7 +73,7 @@ namespace dexih.connections.sql
 
                 SelectQuery = requestQuery;
                 GeneratedQuery = GetGeneratedQuery(requestQuery);
-
+                
                 if (GeneratedQuery?.Columns?.Count > 0)
                 {
                     CacheTable.Columns.Clear();
@@ -77,6 +81,14 @@ namespace dexih.connections.sql
                     {
                         CacheTable.Columns.Add(column.OutputColumn?? column.Column);
                     }
+
+                    // foreach (var join in GeneratedQuery.Joins)
+                    // {
+                    //     foreach (var column in join.JoinTable.Columns)
+                    //     {
+                    //         CacheTable.Columns.Add(column);
+                    //     }
+                    // }
                 }
                 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection(cancellationToken);
@@ -87,7 +99,25 @@ namespace dexih.connections.sql
                 for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
-                    var ordinal = CacheTable.GetOrdinal(fieldName);
+                    var field = fieldName.Split('-', 2);
+                    int ordinal;
+                    if (field.Length == 1)
+                    {
+                        ordinal = CacheTable.GetOrdinal(field[0]);
+                    }
+                    else
+                    {
+                        ordinal = CacheTable.GetOrdinal(field[0], field[1]);
+                        if (ordinal < 0)
+                        {
+                            ordinal = CacheTable.GetOrdinal(fieldName);
+                            if(ordinal < 0 && (field[0] == CacheTable.Name || field[0] == TableAlias))
+                            {
+                                ordinal = CacheTable.GetOrdinal(field[1]);
+                            }
+                        }
+                    }
+                    
                     if (ordinal < 0)
                     {
                         throw new ConnectionException($"The reader could not be opened as column {fieldName} could not be found in the table {CacheTable.Name}.");
@@ -115,7 +145,7 @@ namespace dexih.connections.sql
             {
                 if (await _sqlReader.ReadAsync(cancellationToken))
                 {
-                    var row = new object[CacheTable.Columns.Count];
+                    var row = new object[_fieldCount];
 
                     for (var i = 0; i < _fieldCount; i++)
                     {

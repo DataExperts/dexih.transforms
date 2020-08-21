@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -57,7 +58,7 @@ namespace dexih.transforms.Mapping
                 _column1Ordinal = -1;
             }
 
-            if (JoinColumn != null)
+            if (JoinColumn != null && joinTable != null)
             {
                 _column2Ordinal = joinTable.GetOrdinal(JoinColumn);
                 if (_column2Ordinal < 0 && JoinValue == null)
@@ -195,6 +196,14 @@ namespace dexih.transforms.Mapping
             return false;
         }
 
-
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
+        {
+            if(InputColumn != null) yield return new SelectColumn(InputColumn);
+        }
+        
+        public override IEnumerable<SelectColumn> GetRequiredReferenceColumns()
+        {
+            if(JoinColumn != null) yield return new SelectColumn(JoinColumn);
+        }
     }
 }

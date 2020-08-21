@@ -20,6 +20,7 @@ namespace dexih.transforms
 
         public override bool CanFilter => throw new NotImplementedException();
 
+        public override bool CanJoin => false;
         public override bool CanUpdate => throw new NotImplementedException();
 
         public override bool CanDelete => throw new NotImplementedException();

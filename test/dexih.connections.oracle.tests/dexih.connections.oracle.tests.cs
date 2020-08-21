@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using dexih.connections.oracle;
 using dexih.transforms;
+using dexih.transforms.tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -80,6 +81,38 @@ namespace dexih.connections.sql
             var connection = GetConnection();
 
             await new TransformWriterTargetTests(_output).ParentChild_Write(connection, database, useDbAutoIncrement, updateStrategy, useTransaction);
+        }
+        
+        [Fact]
+        public async Task Sqlite_SelectQuery()
+        {
+            string database = "Test" + Guid.NewGuid().ToString().Substring(0,8);
+            var connection = GetConnection();
+
+            await new SelectQueryTests(_output).SelectQuery(connection, database);
+        }
+
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
         }
     }
 }

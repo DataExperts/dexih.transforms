@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
@@ -28,10 +29,10 @@ namespace dexih.transforms
 
         public TransformLookup() { }
 
-        public TransformLookup(Transform primaryTransform, Transform joinTransform, Mappings mappings, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, string referenceTableAlias)
+        public TransformLookup(Transform primaryTransform, Transform joinTransform, Mappings mappings, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, string tableAlias)
         {
             Mappings = mappings;
-            ReferenceTableAlias = referenceTableAlias;
+            TableAlias = tableAlias;
             JoinDuplicateStrategy = joinDuplicateResolution;
             JoinNotFoundStrategy = joinNotFoundStrategy;
 
@@ -93,7 +94,7 @@ namespace dexih.transforms
 
                 if(JoinDuplicateStrategy == EDuplicateStrategy.Abend)
                 {
-                    throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the lookup {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                    throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the lookup {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                 }
 
                 var newRow = new object[FieldCount];
@@ -212,7 +213,7 @@ namespace dexih.transforms
                 switch (JoinNotFoundStrategy)
                 {
                     case EJoinNotFoundStrategy.Abend:
-                        throw new JoinNotFoundException($"The lookup transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To continue, set the join not found strategy to continue.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                        throw new JoinNotFoundException($"The lookup transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\".", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                     case EJoinNotFoundStrategy.Filter:
                         return null;
                 }

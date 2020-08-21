@@ -49,7 +49,7 @@ namespace dexih.transforms
 		/// </summary>
 		/// <value>The name.</value>
 		public string Name { get; set; }
-
+        
         /// <summary>
         /// The main source of data.
         /// </summary>
@@ -72,7 +72,10 @@ namespace dexih.transforms
         public EDuplicateStrategy? JoinDuplicateStrategy { get; set; } = EDuplicateStrategy.Abend;
         public EJoinNotFoundStrategy? JoinNotFoundStrategy { get; set; } = EJoinNotFoundStrategy.NullJoin;
 
-        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
+        public EJoinStrategy? JoinStrategy { get; set; } = EJoinStrategy.Auto;
+
+        public string TableAlias { get; set; } //used as an alias current table
+        // public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
@@ -92,8 +95,12 @@ namespace dexih.transforms
         /// </summary>
         public SelectQuery GeneratedQuery { get; set; }
 
+        public SelectColumns Columns => GeneratedQuery?.Columns ?? new SelectColumns();
         public Sorts SortFields => GeneratedQuery?.Sorts ?? new Sorts();
         public Filters Filters => GeneratedQuery?.Filters ?? new Filters();
+        public Joins Joins => GeneratedQuery?.Joins ?? new Joins();
+        public List<TableColumn> Groups => GeneratedQuery?.Groups ?? new List<TableColumn>();
+        public Filters GroupFilters => GeneratedQuery?.GroupFilters ?? new Filters();
 
         /// <summary>
         /// Ignores the SelectQuery specified in the open statement.
@@ -339,7 +346,7 @@ namespace dexih.transforms
                     MaxOutputRows = selectQuery.Rows;
                 }
 
-                SelectQuery = selectQuery.CloneProperties<SelectQuery>(true);
+                SelectQuery = selectQuery.CloneProperties(true);
                 if (resetRows)
                 {
                     selectQuery.Rows = -1;
@@ -474,7 +481,7 @@ namespace dexih.transforms
                 return PrimaryTransform.CacheTable.Copy();
             }
 
-            return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+            return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.TableAlias, mapAllReferenceColumns);
         }
 
         /// <summary>
@@ -585,6 +592,31 @@ namespace dexih.transforms
                     if (requestQuery.Groups != null)
                     {
                         columns.AddIfNotExists(requestQuery.Groups.Select(c => new SelectColumn(c)));
+                    }
+                }
+
+                if (ReferenceConnection.CanJoin)
+                {
+                    foreach (var join in requestQuery.Joins)
+                    {
+                        generatedQuery.Joins.Add(join);
+                    }
+                }
+                else
+                {
+                    foreach (var join in requestQuery.Joins)
+                    {
+                        foreach (var joinFilter in join.JoinFilters)
+                        {
+                            if (joinFilter.Column1 == null && CacheTable.Columns[joinFilter.Column1] != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(joinFilter.Column1));
+                            }
+                            if (joinFilter.Column2 == null && CacheTable.Columns[joinFilter.Column2] != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(joinFilter.Column2));
+                            }
+                        }
                     }
                 }
 
@@ -1616,7 +1648,6 @@ namespace dexih.transforms
                 {
                     throw new TransformException($"The transform {Name} failed to process record. {ex.Message}", ex);
                 }
-
 
                 if (IsReader && _incrementalColumnIndex != -1 && _nextRow != null)
                 {

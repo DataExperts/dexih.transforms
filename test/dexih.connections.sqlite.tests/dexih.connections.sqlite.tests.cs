@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using dexih.connections.sqlite;
 using dexih.transforms;
+using dexih.transforms.tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -101,6 +102,49 @@ namespace dexih.connections.sql
             var connection = GetConnection();
 
             await new SelectQueryTests(_output).SelectQuery(connection, database);
+        }
+
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinTwoTablesDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinTwoTablesDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinAndGroupDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinAndGroupDatabase(connection, joinStrategy, usedJoinStrategy);
         }
     }
 }

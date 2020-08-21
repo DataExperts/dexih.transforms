@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -23,6 +24,7 @@ namespace dexih.connections.sql
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
         public override bool CanFilter => true;
+        public override bool CanJoin => true;
         public override bool CanGroup => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
@@ -51,8 +53,7 @@ namespace dexih.connections.sql
 
         protected virtual long MaxSqlSize { get; set; } = 4000000; // the largest size the sql command can be (default 4mb)
 
-
-        protected string AddDelimiter(string name)
+        protected bool IsAggregate(string name)
         {
             // if it is a function, then do not delimiter
             if (name.Length > 4)
@@ -65,7 +66,7 @@ namespace dexih.connections.sql
                     case "max(":
                         if (name.EndsWith(')'))
                         {
-                            return name;
+                            return true;
                         }
 
                         break;
@@ -73,6 +74,19 @@ namespace dexih.connections.sql
             }
 
             if (name.StartsWith("count(") && name.EndsWith(')'))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected string AddDelimiter(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "";
+
+            // if it is a function, then do not delimiter
+            if (IsAggregate(name))
             {
                 return name;
             }
@@ -354,9 +368,9 @@ namespace dexih.connections.sql
             }
         }
 
-        protected string AggregateFunction(SelectColumn column)
+        protected string AggregateFunction(SelectColumn column, string alias)
         {
-            var selectColumn = AddDelimiter(column.Column.Name);
+            var selectColumn = alias == null ? AddDelimiter(column.Column.Name) : $"{AddDelimiter(column.Column.ReferenceTable ?? alias)}.{AddDelimiter(column.Column.Name)}";
 
             if (column.Aggregate == EAggregate.None)
             {
@@ -439,28 +453,63 @@ namespace dexih.connections.sql
 
             return true;
         }
+        
+        private string GetDelimitedColumn(TableColumn column, string alias) => alias == null && column.ReferenceTable == null ? AddDelimiter(column.Name) : $" {AddDelimiter(column.ReferenceTable ?? alias)}.{AddDelimiter(column.Name)} ";
 
+        private string GetOutputName(SelectColumn column, string alias) =>
+            column.OutputColumn?.Name == null
+                ? (alias == null && column.Column.ReferenceTable == null
+                    ? AddDelimiter(column.Column.Name)
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.Column.Name))
+                : (alias == null && column.Column.ReferenceTable == null
+                    ? AddDelimiter(column.OutputColumn?.Name)
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.OutputColumn?.Name));
+        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
+        
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
             var sql = new StringBuilder();
 
+            // if the query contains a join, we will need to add alias' to all the table/column names to ensure they are unique 
+            // across joins.
+            var alias = query?.Alias; // ?? table.Name;
+            
             //if the query doesn't have any columns, then use all columns from the table.
-            Dictionary<string, string> columns;
+            Dictionary<string, (string name, string alias)> columns;
             if (query?.Columns?.Count > 0)
             {
-                columns = query.Columns.ToDictionary(c => c.GetOutputName(), AggregateFunction);
+                columns = query.Columns.ToDictionary(c => GetOutputName(c, alias), c => (AggregateFunction(c, alias),  GetOutputName(c, alias)));
             }
             else
             {
                 columns = table.Columns.Where(c => c.DeltaType != EDeltaType.IgnoreField)
-                    .ToDictionary(c => c.Name, c => c.Name);
+                    .ToDictionary(c => GetFieldName(c, alias), c => (GetDelimitedColumn(c, alias),  GetFieldName(c, alias)));
+            }
+            
+            sql.Append("select ");
+            sql.Append(string.Join(",", columns.Select(c => c.Value.name + " " + c.Value.alias )) + " ");
+            sql.Append($"from {SqlTableName(table)} {AddDelimiter(alias)} ");
+            sql.Append(" " + SqlFromAttribute(table) + " ");
+
+            if (query != null)
+            {
+                foreach (var join in query.Joins)
+                {
+                    var joinType = join.JoinType switch
+                    {
+                        EJoinType.Full => "outer",
+                        EJoinType.Inner => "",
+                        EJoinType.Left => "left",
+                        EJoinType.Right => "right",
+                        _ => throw new ArgumentOutOfRangeException("Invalid join type " + join.JoinType)
+                    };
+
+                    sql.Append(
+                        $" {joinType} join {SqlTableName(join.JoinTable)} {AddDelimiter(join.Alias)} {SqlFromAttribute(join.JoinTable)} on ");
+                    sql.Append(BuildFiltersString(join.JoinFilters, cmd, "", alias));
+                }
             }
 
-            sql.Append("select ");
-            sql.Append(string.Join(",", columns.Select(c => AddDelimiter(c.Value) + " " + AddDelimiter(c.Key))) + " ");
-            sql.Append("from " + SqlTableName(table) + " ");
-            sql.Append(" " + SqlFromAttribute(table) + " ");
-            
             var filters = new Filters();
             if (query?.Filters != null && query.Filters.Any() )
             {
@@ -475,39 +524,39 @@ namespace dexih.connections.sql
                 filters.Add(filter);
             }
 
-            sql.Append(BuildFiltersString(filters, cmd));
+            sql.Append(BuildFiltersString(filters, cmd, "where", alias));
 
             if (query?.Groups?.Count > 0)
             {
                 sql.Append(" group by ");
-                sql.Append(string.Join(",", query.Groups.Select(c => AddDelimiter(c.Name)).ToArray()));
+                sql.Append(string.Join(",", query.Groups.Select(c => GetDelimitedColumn(c, alias)).ToArray()));
             }
 
             if (query?.GroupFilters?.Count > 0)
             {
                 var groupFilters = query.GroupFilters.Select(c => new Filter()
                 {
-                    Column1 = c.Column1 == null ? null : new TableColumn(columns[c.Column1.Name], c.Column1.DataType, c.Column1.DeltaType, c.Column1.Rank),
-                    Column2 = c.Column2 == null ? null :new TableColumn(columns[c.Column2.Name], c.Column2.DataType, c.Column2.DeltaType, c.Column2.Rank),
+                    Column1 = c.Column1 == null ? null : new TableColumn(columns[GetFieldName(c.Column1, alias)].name, c.Column1.DataType, c.Column1.DeltaType, c.Column1.Rank),
+                    Column2 = c.Column2 == null ? null :new TableColumn(columns[GetFieldName(c.Column2, alias)].name, c.Column2.DataType, c.Column2.DeltaType, c.Column2.Rank),
                     Value1 =  c.Value1,
                     Value2 = c.Value2,
                     Operator = c.Operator,
                     CompareDataType = c.CompareDataType
                 }).ToList();
 
-                sql.Append(BuildFiltersString(groupFilters, cmd, "having"));
+                sql.Append(BuildFiltersString(groupFilters, cmd, "having", null));
             }
 
             if (query?.Sorts?.Count > 0)
             {
                 sql.Append(" order by ");
-                sql.Append(string.Join(",", query.Sorts.Select(c => AddDelimiter(c.Column.Name) + " " + (c.Direction == ESortDirection.Descending ? " desc" : "")).ToArray()));
+                sql.Append(string.Join(",", query.Sorts.Select(c => GetDelimitedColumn(c.Column, alias) + " " + (c.Direction == ESortDirection.Descending ? " desc" : "")).ToArray()));
             }
 
             return sql.ToString();
         }
         
-        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd, string prefix = "where")
+        protected string BuildFiltersString(List<Filter> filters, DbCommand cmd, string prefix, string alias = null)
         {
             if (filters == null || filters.Count == 0)
                 return "";
@@ -515,6 +564,11 @@ namespace dexih.connections.sql
             var sql = new StringBuilder();
             sql.Append(" " + prefix + " ");
 
+            string GetColumn(TableColumn column)
+            {
+                return (alias != null ? GetDelimitedColumn(column, alias) : AddDelimiter(column.Name));
+            }
+            
             var index = 0;
             foreach (var filter in filters)
             {
@@ -545,12 +599,6 @@ namespace dexih.connections.sql
                                 filter.Column1.Rank,
                                 ParameterDirection.Input,
                                 filter.Column1.DefaultValue);
-
-                            //var param = cmd.CreateParameter();
-                            //param.ParameterName = parameterName;
-                            //param.DbType = GetDbType(filter.Column1.DataType);
-                            //param.Direction = ParameterDirection.Input;
-                            //param.Value = filter.Column1.DefaultValue;
                             cmd.Parameters.Add(param);
                         }
 
@@ -558,7 +606,14 @@ namespace dexih.connections.sql
                     }
                     else
                     {
-                        sql.Append(" " + AddDelimiter(filter.Column1.Name) + " ");    
+                        if (IsAggregate(filter.Column1.Name))
+                        {
+                            sql.Append($" {filter.Column1.Name} ");
+                        }
+                        else
+                        {
+                            sql.Append($" {GetColumn(filter.Column1)} ");    
+                        }
                     }
                 }
                 else
@@ -568,110 +623,102 @@ namespace dexih.connections.sql
                     {
                         var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
                             filter.Value1);
-
-                        //var param = cmd.CreateParameter();
-                        //param.ParameterName = parameterName;
-                        //param.DbType = GetDbType(filter.BestDataType());
-                        //param.Direction = ParameterDirection.Input;
-                        //param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
-                        //    filter.Value1);
                         cmd.Parameters.Add(param);
                     }
 
                     sql.Append($" {parameterName} ");
                 }
 
-                sql.Append(GetSqlCompare(filter.Operator) + " ");
-
-                if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
+                if (filter.Operator == ECompare.IsEqual && filter.Column2 == null && filter.Value2 == null)
                 {
-                    if (filter.Column2 != null)
-                        if (filter.Column2.IsInput)
-                        {
-                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
-                            if (cmd != null)
-                            {
-                                var param = CreateParameter(cmd, parameterName, filter.Column2.DataType, filter.Column2.Rank, ParameterDirection.Input,
-                                    filter.Column2.DefaultValue);
+                    sql.Append(GetSqlCompare(ECompare.IsNull) + " ");
+                }
+                else
+                {
+                    sql.Append(GetSqlCompare(filter.Operator) + " ");
 
-                                //var param = cmd.CreateParameter();
-                                //param.ParameterName = parameterName;
-                                //param.DbType = GetDbType(filter.Column2.DataType);
-                                //param.Direction = ParameterDirection.Input;
-                                //param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
-                                //    filter.Column2.DefaultValue);
-                                cmd.Parameters.Add(param);
-                                sql.Append($" {parameterName} ");
-                            }
-                        }
-                        else
-                        {
-                            sql.Append(" " + AddDelimiter(filter.Column2.Name) + " ");    
-                        }
-                    else
+                    if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
                     {
-                        var value2 = filter.Value2;
-
-                        if (value2 is JsonElement jsonElement)
-                        {
-                            if (jsonElement.ValueKind == JsonValueKind.Array)
+                        if (filter.Column2 != null)
+                            if (filter.Column2.IsInput)
                             {
-                                value2 = jsonElement.ToObject<string[]>();
+                                var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
+                                if (cmd != null)
+                                {
+                                    var param = CreateParameter(cmd, parameterName, filter.Column2.DataType,
+                                        filter.Column2.Rank, ParameterDirection.Input,
+                                        filter.Column2.DefaultValue);
+                                    cmd.Parameters.Add(param);
+                                    sql.Append($" {parameterName} ");
+                                }
                             }
                             else
                             {
-                                value2 = jsonElement.ToObject<string>();
+                                if (IsAggregate(filter.Column2.Name))
+                                {
+                                    sql.Append($" {filter.Column2.Name} ");
+                                }
+                                else
+                                {
+                                    sql.Append($" {GetColumn(filter.Column2)} ");    
+                                }
                             }
-                        }
-                        
-                        if (value2 != null && value2.GetType().IsArray)
+                        else
                         {
-                            var array = (from object value in (Array) value2 select value?.ToString()).ToList();
+                            var value2 = filter.Value2;
 
-                            var index1 = index;
-                            if (array.Count == 0)
+                            if (value2 is JsonElement jsonElement)
                             {
-                                sql.Append("(null)");
+                                if (jsonElement.ValueKind == JsonValueKind.Array)
+                                {
+                                    value2 = jsonElement.ToObject<string[]>();
+                                }
+                                else
+                                {
+                                    value2 = jsonElement.ToObject<string>();
+                                }
                             }
-                            else {
-                                sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
+
+                            if (value2 != null && value2.GetType().IsArray)
+                            {
+                                var array = (from object value in (Array) value2 select value?.ToString()).ToList();
+
+                                var index1 = index;
+                                if (array.Count == 0)
+                                {
+                                    sql.Append("(null)");
+                                }
+                                else
+                                {
+                                    sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
                                        {
-                                           var parameterName = $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
+                                           var parameterName =
+                                               $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
                                            if (cmd != null)
                                            {
-                                               var param = CreateParameter(cmd, parameterName, filter.BestDataType(),0, ParameterDirection.Input, c);
-
-                                               //var param = cmd.CreateParameter();
-                                               //param.Direction = ParameterDirection.Input;
-                                               //param.DbType = GetDbType(filter.BestDataType());
-                                               //param.Value = ConvertForWrite(param.ParameterName,
-                                               //    filter.BestDataType(), 0, true, c);
-                                               //param.ParameterName = parameterName;
+                                               var param = CreateParameter(cmd, parameterName,
+                                                   filter.BestDataType(), 0, ParameterDirection.Input, c);
                                                cmd.Parameters.Add(param);
                                            }
 
                                            return $"{parameterName}";
                                        })) +
-                                   ") ");
+                                       ") ");
+                                }
                             }
-                        }
-                        else
-                        {
-                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
-                            if (cmd != null)
+                            else
                             {
-                                var param = CreateParameter(cmd, parameterName, filter.BestDataType(), filter.RankValue2(), ParameterDirection.Input,
-                                    value2);
-                                //var param = cmd.CreateParameter();
-                                //param.ParameterName = parameterName;
-                                //param.Direction = ParameterDirection.Input;
-                                //param.DbType = GetDbType(filter.BestDataType());
-                                //param.Value = ConvertForWrite(param.ParameterName, filter.BestDataType(), 0, true,
-                                //    value2);
-                                cmd.Parameters.Add(param);
-                            }
+                                var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
+                                if (cmd != null)
+                                {
+                                    var param = CreateParameter(cmd, parameterName, filter.BestDataType(),
+                                        filter.RankValue2(), ParameterDirection.Input,
+                                        value2);
+                                    cmd.Parameters.Add(param);
+                                }
 
-                            sql.Append($" {parameterName} ");
+                                sql.Append($" {parameterName} ");
+                            }
                         }
                     }
                 }
@@ -680,11 +727,11 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1 != null)
                     {
-                        sql.Append($" or ${AddDelimiter(filter.Column1.Name) is null} ");
+                        sql.Append($" or ${GetColumn(filter.Column1)} is null ");
                     }
                     if (filter.Column2 != null)
                     {
-                        sql.Append($" or ${AddDelimiter(filter.Column2.Name) is null} ");
+                        sql.Append($" or ${GetColumn(filter.Column2)} is null ");
                     }
                 }
 
@@ -913,7 +960,7 @@ namespace dexih.connections.sql
                                 parameters[i] = param;
                             }
 
-                            sql.Append(BuildFiltersString(query.Filters, cmd));
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where"));
 
                             cmd.CommandText = sql.ToString();
 
@@ -959,7 +1006,7 @@ namespace dexih.connections.sql
 
                         await using (var cmd = transaction.connection.CreateCommand())
                         {
-                            sql.Append(BuildFiltersString(query.Filters, cmd));
+                            sql.Append(BuildFiltersString(query.Filters, cmd, "where"));
 
                             cmd.Transaction = transaction.transaction;
                             cmd.CommandText = sql.ToString();

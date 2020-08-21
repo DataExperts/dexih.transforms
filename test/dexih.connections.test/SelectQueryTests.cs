@@ -23,6 +23,9 @@ namespace dexih.connections.test
 
         public async Task SelectQuery(Connection connection, string databaseName)
         {
+            _output.WriteLine("Using database: " + databaseName);
+            await connection.CreateDatabase(databaseName, CancellationToken.None);
+            
             // create a new table with data.
             var newTable = DataSets.CreateTable(connection.CanUseDbAutoIncrement);
             var table = await connection.InitializeTable(newTable, 1000, CancellationToken.None);

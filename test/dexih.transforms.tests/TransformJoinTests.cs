@@ -22,12 +22,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -47,13 +47,13 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateSortedTestData();
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
 
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Hash);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -74,12 +74,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Filter, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Filter, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -95,13 +95,13 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateSortedTestData();
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Filter, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Filter, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
 
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Hash);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -118,12 +118,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Abend, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Abend, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             for(var i = 1; i<10; i++)
             {
@@ -140,13 +140,13 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateSortedTestData();
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Abend, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.Abend, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
 
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Hash);
 
             for (var i = 1; i < 10; i++)
             {
@@ -166,13 +166,12 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateSortedTestData();
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
             await Assert.ThrowsAsync<TransformException>(async () => { while (await transformJoin.ReadAsync()) ; });
-
         }
 
         /// <summary>
@@ -183,13 +182,12 @@ namespace dexih.transforms.tests
         {
             var source = Helpers.CreateSortedTestData();
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
             await Assert.ThrowsAsync<TransformException>(async () => { while (await transformJoin.ReadAsync()) ; });
-
         }
 
         /// <summary>
@@ -202,7 +200,7 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
             // var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(10, transformJoin.FieldCount);
@@ -221,12 +219,12 @@ namespace dexih.transforms.tests
             var source = Helpers.CreateSortedTestData();
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinDataMissingRows(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinDataMissingRows(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             // var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinDataMissingRows(), new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Abend, null, "Join");
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -256,12 +254,12 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
 
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join");
 //            var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.All, null, "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -302,7 +300,7 @@ namespace dexih.transforms.tests
                     }, EFunctionCaching.NoCache)
             };
             
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
             
             //            var conditions = new List<TransformFunction>
 //            {
@@ -318,7 +316,7 @@ namespace dexih.transforms.tests
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -342,13 +340,13 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.First, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.First, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
             // var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.First, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.Equal(TransformJoin.EJoinAlgorithm.Sorted, transformJoin.JoinAlgorithm);
+            Assert.Equal(EJoinStrategy.Sorted, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -372,13 +370,13 @@ namespace dexih.transforms.tests
             var sortedJoinData = new TransformSort(Helpers.CreateDuplicatesJoinData(), new Sorts() { new Sort("StringColumn") });
             
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Last, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.Last, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
 
 //            var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join> { new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")) }, null, EDuplicateStrategy.Last, new TableColumn("LookupValue", ETypeCode.String, "Join"), "Join");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -408,17 +406,11 @@ namespace dexih.transforms.tests
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
                 new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: sortedJoinData.CacheTable.Name), true )
             };
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
-
-//            var transformJoin = new TransformJoin(source, sortedJoinData, new List<Join>
-//            {
-//                new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-//                new Join(new TableColumn("IsValid"), true)
-//            }, null, EDuplicateStrategy.Abend, null, "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "join_duplicates"), "join_duplicates");
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open();
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Sorted);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Sorted);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -443,19 +435,13 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "Join"), true )
+                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "join_duplicates"), true )
             };
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
-
-//            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<Join>
-//            {
-//                new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-//                new Join(new TableColumn("IsValid"), true)
-//            }, null, EDuplicateStrategy.Abend, null, "Join");
+            
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "join_duplicates"), null);
+            
             Assert.Equal(10, transformJoin.FieldCount);
-
             await transformJoin.Open(1, null, CancellationToken.None);
-//            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -488,7 +474,7 @@ namespace dexih.transforms.tests
                     }, EFunctionCaching.NoCache)
             };
             
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
             
 //            var conditions = new List<TransformFunction>
@@ -505,7 +491,7 @@ namespace dexih.transforms.tests
             Assert.Equal(10, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.True(transformJoin.JoinAlgorithm == TransformJoin.EJoinAlgorithm.Hash);
+            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Hash);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -538,7 +524,7 @@ namespace dexih.transforms.tests
                     }, EFunctionCaching.NoCache)
             };
             
-            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
 //            //create a condition to join the source to the join columns + 1
 //            var conditions = new List<TransformFunction>
@@ -554,7 +540,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.Equal(TransformJoin.EJoinAlgorithm.Hash, transformJoin.JoinAlgorithm);
+            Assert.Equal(EJoinStrategy.Hash, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -589,7 +575,7 @@ namespace dexih.transforms.tests
                     }, EFunctionCaching.NoCache)
             };
             
-            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, Helpers.CreateUnSortedJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
 //            //create a condition to join the source to the join columns + 1
 //            var conditions = new List<TransformFunction>
@@ -605,7 +591,7 @@ namespace dexih.transforms.tests
             Assert.Equal(9, transformJoin.FieldCount);
 
             await transformJoin.Open(1, null, CancellationToken.None);
-            Assert.Equal(TransformJoin.EJoinAlgorithm.Hash, transformJoin.JoinAlgorithm);
+            Assert.Equal(EJoinStrategy.Hash, transformJoin.JoinAlgorithm);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())
@@ -629,7 +615,7 @@ namespace dexih.transforms.tests
                 new MapJoinNode(new TableColumn("array", ETypeCode.Node), source.CacheTable),
                 new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))
             };
-            var link = new TransformJoin(source, Helpers.CreateChildTableData(), mappings, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var link = new TransformJoin(source, Helpers.CreateChildTableData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
             Assert.Equal(3, link.FieldCount);
 
@@ -694,7 +680,7 @@ namespace dexih.transforms.tests
             var sortedJoinData = Helpers.CreateValidDatesJoinData();
 
             var mappings = new Mappings { new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")) };
-            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EDuplicateStrategy.MergeValidDates, EJoinNotFoundStrategy.NullJoin, null, "Join");
+            var transformJoin = new TransformJoin(source, sortedJoinData, mappings, EJoinStrategy.Auto, EDuplicateStrategy.MergeValidDates, EJoinNotFoundStrategy.NullJoin, null, "Join");
 
             await transformJoin.Open(1, null, CancellationToken.None);
 

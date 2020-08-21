@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -9,7 +10,9 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
+using Microsoft.Extensions.Logging;
 
 namespace dexih.transforms
 {
@@ -19,20 +22,21 @@ namespace dexih.transforms
     /// </summary>
     [Transform(
         Name = "Join",
-        Description = "Join two tables by first loading the secondary table into memory.  This is fast when the secondary table is not large.",
+        Description = "Join two tables by first loading the secondary table into memory. This is fast when the secondary table is not large.",
         TransformType = ETransformType.Join
     )]
     public class TransformJoin : Transform
     {
         public TransformJoin() { }
 
-        public TransformJoin(Transform primaryTransform, Transform joinTransform, Mappings mappings, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, TableColumn joinSortField, string referenceTableAlias)
+        public TransformJoin(Transform primaryTransform, Transform joinTransform, Mappings mappings, EJoinStrategy joinStrategy, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, TableColumn joinSortField, string tableAlias)
         {
             Mappings = mappings;
-            ReferenceTableAlias = referenceTableAlias;
+            TableAlias = tableAlias;
             JoinDuplicateStrategy = joinDuplicateResolution;
             JoinNotFoundStrategy = joinNotFoundStrategy;
             JoinSortField = joinSortField;
+            JoinStrategy = joinStrategy;
 
             SetInTransform(primaryTransform, joinTransform);
         }
@@ -62,19 +66,17 @@ namespace dexih.transforms
         private int _validToOrdinal = -1;
 
         private bool _cacheLoaded = false;
-
-
-        public enum EJoinAlgorithm
-        {
-            Sorted = 1, Hash
-        }
-        public EJoinAlgorithm JoinAlgorithm { get; private set; }
+        
+        public EJoinStrategy JoinAlgorithm { get; private set; }
 
         private int _primaryFieldCount;
         private int _referenceFieldCount;
 
         // list of mappings which are not standard join/equal mappings.
         private Mappings _additionalJoins;
+
+        private string GetReferenceTableAlias => ReferenceTransform?.TableAlias ?? ReferenceTransform?.CacheTable.Name;
+            
         
         public override string TransformName { get; } = "Join";
 
@@ -88,14 +90,7 @@ namespace dexih.transforms
 
         protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
-            Table table;
-            if (Mappings == null)
-            {
-                table = PrimaryTransform.CacheTable.Copy();
-            } else
-            {
-                table = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
-            }
+            var table = Mappings == null ? PrimaryTransform.CacheTable.Copy() : Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, mapAllReferenceColumns);
 
             if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
             {
@@ -116,7 +111,7 @@ namespace dexih.transforms
                 throw new Exception("There must a join table specified.");
             }
 
-            _referenceTableName = string.IsNullOrEmpty(ReferenceTransform.ReferenceTableAlias) ? ReferenceTransform.CacheTable.Name : ReferenceTransform.ReferenceTableAlias;
+            _referenceTableName = GetReferenceTableAlias;
             _referenceTable = ReferenceTransform.CacheTable.Copy();
 
             _additionalJoins = new Mappings();
@@ -244,7 +239,8 @@ namespace dexih.transforms
                             {
                                 return new ParameterColumn(parameterJoinColumn.Name, parameterJoinColumn.Column);
                             }
-                            else if (c is ParameterArray parameterArray)
+
+                            if (c is ParameterArray parameterArray)
                             {
                                 var newArray = parameterArray.Parameters.Select(arrayParameter =>
                                 {
@@ -261,10 +257,8 @@ namespace dexih.transforms
                                 return new ParameterArray(parameterArray.Name, parameterArray.DataType,
                                     parameterArray.Rank, newArray);
                             }
-                            else
-                            {
-                                return c;
-                            }
+
+                            return c;
 
                         }).ToArray();
 
@@ -321,7 +315,7 @@ namespace dexih.transforms
 
             // _firstRead = true;
 
-            _containsJoinColumns = Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null && c.Compare == ECompare.IsEqual).Any();
+            _containsJoinColumns = Mappings.OfType<MapJoin>().Any(c => c.InputColumn != null && c.Compare == ECompare.IsEqual);
             _primaryFieldCount = PrimaryTransform.BaseFieldCount;
             _referenceFieldCount = ReferenceTransform.BaseFieldCount;
 
@@ -338,7 +332,7 @@ namespace dexih.transforms
             IsOpen = true;
 
             SetRequestQuery(requestQuery, true);
-            SelectQuery.Columns = null;
+            SelectQuery.Alias = TableAlias;
             
             if (_cacheLoaded) return true;
 
@@ -349,64 +343,306 @@ namespace dexih.transforms
 
             var referenceQuery = new SelectQuery
             {
-                Sorts = RequiredReferenceSortFields()
+                Sorts = RequiredReferenceSortFields(),
+                Alias = _referenceTableName
             };
 
-            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
-            if (!returnValue) return false;
-
-            GeneratedQuery = new SelectQuery()
+            // join is a reference to the join to check that the database was able to push it down.
+            Join join = null;
+            if (ReferenceTransform.ReferenceConnection?.CanJoin != null && 
+                ReferenceTransform.ReferenceConnection.CanJoin && // the reference connection allows database joins 
+                JoinDuplicateStrategy == EDuplicateStrategy.All &&  // database joins are only valid with no duplicate detection
+                (JoinStrategy == EJoinStrategy.Auto || JoinStrategy == EJoinStrategy.Database)) // database join allowed with auto/database strategies.
             {
-                Sorts = PrimaryTransform.SortFields,
-                Filters = PrimaryTransform.Filters
-            };
-
-            returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
-            if (!returnValue)
-            {
-                return false;
-            }
-
-            var canUseSorted = true;
-            // if one of the functions joins the two tables then we will need to default to HashJoin.
-            foreach (var mapping in Mappings)
-            {
-                if (mapping is MapFunction mapFunction)
+                var canJoin = true;
+                var joinFilters = new Filters();
+                foreach (var mapping in Mappings)
                 {
-                    if (mapFunction.Parameters.Inputs.OfType<ParameterColumn>().Any() &&
-                        mapFunction.Parameters.Inputs.OfType<ParameterJoinColumn>().Any())
+                    if (mapping is MapJoin mapJoin)
                     {
-                        canUseSorted = false;
+                        var joinColumn = mapJoin.JoinColumn.Copy();
+                        joinColumn.ReferenceTable = GetReferenceTableAlias;
+                        var joinFilter = new Filter(mapJoin.InputColumn, mapJoin.Compare, joinColumn);
+                        joinFilters.Add(joinFilter);
+                    }
+                    else
+                    {
+                        canJoin = false;
+                        if (JoinStrategy == EJoinStrategy.Database)
+                        {
+                            throw new InvalidJoinStrategyException($"A database join cannot be used.  The a mapping of type {mapping.GetType().Name} does not support push-down to database.  Change the join strategy or review your connections and mappings to ensure they can be pushed down to the database.");
+                        }
                         break;
+                    }
+                }
+
+                if (canJoin)
+                {
+                    var referenceTable = _referenceTable.Copy();
+                    foreach(var column in referenceTable.Columns)
+                    {
+                        column.ReferenceTable = GetReferenceTableAlias;
+                    }
+                    join = new Join(
+                        JoinNotFoundStrategy == EJoinNotFoundStrategy.Filter ? EJoinType.Inner : EJoinType.Left,
+                        referenceTable, GetReferenceTableAlias, joinFilters)
+                    {
+                        ConnectionId = ReferenceTransform.ReferenceConnection.GetHashCode()
+                    };
+
+                    SelectQuery.Joins.Add(join);
+
+                    if (requestQuery?.Joins.Count > 0)
+                    {
+                        SelectQuery.Joins.AddRange(requestQuery.Joins);
                     }
                 }
             }
             
-            //check if the primary and reference transform are sorted in the join
-            if ( canUseSorted &&
-                SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) && 
-                SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields))
+            if(requestQuery?.Columns.Count > 0)
             {
-                JoinAlgorithm = EJoinAlgorithm.Sorted;
+                void AllocateSelectColumn(SelectColumn selectColumn)
+                {
+                    if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null && (SelectQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                    {
+                        SelectQuery.Columns ??= new SelectColumns();
+                        if (!SelectQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                        {
+                            selectColumn.Column.ReferenceTable = SelectQuery.Alias;
+                            SelectQuery.Columns.Add(selectColumn);
+                        }
+                    }
+
+                    if (_referenceTable.Columns[selectColumn.Column] != null && (referenceQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                    {
+                        referenceQuery.Columns ??= new SelectColumns();
+                        if (!referenceQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                        {
+                            selectColumn.Column.ReferenceTable = referenceQuery.Alias;
+                            referenceQuery.Columns.Add(selectColumn);
+                        }
+                    }
+
+                }
+                if (join == null)
+                {
+                    foreach (var column in requestQuery.GetAllColumns())
+                    {
+                        AllocateSelectColumn(new SelectColumn(column));
+                    }
+
+                    foreach (var column in Mappings.GetRequiredColumns(true))
+                    {
+                        AllocateSelectColumn(column);
+                    }
+
+                    foreach (var column in Mappings.GetRequiredReferenceColumns(true))
+                    {
+                        AllocateSelectColumn(column);
+                    }
+                }
+                else
+                {
+                    TableColumn SetColumnReference(TableColumn column)
+                    {
+                        var copy = column.CloneProperties();
+                        if (copy.ReferenceTable == null)
+                        {
+                            if (PrimaryTransform.CacheTable.Columns[column] != null)
+                            {
+                                copy.ReferenceTable = SelectQuery.Alias;
+                            }
+                            if (_referenceTable.Columns[column] != null)
+                            {
+                                copy.ReferenceTable = referenceQuery.Alias;
+                            }
+                        }
+
+                        return copy;
+                    }
+                    SelectQuery.Columns ??= new SelectColumns();
+                    foreach (var column in requestQuery.Columns)
+                    {
+                        SelectQuery.Columns.Add(new SelectColumn(SetColumnReference(column.Column), column.Aggregate, column.OutputColumn));
+                    }
+
+                    foreach (var column in requestQuery.Groups)
+                    {
+                        SelectQuery.Groups.Add(SetColumnReference(column));
+                    }
+
+                    SelectQuery.Sorts.Clear();
+                    // if the join can be pushed down, then group by's also can.
+                    SelectQuery.GroupFilters = requestQuery.GroupFilters;
+                }
+                
+                // CacheTable.Columns.Clear();
+                // foreach (var selectColumn in SelectQuery.Columns)
+                // {
+                //     CacheTable.Columns.Add(selectColumn.Column);
+                // }
+                // foreach (var selectColumn in referenceQuery.Columns)
+                // {
+                //     CacheTable.Columns.Add(selectColumn.Column);
+                // }
+                
+            }
+            
+            //we need to translate filters and sorts to source column names before passing them through.
+            if(requestQuery?.Filters != null)
+            {
+                // adds the filter to the table if the columns exist
+                void AddFilter(Filters filters, Table table, Filter filter)
+                {
+                    if (filter.Column1 != null)
+                    {
+                        var refColumn1 = table.Columns[filter.Column1];
+
+                        if (refColumn1 != null)
+                        {
+                            if (filter.Column2 != null)
+                            {
+                                var refColumn2 = table.Columns[filter.Column2];
+                                if (refColumn2 != null)
+                                {
+                                    filters.Add(filter);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                filters.Add(filter);
+                            }
+                        }
+                    }
+                    
+                    if (filter.Column2 != null)
+                    {
+                        var refColumn2a = table.Columns[filter.Column2];
+
+                        if (refColumn2a != null)
+                        {
+                            if (filter.Column1 != null)
+                            {
+                                var refColumn1a = table.Columns[filter.Column1];
+                                if (refColumn1a != null)
+                                {
+                                    filters.Add(filter);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                filters.Add(filter);
+                            }
+                        }
+                    }
+                }
+
+                if (join == null)
+                {
+                    // distribute any filters to the reference/main query.
+                    foreach (var filter in requestQuery.Filters)
+                    {
+                        AddFilter(referenceQuery.Filters, _referenceTable, filter);
+                        AddFilter(SelectQuery.Filters, PrimaryTransform.CacheTable, filter);
+                    }
+                }
+                else
+                {
+                    SelectQuery.Filters.AddRange(requestQuery.Filters);
+                }
+            }
+
+            var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
+            if (!returnValue) return false;
+            
+            GeneratedQuery = new SelectQuery()
+            {
+                Columns = PrimaryTransform.Columns,
+                Sorts = PrimaryTransform.SortFields,
+                Filters = PrimaryTransform.Filters,
+                Joins = PrimaryTransform.Joins
+            };
+            
+            // if the join is pushed down successful, then we don't need to open the reference transform.
+            if (join != null && PrimaryTransform.Joins.Any(c => c.JoinId == join.JoinId) )
+            {
+                CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, null, GetReferenceTableAlias, false);
+                _primaryFieldCount = PrimaryTransform.BaseFieldCount;
+                _referenceFieldCount = ReferenceTransform.BaseFieldCount;
+                
+                // if this is a push-down query, then group by's can also be passed through.
+                GeneratedQuery.Groups = PrimaryTransform.Groups;
+                GeneratedQuery.GroupFilters = PrimaryTransform.GroupFilters;
+
+                JoinAlgorithm = EJoinStrategy.Database;
             }
             else
             {
-                JoinAlgorithm = EJoinAlgorithm.Hash;
-                
-                _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
-                _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
-                _groupsOpen = await ReadNextGroup();
-
-                //load all the join data into an a reference dictionary
-                while (_groupsOpen)
+                if (JoinStrategy == EJoinStrategy.Database)
                 {
-                    _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
-                    _groupsOpen = await ReadNextGroup();
+                    throw new InvalidJoinStrategyException("A database join cannot be used.  Change the join strategy or review your connections and mappings to ensure they can be pushed down to the database.");  
+                }
+                
+                returnValue = await ReferenceTransform.Open(auditKey, referenceQuery, cancellationToken);
+                if (!returnValue)
+                {
+                    return false;
                 }
 
-                _cacheLoaded = true;
-            }
+                CacheTable = InitializeCacheTable(false); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, false);
+                _primaryFieldCount = PrimaryTransform.BaseFieldCount;
+                _referenceFieldCount = ReferenceTransform.BaseFieldCount;
 
+                var canUseSorted = true;
+                // if one of the functions joins the two tables then we will need to default to HashJoin.
+                foreach (var mapping in Mappings)
+                {
+                    if (mapping is MapFunction mapFunction)
+                    {
+                        if (mapFunction.Parameters.Inputs.OfType<ParameterColumn>().Any() &&
+                            mapFunction.Parameters.Inputs.OfType<ParameterJoinColumn>().Any())
+                        {
+                            canUseSorted = false;
+                            break;
+                        }
+                    }
+                }
+
+                //check if the primary and reference transform are sorted in the join
+                if (canUseSorted &&
+                    SortFieldsMatch(RequiredSortFields(), PrimaryTransform.SortFields) &&
+                    SortFieldsMatch(RequiredReferenceSortFields(), ReferenceTransform.SortFields) &&
+                    (JoinStrategy == EJoinStrategy.Auto || JoinStrategy == EJoinStrategy.Sorted)
+                    )
+                {
+                    JoinAlgorithm = EJoinStrategy.Sorted;
+                }
+                else
+                {
+                    if (JoinStrategy == EJoinStrategy.Sorted)
+                    {
+                        throw new InvalidJoinStrategyException("A sorted join cannot be used.  Change the join strategy or review your connections and mappings to ensure they can be pushed down to the database.");  
+                    }
+                    
+                    JoinAlgorithm = EJoinStrategy.Hash;
+
+                    _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
+                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
+                    _groupsOpen = await ReadNextGroup();
+
+                    //load all the join data into an a reference dictionary
+                    while (_groupsOpen)
+                    {
+                        _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
+                        _groupsOpen = await ReadNextGroup();
+                    }
+
+                    _cacheLoaded = true;
+                }
+            }
+            
             return true;
         }
 
@@ -468,12 +704,38 @@ namespace dexih.transforms
 
         private async Task<object[]> GetJoin(CancellationToken cancellationToken = default)
         {
+            // logic when the join query is pushed down to the database
+            if (JoinAlgorithm == EJoinStrategy.Database)
+            {
+                // if the join not found strategy is abend, we need to check for any joins not found.
+                if (JoinNotFoundStrategy == EJoinNotFoundStrategy.Abend)
+                {
+                    var found = false;
+                    foreach (var join in Mappings.OfType<MapJoin>())
+                    {
+                        if (join.JoinColumn != null && PrimaryTransform[join.JoinColumn] != null)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
+                    }
+                }
+                
+                return PrimaryTransform.CurrentRow;
+            }
+            
             var newRow = new object[FieldCount];
             var joinMatchFound = false;
 
             //if input is sorted, then run a sorted join
-            if (JoinAlgorithm == EJoinAlgorithm.Sorted)
+            switch (JoinAlgorithm)
             {
+                case EJoinStrategy.Sorted:
                 //first read get a row from the join table.
                 if (_firstRead)
                 {
@@ -495,8 +757,8 @@ namespace dexih.transforms
                 if (_containsJoinColumns)
                 {
                     // update the primary row only.
-                    var (isMatch, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
-                    if (ignore)
+                    var (isMatch, ignore1) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    if (ignore1)
                     {
                         TransformRowsIgnored += 1;
                     }
@@ -514,8 +776,8 @@ namespace dexih.transforms
                                 if (_groupsOpen)
                                 {
                                     // now the join table has advanced, add the reference row.
-                                    (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
-                                    if (ignore)
+                                    (_, ignore1) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, ReferenceTransform.CurrentRow, cancellationToken);
+                                    if (ignore1)
                                     {
                                         TransformRowsIgnored += 1;
                                     }
@@ -539,41 +801,45 @@ namespace dexih.transforms
                 {
                     joinMatchFound = true;
                 }
-            }
-            else //if input is not sorted, then run a hash join.
-            {
-                //                //first load the join table into memory
-                //                if (_firstRead)
-                //                {
-                //                    _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
-                //                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
-                //                    _groupsOpen = await ReadNextGroup();
-                //
-                //                    //load all the join data into an a reference dictionary
-                //                    while (_groupsOpen)
-                //                    {
-                //                        _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
-                //                        _groupsOpen = await ReadNextGroup();
-                //                    }
-                //
-                //                    _firstRead = false;
-                //                }
+                break;
+                case EJoinStrategy.Hash:
+                    //if input is not sorted, then run a hash join.
+                    
+                    //                //first load the join table into memory
+                    //                if (_firstRead)
+                    //                {
+                    //                    _joinHashData = new SortedDictionary<object[], List<object[]>>(new JoinKeyComparer());
+                    //                    _joinReaderOpen = await ReferenceTransform.ReadAsync(cancellationToken);
+                    //                    _groupsOpen = await ReadNextGroup();
+                    //
+                    //                    //load all the join data into an a reference dictionary
+                    //                    while (_groupsOpen)
+                    //                    {
+                    //                        _joinHashData.Add(Mappings.GetJoinReferenceKey(_groupData[0]), _groupData);
+                    //                        _groupsOpen = await ReadNextGroup();
+                    //                    }
+                    //
+                    //                    _firstRead = false;
+                    //                }
 
-                var (_, ignore) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
-                if (ignore)
-                {
-                    TransformRowsIgnored += 1;
-                }
-                else
-                {
-                    var primaryKey = Mappings.GetJoinPrimaryKey();
-
-                    if (_joinHashData.TryGetValue(primaryKey, out _groupData))
+                    var (_, ignore2) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    if (ignore2)
                     {
-                        _groupsOpen = true;
-                        joinMatchFound = true;
+                        TransformRowsIgnored += 1;
                     }
-                }
+                    else
+                    {
+                        var primaryKey = Mappings.GetJoinPrimaryKey();
+
+                        if (_joinHashData.TryGetValue(primaryKey, out _groupData))
+                        {
+                            _groupsOpen = true;
+                            joinMatchFound = true;
+                        }
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             var pos = SetPrimaryRow(newRow);
@@ -622,7 +888,7 @@ namespace dexih.transforms
                         case EDuplicateStrategy.Abend:
                             if (groupData.Count > 1)
                             {
-                                throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                                throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                             }
                             joinRow = groupData[0];
                             break;
@@ -653,7 +919,7 @@ namespace dexih.transforms
                     switch(JoinNotFoundStrategy)
                     {
                         case EJoinNotFoundStrategy.Abend:
-                            throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To continue, set the join not found strategy to continue.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                            throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                         case EJoinNotFoundStrategy.Filter:
                             return null;
                     }
@@ -695,7 +961,7 @@ namespace dexih.transforms
                 switch (JoinNotFoundStrategy)
                 {
                     case EJoinNotFoundStrategy.Abend:
-                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To continue, set the join not found strategy to continue.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                     case EJoinNotFoundStrategy.Filter:
                         return null;
                 }
@@ -906,7 +1172,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null && c.Compare == ECompare.IsEqual))
             {
-                fields.Add(new Sort {Column = joinPair.InputColumn, Direction = ESortDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.InputColumn.Copy(), Direction = ESortDirection.Ascending});
             }
 
             if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
@@ -917,7 +1183,7 @@ namespace dexih.transforms
                     throw new TransformException("The update strategy is merge valid dates, and the validfrom field is part of the joins.  Remove the validfrom from the joins.");
                 }
 
-                fields.Add(new Sort { Column = column, Direction = ESortDirection.Ascending });
+                fields.Add(new Sort { Column = column.Copy(), Direction = ESortDirection.Ascending });
             }
             
             return fields;
@@ -928,7 +1194,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.JoinColumn != null && c.Compare == ECompare.IsEqual))
             {
-                fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = ESortDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.JoinColumn.Copy(), Direction = ESortDirection.Ascending});
             }
 
             if (JoinSortField != null)
@@ -938,8 +1204,6 @@ namespace dexih.transforms
 
             return fields;
         }
-
-
     }
 
 

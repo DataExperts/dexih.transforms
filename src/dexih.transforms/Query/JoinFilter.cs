@@ -1,7 +1,8 @@
 ﻿// using System;
+// using System.Runtime.Serialization;
 // using static Dexih.Utils.DataType.DataType;
 // using Dexih.Utils.DataType;
-// 
+//
 //
 // namespace dexih.functions.Query
 // {

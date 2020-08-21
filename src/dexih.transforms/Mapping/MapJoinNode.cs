@@ -78,14 +78,12 @@ namespace dexih.transforms.Mapping
         //     return new SelectColumn[0];
         // }
 
-        public override IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        public override IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            if (NodeColumn == null)
+            if (NodeColumn != null)
             {
-                return new TableColumn[0];
+                yield return new SelectColumn(NodeColumn);
             }
-
-            return new[] {NodeColumn};
         }
         
         public override bool MatchesSelectQuery(SelectQuery selectQuery)

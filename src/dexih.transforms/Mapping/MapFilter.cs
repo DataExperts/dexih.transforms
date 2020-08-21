@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -110,13 +111,11 @@ namespace dexih.transforms.Mapping
             return filter;
         }
         
-        // public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
-        // {
-        //     var columns = new List<SelectColumn>();
-        //     // if (Column1 != null) { columns.Add(new SelectColumn(Column1));}
-        //     // if(Column2 != null) { columns.Add(new SelectColumn(Column2));}
-        //     return columns;
-        // }
+        public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
+        {
+            if (Column1 != null) { yield return new SelectColumn(Column1);}
+            if (Column2 != null) { yield return new SelectColumn(Column2);}
+        }
 
         public override bool MatchesSelectQuery(SelectQuery selectQuery)
         {

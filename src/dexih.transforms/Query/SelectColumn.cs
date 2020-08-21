@@ -35,11 +35,6 @@ namespace dexih.functions.Query
         [DataMember(Order = 2)] 
         public TableColumn OutputColumn { get; set; }
         
-        public string GetOutputName()
-        {
-            return OutputColumn?.Name ?? Column.Name;
-        }
-
         public bool Equals(SelectColumn other)
         {
             if (ReferenceEquals(null, other)) return false;

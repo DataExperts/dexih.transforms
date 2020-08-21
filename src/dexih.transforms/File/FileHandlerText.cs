@@ -157,7 +157,7 @@ namespace dexih.transforms.File
                         length = Convert.ToInt32(dataTypes[i].MaxLength * 1.5);
                         break;
                 }
-
+                
                 if (length > 1000)
                 {
                     dataType = ETypeCode.Text;
@@ -174,7 +174,7 @@ namespace dexih.transforms.File
                     MaxLength = length,
                     DeltaType = EDeltaType.TrackingField,
                     Description = "",
-                    AllowDbNull = true,
+                    AllowDbNull = dataTypes[i].HasNulls || dataTypes[i].HasBlanks,
                     IsUnique = false
                 };
                 columns.Add(col);

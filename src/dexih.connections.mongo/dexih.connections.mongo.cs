@@ -40,6 +40,7 @@ namespace dexih.connections.mongo
         public override bool CanBulkLoad => true;
         public override bool CanSort => true;
         public override bool CanFilter => true;
+        public override bool CanJoin => false;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
         public override bool CanGroup => false;

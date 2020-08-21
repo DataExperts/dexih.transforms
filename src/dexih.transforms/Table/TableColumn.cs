@@ -48,9 +48,13 @@ namespace dexih.functions
         //this is the max length of the non-encrypted data type.
         private int? _baseMaxLength;
 
-
+        private string _referenceTable;
+        
         [DataMember(Order = 0)]
-        public string ReferenceTable { get; set; }
+        public string ReferenceTable {
+            get => string.IsNullOrWhiteSpace(_referenceTable) ? null : _referenceTable;
+            set => _referenceTable = value;
+        }
 
         [DataMember(Order = 1)]
         public string Name { get; set; }
@@ -164,7 +168,18 @@ namespace dexih.functions
             {
                 return ColumnGroup + "." + Name;
             }
+            
             return Name;
+        }
+
+        public string ReferenceTableName()
+        {
+            if (!string.IsNullOrEmpty(ReferenceTable))
+            {
+                return ReferenceTable + "." + Name;
+            }
+
+            return "T." + Name;
         }
 
         /// <summary>
@@ -458,6 +473,7 @@ namespace dexih.functions
                 hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (LogicalName != null ? LogicalName.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Description != null ? Description.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (ReferenceTable != null ? ReferenceTable.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ Rank;
                 hashCode = (hashCode * 397) ^ (int) _baseDataType;
                 hashCode = (hashCode * 397) ^ _baseMaxLength.GetHashCode();

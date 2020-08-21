@@ -35,6 +35,7 @@ namespace dexih.transforms
         public override bool CanBulkLoad => true;
         public override bool CanSort => false;
         public override bool CanFilter => true;
+        public override bool CanJoin => false;
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;
@@ -299,8 +300,7 @@ namespace dexih.transforms
                     await writer.FlushAsync();
                     stream.Position = 0;
                 }
-
-
+                
                 FileHandlerBase fileHandler = null;
 
                 switch (flatFile.FormatType)
@@ -322,11 +322,7 @@ namespace dexih.transforms
 
                 //The new datatable that will contain the table schema
                 var newFlatFile = flatFile.CopyFlatFile();
-//                flatFile.Name = originalTable.Name;
-//                newFlatFile.Columns.Clear();
-//                newFlatFile.LogicalName = newFlatFile.Name;
-//                newFlatFile.Description = "";
-
+                
                 foreach (var column in columns)
                 {
                     newFlatFile.Columns.Add(column);
@@ -424,7 +420,7 @@ namespace dexih.transforms
                 var fileName = table.Name + DateTime.Now.ToString("_yyyyMMddHHmmss") + ".csv";
                 var flatFile = (FlatFile)table;
 
-                //open a new filestream 
+                //open a new file stream 
                 await using (var writer = await GetWriteFileStream(flatFile, EFlatFilePath.Outgoing, fileName, cancellationToken))
                 await using (var streamWriter = new StreamWriter(writer))
                 await using (var csv = new CsvWriter(streamWriter, flatFile.FileConfiguration))

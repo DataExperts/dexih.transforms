@@ -20,7 +20,7 @@ namespace dexih.functions.Query
             Groups = new List<TableColumn>();
             Rows = -1; //-1 means show all rows.
             GroupFilters = new Filters();
-            // Joins = new List<Join>();
+            Joins = new Joins();
         }
 
         [DataMember(Order = 0)]
@@ -41,24 +41,26 @@ namespace dexih.functions.Query
         [DataMember(Order = 5)]
         public Filters GroupFilters { get; set; }
         
-        // [DataMember(Order = 6)]
-        // public List<Join> Joins { get; set; }
+        [DataMember(Order = 6)]
+        public Joins Joins { get; set; }
 
-        [DataMember(Order = 6)] 
+        [DataMember(Order = 7)] 
         public int Rows { get; set; }
 
-        [DataMember(Order = 7)]
+        [DataMember(Order = 8)]
         public List<TableColumn> InputColumns { get; set; }
 
         /// <summary>
         /// Used for flat files to specify only a specific filename
         /// </summary>
-        [DataMember(Order = 8)]
+        [DataMember(Order = 9)]
         public string FileName { get; set; }
 
-        [DataMember(Order = 9)] 
+        [DataMember(Order = 10)] 
         public EFlatFilePath Path { get; set; } = EFlatFilePath.None;
-        
+
+        [DataMember(Order = 11)] public string Alias { get; set; }
+
         /// <summary>
         /// Tests is a row should be filtered based on the filters provided.  
         /// </summary>
@@ -358,6 +360,44 @@ namespace dexih.functions.Query
             {
                 filter.Value1 = inputParameters.SetParameters(filter.Value1, 0);
                 filter.Value2 = inputParameters.SetParameters(filter.Value2, filter.RankValue2());
+            }
+        }
+
+        public IEnumerable<TableColumn> GetAllColumns()
+        {
+            foreach (var column in Columns)
+            {
+                yield return column.Column;
+            }
+
+            foreach (var column in Groups)
+            {
+                yield return column;
+            }
+
+            foreach (var filter in Filters)
+            {
+                if (filter.Column1 != null)
+                {
+                    yield return filter.Column1;
+                }
+
+                if (filter.Column2 != null)
+                {
+                    yield return filter.Column2;
+                }
+            }
+
+            foreach (var joinFilter in Joins.SelectMany(join => join.JoinFilters))
+            {
+                if (joinFilter.Column1 != null)
+                {
+                    yield return joinFilter.Column1;
+                }
+                if (joinFilter.Column2 != null)
+                {
+                    yield return joinFilter.Column2;
+                }
             }
         }
     }

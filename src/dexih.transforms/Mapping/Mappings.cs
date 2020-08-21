@@ -197,7 +197,7 @@ namespace dexih.transforms.Mapping
 
                     if (!found && PassThroughColumns && _passThroughColumns != null)
                     {
-                        var column = _passThroughColumns.SingleOrDefault(c => c.Compare(t.Column));
+                        var column = _passThroughColumns.FirstOrDefault(c => c.Compare(t.Column));
                         if (column != null)
                         {
                             fields.Add(new Sort(column, t.Direction));
@@ -490,14 +490,14 @@ namespace dexih.transforms.Mapping
             return columns.ToArray();
         }
         
-        public TableColumn[] GetRequiredReferenceColumns()
+        public SelectColumn[] GetRequiredReferenceColumns(bool ignorePassthrough = false)
         {
-            if (PassThroughColumns)
+            if (PassThroughColumns && !ignorePassthrough)
             {
                 return null;
             }
             
-            var columns = new HashSet<TableColumn>();
+            var columns = new HashSet<SelectColumn>();
             
             foreach (var mapping in this)
             {

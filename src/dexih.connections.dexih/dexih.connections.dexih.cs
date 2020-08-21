@@ -35,6 +35,8 @@ namespace dexih.connections.dexih
         public override bool CanBulkLoad => false;
         public override bool CanSort => true;
         public override bool CanFilter => true;
+        public override bool CanJoin => true;
+
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;

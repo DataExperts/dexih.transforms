@@ -173,11 +173,11 @@ namespace dexih.transforms.Mapping
         {
             if (includeAggregate)
             {
-                return new [] {new SelectColumn(InputColumn, Aggregate, OutputColumn), };    
+                yield return new SelectColumn(InputColumn, Aggregate, OutputColumn);    
             }
             else
             {
-                return new [] {new SelectColumn(InputColumn, EAggregate.None, InputColumn), };
+                yield return new SelectColumn(InputColumn, EAggregate.None, InputColumn);
             }
         }
 
