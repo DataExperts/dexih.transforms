@@ -113,8 +113,12 @@ namespace dexih.transforms
         {
             var generatedQuery = new SelectQuery()
             {
+                Columns = PrimaryTransform.Columns,
                 Sorts = _sortFields,
-                Filters = PrimaryTransform.Filters
+                Filters = PrimaryTransform.Filters,
+                Joins = PrimaryTransform.Joins,
+                Groups = PrimaryTransform.Groups,
+                GroupFilters = PrimaryTransform.GroupFilters,
             };
 
             return generatedQuery;

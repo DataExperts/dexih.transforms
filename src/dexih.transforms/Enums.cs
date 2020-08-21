@@ -13,13 +13,13 @@ namespace dexih.transforms
         [Description("Automatic")]
         Auto = 0,
 
-        [Description("Sorted")]
+        [Description("Pre-Sorted Join")]
         Sorted,
 
-        [Description("In Memory")]
+        [Description("In Memory (hash) join")]
         Hash,
 
-        [Description("Database")]
+        [Description("Database Join")]
         Database,
     }
     

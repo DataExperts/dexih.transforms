@@ -370,7 +370,7 @@ namespace dexih.connections.sql
 
         protected string AggregateFunction(SelectColumn column, string alias)
         {
-            var selectColumn = $"{AddDelimiter(column.Column.ReferenceTable ?? alias)}.{AddDelimiter(column.Column.Name)}";
+            var selectColumn = alias == null ? AddDelimiter(column.Column.Name) : $"{AddDelimiter(column.Column.ReferenceTable ?? alias)}.{AddDelimiter(column.Column.Name)}";
 
             if (column.Aggregate == EAggregate.None)
             {
@@ -454,9 +454,17 @@ namespace dexih.connections.sql
             return true;
         }
         
-        private string GetDelimitedColumn(TableColumn column, string alias) => $" {AddDelimiter(column.ReferenceTable ?? alias)}.{AddDelimiter(column.Name)} ";
-        private string GetOutputName(SelectColumn column, string alias) => column.OutputColumn?.Name == null ? AddDelimiter(column.Column.ReferenceTable ?? alias + "-" + column.Column.Name) : AddDelimiter(column.Column.ReferenceTable ?? alias + "-" + column.OutputColumn?.Name);
-        private string GetFieldName(TableColumn column, string alias) => AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
+        private string GetDelimitedColumn(TableColumn column, string alias) => alias == null && column.ReferenceTable == null ? AddDelimiter(column.Name) : $" {AddDelimiter(column.ReferenceTable ?? alias)}.{AddDelimiter(column.Name)} ";
+
+        private string GetOutputName(SelectColumn column, string alias) =>
+            column.OutputColumn?.Name == null
+                ? (alias == null && column.Column.ReferenceTable == null
+                    ? AddDelimiter(column.Column.Name)
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.Column.Name))
+                : (alias == null && column.Column.ReferenceTable == null
+                    ? AddDelimiter(column.OutputColumn?.Name)
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.OutputColumn?.Name));
+        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
         
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
@@ -464,7 +472,7 @@ namespace dexih.connections.sql
 
             // if the query contains a join, we will need to add alias' to all the table/column names to ensure they are unique 
             // across joins.
-            var alias = query?.Alias ?? table.Name;
+            var alias = query?.Alias; // ?? table.Name;
             
             //if the query doesn't have any columns, then use all columns from the table.
             Dictionary<string, (string name, string alias)> columns;
@@ -492,7 +500,8 @@ namespace dexih.connections.sql
                         EJoinType.Full => "outer",
                         EJoinType.Inner => "",
                         EJoinType.Left => "left",
-                        EJoinType.Right => "right"
+                        EJoinType.Right => "right",
+                        _ => throw new ArgumentOutOfRangeException("Invalid join type " + join.JoinType)
                     };
 
                     sql.Append(
@@ -535,7 +544,7 @@ namespace dexih.connections.sql
                     CompareDataType = c.CompareDataType
                 }).ToList();
 
-                sql.Append(BuildFiltersString(groupFilters, cmd, "having", alias));
+                sql.Append(BuildFiltersString(groupFilters, cmd, "having", null));
             }
 
             if (query?.Sorts?.Count > 0)

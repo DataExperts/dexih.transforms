@@ -75,7 +75,7 @@ namespace dexih.transforms
         public EJoinStrategy? JoinStrategy { get; set; } = EJoinStrategy.Auto;
 
         public string TableAlias { get; set; } //used as an alias current table
-        public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
+        // public string ReferenceTableAlias { get; set; } //used as an alias for joined tables when the same table is joined multiple times.
 
         public Connection ReferenceConnection { get; set; } //database connection reference (for start readers only).
 
@@ -95,10 +95,12 @@ namespace dexih.transforms
         /// </summary>
         public SelectQuery GeneratedQuery { get; set; }
 
+        public SelectColumns Columns => GeneratedQuery?.Columns ?? new SelectColumns();
         public Sorts SortFields => GeneratedQuery?.Sorts ?? new Sorts();
         public Filters Filters => GeneratedQuery?.Filters ?? new Filters();
-        
         public Joins Joins => GeneratedQuery?.Joins ?? new Joins();
+        public List<TableColumn> Groups => GeneratedQuery?.Groups ?? new List<TableColumn>();
+        public Filters GroupFilters => GeneratedQuery?.GroupFilters ?? new Filters();
 
         /// <summary>
         /// Ignores the SelectQuery specified in the open statement.
@@ -479,7 +481,7 @@ namespace dexih.transforms
                 return PrimaryTransform.CacheTable.Copy();
             }
 
-            return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+            return Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.TableAlias, mapAllReferenceColumns);
         }
 
         /// <summary>
@@ -598,6 +600,23 @@ namespace dexih.transforms
                     foreach (var join in requestQuery.Joins)
                     {
                         generatedQuery.Joins.Add(join);
+                    }
+                }
+                else
+                {
+                    foreach (var join in requestQuery.Joins)
+                    {
+                        foreach (var joinFilter in join.JoinFilters)
+                        {
+                            if (joinFilter.Column1 == null && CacheTable.Columns[joinFilter.Column1] != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(joinFilter.Column1));
+                            }
+                            if (joinFilter.Column2 == null && CacheTable.Columns[joinFilter.Column2] != null)
+                            {
+                                columns.AddIfNotExists(new SelectColumn(joinFilter.Column2));
+                            }
+                        }
                     }
                 }
 

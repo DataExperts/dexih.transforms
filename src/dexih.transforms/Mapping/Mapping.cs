@@ -110,9 +110,9 @@ namespace dexih.transforms.Mapping
             return new SelectColumn[0];
         }
 
-        public virtual IEnumerable<TableColumn> GetRequiredReferenceColumns()
+        public virtual IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            return new TableColumn[0];
+            return new SelectColumn[0];
         }
 
         /// <summary>

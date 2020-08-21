@@ -125,7 +125,7 @@ namespace dexih.functions.Query
         
         public ETypeCode BestDataType()
         {
-            var typeCode = ETypeCode.String;
+            ETypeCode typeCode;
 
             if (Column1 != null)
             {

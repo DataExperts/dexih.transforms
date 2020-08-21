@@ -23,8 +23,6 @@ namespace dexih.functions.Query
             Joins = new Joins();
         }
 
-        private string _alias;
-
         [DataMember(Order = 0)]
         public SelectColumns Columns { get; set; }
 
@@ -362,6 +360,44 @@ namespace dexih.functions.Query
             {
                 filter.Value1 = inputParameters.SetParameters(filter.Value1, 0);
                 filter.Value2 = inputParameters.SetParameters(filter.Value2, filter.RankValue2());
+            }
+        }
+
+        public IEnumerable<TableColumn> GetAllColumns()
+        {
+            foreach (var column in Columns)
+            {
+                yield return column.Column;
+            }
+
+            foreach (var column in Groups)
+            {
+                yield return column;
+            }
+
+            foreach (var filter in Filters)
+            {
+                if (filter.Column1 != null)
+                {
+                    yield return filter.Column1;
+                }
+
+                if (filter.Column2 != null)
+                {
+                    yield return filter.Column2;
+                }
+            }
+
+            foreach (var joinFilter in Joins.SelectMany(join => join.JoinFilters))
+            {
+                if (joinFilter.Column1 != null)
+                {
+                    yield return joinFilter.Column1;
+                }
+                if (joinFilter.Column2 != null)
+                {
+                    yield return joinFilter.Column2;
+                }
             }
         }
     }

@@ -60,6 +60,11 @@ namespace dexih.connections.sql
                 AuditKey = auditKey;
                 IsOpen = true;
 
+                if (requestQuery != null)
+                {
+                    requestQuery.Alias = TableAlias;
+                }
+                
                 // disables push down query logic
                 if (IgnoreQuery)
                 {
@@ -77,13 +82,13 @@ namespace dexih.connections.sql
                         CacheTable.Columns.Add(column.OutputColumn?? column.Column);
                     }
 
-                    foreach (var join in GeneratedQuery.Joins)
-                    {
-                        foreach (var column in join.JoinTable.Columns)
-                        {
-                            CacheTable.Columns.Add(column);
-                        }
-                    }
+                    // foreach (var join in GeneratedQuery.Joins)
+                    // {
+                    //     foreach (var column in join.JoinTable.Columns)
+                    //     {
+                    //         CacheTable.Columns.Add(column);
+                    //     }
+                    // }
                 }
                 
                 _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection(cancellationToken);
@@ -106,7 +111,7 @@ namespace dexih.connections.sql
                         if (ordinal < 0)
                         {
                             ordinal = CacheTable.GetOrdinal(fieldName);
-                            if(ordinal < 0 && field[0] == CacheTable.Name)
+                            if(ordinal < 0 && (field[0] == CacheTable.Name || field[0] == TableAlias))
                             {
                                 ordinal = CacheTable.GetOrdinal(field[1]);
                             }
@@ -140,7 +145,7 @@ namespace dexih.connections.sql
             {
                 if (await _sqlReader.ReadAsync(cancellationToken))
                 {
-                    var row = new object[CacheTable.Columns.Count];
+                    var row = new object[_fieldCount];
 
                     for (var i = 0; i < _fieldCount; i++)
                     {

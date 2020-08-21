@@ -435,19 +435,13 @@ namespace dexih.transforms.tests
             var mappings = new Mappings
             {
                 new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "Join"), true )
+                new MapFilter(new TableColumn("IsValid", ETypeCode.Boolean, parentTable: "join_duplicates"), true )
             };
-            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "Join"), "Join");
-
-//            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), new List<Join>
-//            {
-//                new Join(new TableColumn("StringColumn"), new TableColumn("StringColumn")),
-//                new Join(new TableColumn("IsValid"), true)
-//            }, null, EDuplicateStrategy.Abend, null, "Join");
+            
+            var transformJoin = new TransformJoin(source, Helpers.CreateDuplicatesJoinData(), mappings, EJoinStrategy.Auto, EDuplicateStrategy.Abend, EJoinNotFoundStrategy.NullJoin, new TableColumn("LookupValue", ETypeCode.String, parentTable: "join_duplicates"), null);
+            
             Assert.Equal(10, transformJoin.FieldCount);
-
             await transformJoin.Open(1, null, CancellationToken.None);
-//            Assert.True(transformJoin.JoinAlgorithm == EJoinStrategy.Hash);
 
             var pos = 0;
             while (await transformJoin.ReadAsync())

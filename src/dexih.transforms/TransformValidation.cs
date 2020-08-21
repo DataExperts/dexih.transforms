@@ -58,7 +58,7 @@ namespace dexih.transforms
         {
             var table = new Table("Validate");
             
-            _mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.ReferenceTableAlias, mapAllReferenceColumns);
+            _mappingTable = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, ReferenceTransform?.TableAlias, mapAllReferenceColumns);
             var sourceTable = PrimaryTransform?.CacheTable;
             
             //add the operation type, which indicates whether record is rejected 'R' or 'C/U/D' create/update/delete

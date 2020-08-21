@@ -10,6 +10,7 @@ using dexih.transforms.Exceptions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
+using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
 using Microsoft.Extensions.Logging;
 
@@ -21,17 +22,17 @@ namespace dexih.transforms
     /// </summary>
     [Transform(
         Name = "Join",
-        Description = "Join two tables by first loading the secondary table into memory.  This is fast when the secondary table is not large.",
+        Description = "Join two tables by first loading the secondary table into memory. This is fast when the secondary table is not large.",
         TransformType = ETransformType.Join
     )]
     public class TransformJoin : Transform
     {
         public TransformJoin() { }
 
-        public TransformJoin(Transform primaryTransform, Transform joinTransform, Mappings mappings, EJoinStrategy joinStrategy, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, TableColumn joinSortField, string referenceTableAlias)
+        public TransformJoin(Transform primaryTransform, Transform joinTransform, Mappings mappings, EJoinStrategy joinStrategy, EDuplicateStrategy joinDuplicateResolution, EJoinNotFoundStrategy joinNotFoundStrategy, TableColumn joinSortField, string tableAlias)
         {
             Mappings = mappings;
-            ReferenceTableAlias = referenceTableAlias;
+            TableAlias = tableAlias;
             JoinDuplicateStrategy = joinDuplicateResolution;
             JoinNotFoundStrategy = joinNotFoundStrategy;
             JoinSortField = joinSortField;
@@ -74,9 +75,7 @@ namespace dexih.transforms
         // list of mappings which are not standard join/equal mappings.
         private Mappings _additionalJoins;
 
-        private string GetReferenceTableAlias => !string.IsNullOrWhiteSpace(ReferenceTableAlias)
-            ? ReferenceTableAlias
-            : ReferenceTransform?.ReferenceTableAlias ?? ReferenceTransform?.CacheTable.Name;
+        private string GetReferenceTableAlias => ReferenceTransform?.TableAlias ?? ReferenceTransform?.CacheTable.Name;
             
         
         public override string TransformName { get; } = "Join";
@@ -91,14 +90,7 @@ namespace dexih.transforms
 
         protected override Table InitializeCacheTable(bool mapAllReferenceColumns)
         {
-            Table table;
-            if (Mappings == null)
-            {
-                table = PrimaryTransform.CacheTable.Copy();
-            } else
-            {
-                table = Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, mapAllReferenceColumns);
-            }
+            var table = Mappings == null ? PrimaryTransform.CacheTable.Copy() : Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, mapAllReferenceColumns);
 
             if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
             {
@@ -247,7 +239,8 @@ namespace dexih.transforms
                             {
                                 return new ParameterColumn(parameterJoinColumn.Name, parameterJoinColumn.Column);
                             }
-                            else if (c is ParameterArray parameterArray)
+
+                            if (c is ParameterArray parameterArray)
                             {
                                 var newArray = parameterArray.Parameters.Select(arrayParameter =>
                                 {
@@ -264,10 +257,8 @@ namespace dexih.transforms
                                 return new ParameterArray(parameterArray.Name, parameterArray.DataType,
                                     parameterArray.Rank, newArray);
                             }
-                            else
-                            {
-                                return c;
-                            }
+
+                            return c;
 
                         }).ToArray();
 
@@ -342,7 +333,6 @@ namespace dexih.transforms
 
             SetRequestQuery(requestQuery, true);
             SelectQuery.Alias = TableAlias;
-            SelectQuery.Columns = null;
             
             if (_cacheLoaded) return true;
 
@@ -353,13 +343,13 @@ namespace dexih.transforms
 
             var referenceQuery = new SelectQuery
             {
-                Sorts = RequiredReferenceSortFields()
+                Sorts = RequiredReferenceSortFields(),
+                Alias = _referenceTableName
             };
 
             // join is a reference to the join to check that the database was able to push it down.
             Join join = null;
-            
-            if (ReferenceTransform.ReferenceConnection != null && 
+            if (ReferenceTransform.ReferenceConnection?.CanJoin != null && 
                 ReferenceTransform.ReferenceConnection.CanJoin && // the reference connection allows database joins 
                 JoinDuplicateStrategy == EDuplicateStrategy.All &&  // database joins are only valid with no duplicate detection
                 (JoinStrategy == EJoinStrategy.Auto || JoinStrategy == EJoinStrategy.Database)) // database join allowed with auto/database strategies.
@@ -380,7 +370,7 @@ namespace dexih.transforms
                         canJoin = false;
                         if (JoinStrategy == EJoinStrategy.Database)
                         {
-                            throw new InvalidJoinStrategyException($"A database join cannot be used.  The a mapping of type {mapping.GetType().Name} does not support pushdown to database.  Change the join strategy or review your connections and mappings to ensure they can be pushed down to the database.");
+                            throw new InvalidJoinStrategyException($"A database join cannot be used.  The a mapping of type {mapping.GetType().Name} does not support push-down to database.  Change the join strategy or review your connections and mappings to ensure they can be pushed down to the database.");
                         }
                         break;
                     }
@@ -401,7 +391,101 @@ namespace dexih.transforms
                     };
 
                     SelectQuery.Joins.Add(join);
+
+                    if (requestQuery?.Joins.Count > 0)
+                    {
+                        SelectQuery.Joins.AddRange(requestQuery.Joins);
+                    }
                 }
+            }
+            
+            if(requestQuery?.Columns.Count > 0)
+            {
+                void AllocateSelectColumn(SelectColumn selectColumn)
+                {
+                    if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null && (SelectQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                    {
+                        SelectQuery.Columns ??= new SelectColumns();
+                        if (!SelectQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                        {
+                            selectColumn.Column.ReferenceTable = SelectQuery.Alias;
+                            SelectQuery.Columns.Add(selectColumn);
+                        }
+                    }
+
+                    if (_referenceTable.Columns[selectColumn.Column] != null && (referenceQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                    {
+                        referenceQuery.Columns ??= new SelectColumns();
+                        if (!referenceQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                        {
+                            selectColumn.Column.ReferenceTable = referenceQuery.Alias;
+                            referenceQuery.Columns.Add(selectColumn);
+                        }
+                    }
+
+                }
+                if (join == null)
+                {
+                    foreach (var column in requestQuery.GetAllColumns())
+                    {
+                        AllocateSelectColumn(new SelectColumn(column));
+                    }
+
+                    foreach (var column in Mappings.GetRequiredColumns(true))
+                    {
+                        AllocateSelectColumn(column);
+                    }
+
+                    foreach (var column in Mappings.GetRequiredReferenceColumns(true))
+                    {
+                        AllocateSelectColumn(column);
+                    }
+                }
+                else
+                {
+                    TableColumn SetColumnReference(TableColumn column)
+                    {
+                        var copy = column.CloneProperties();
+                        if (copy.ReferenceTable == null)
+                        {
+                            if (PrimaryTransform.CacheTable.Columns[column] != null)
+                            {
+                                copy.ReferenceTable = SelectQuery.Alias;
+                            }
+                            if (_referenceTable.Columns[column] != null)
+                            {
+                                copy.ReferenceTable = referenceQuery.Alias;
+                            }
+                        }
+
+                        return copy;
+                    }
+                    SelectQuery.Columns ??= new SelectColumns();
+                    foreach (var column in requestQuery.Columns)
+                    {
+                        SelectQuery.Columns.Add(new SelectColumn(SetColumnReference(column.Column), column.Aggregate, column.OutputColumn));
+                    }
+
+                    foreach (var column in requestQuery.Groups)
+                    {
+                        SelectQuery.Groups.Add(SetColumnReference(column));
+                    }
+
+                    SelectQuery.Sorts.Clear();
+                    // if the join can be pushed down, then group by's also can.
+                    SelectQuery.GroupFilters = requestQuery.GroupFilters;
+                }
+                
+                // CacheTable.Columns.Clear();
+                // foreach (var selectColumn in SelectQuery.Columns)
+                // {
+                //     CacheTable.Columns.Add(selectColumn.Column);
+                // }
+                // foreach (var selectColumn in referenceQuery.Columns)
+                // {
+                //     CacheTable.Columns.Add(selectColumn.Column);
+                // }
+                
             }
             
             //we need to translate filters and sorts to source column names before passing them through.
@@ -475,6 +559,7 @@ namespace dexih.transforms
             
             GeneratedQuery = new SelectQuery()
             {
+                Columns = PrimaryTransform.Columns,
                 Sorts = PrimaryTransform.SortFields,
                 Filters = PrimaryTransform.Filters,
                 Joins = PrimaryTransform.Joins
@@ -483,6 +568,14 @@ namespace dexih.transforms
             // if the join is pushed down successful, then we don't need to open the reference transform.
             if (join != null && PrimaryTransform.Joins.Any(c => c.JoinId == join.JoinId) )
             {
+                CacheTable = Mappings.Initialize(PrimaryTransform?.CacheTable, null, GetReferenceTableAlias, false);
+                _primaryFieldCount = PrimaryTransform.BaseFieldCount;
+                _referenceFieldCount = ReferenceTransform.BaseFieldCount;
+                
+                // if this is a push-down query, then group by's can also be passed through.
+                GeneratedQuery.Groups = PrimaryTransform.Groups;
+                GeneratedQuery.GroupFilters = PrimaryTransform.GroupFilters;
+
                 JoinAlgorithm = EJoinStrategy.Database;
             }
             else
@@ -497,6 +590,10 @@ namespace dexih.transforms
                 {
                     return false;
                 }
+
+                CacheTable = InitializeCacheTable(false); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, false);
+                _primaryFieldCount = PrimaryTransform.BaseFieldCount;
+                _referenceFieldCount = ReferenceTransform.BaseFieldCount;
 
                 var canUseSorted = true;
                 // if one of the functions joins the two tables then we will need to default to HashJoin.
@@ -545,7 +642,7 @@ namespace dexih.transforms
                     _cacheLoaded = true;
                 }
             }
-
+            
             return true;
         }
 
@@ -625,7 +722,7 @@ namespace dexih.transforms
 
                     if (!found)
                     {
-                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                     }
                 }
                 
@@ -791,7 +888,7 @@ namespace dexih.transforms
                         case EDuplicateStrategy.Abend:
                             if (groupData.Count > 1)
                             {
-                                throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                                throw new DuplicateJoinKeyException($"The join transform {Name} failed as the selected columns on the join table {ReferenceTransform?.CacheTable?.Name} are not unique.  To continue when duplicates occur set the join strategy to first, last or all.", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                             }
                             joinRow = groupData[0];
                             break;
@@ -822,7 +919,7 @@ namespace dexih.transforms
                     switch(JoinNotFoundStrategy)
                     {
                         case EJoinNotFoundStrategy.Abend:
-                            throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                            throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                         case EJoinNotFoundStrategy.Filter:
                             return null;
                     }
@@ -864,7 +961,7 @@ namespace dexih.transforms
                 switch (JoinNotFoundStrategy)
                 {
                     case EJoinNotFoundStrategy.Abend:
-                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTableAlias, Mappings.GetJoinPrimaryKey());
+                        throw new JoinNotFoundException($"The join transform {Name} failed as a matching row on the join table {ReferenceTransform?.CacheTable?.Name} are was not found.  To fix set the strategy when join produces no match to \"filter row\" or \"add null join\"", ReferenceTransform.TableAlias, Mappings.GetJoinPrimaryKey());
                     case EJoinNotFoundStrategy.Filter:
                         return null;
                 }
@@ -1075,7 +1172,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.InputColumn != null && c.Compare == ECompare.IsEqual))
             {
-                fields.Add(new Sort {Column = joinPair.InputColumn, Direction = ESortDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.InputColumn.Copy(), Direction = ESortDirection.Ascending});
             }
 
             if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
@@ -1086,7 +1183,7 @@ namespace dexih.transforms
                     throw new TransformException("The update strategy is merge valid dates, and the validfrom field is part of the joins.  Remove the validfrom from the joins.");
                 }
 
-                fields.Add(new Sort { Column = column, Direction = ESortDirection.Ascending });
+                fields.Add(new Sort { Column = column.Copy(), Direction = ESortDirection.Ascending });
             }
             
             return fields;
@@ -1097,7 +1194,7 @@ namespace dexih.transforms
             var fields = new Sorts();
             foreach (var joinPair in Mappings.OfType<MapJoin>().Where(c => c.JoinColumn != null && c.Compare == ECompare.IsEqual))
             {
-                fields.Add(new Sort {Column = joinPair.JoinColumn, Direction = ESortDirection.Ascending});
+                fields.Add(new Sort {Column = joinPair.JoinColumn.Copy(), Direction = ESortDirection.Ascending});
             }
 
             if (JoinSortField != null)
@@ -1107,8 +1204,6 @@ namespace dexih.transforms
 
             return fields;
         }
-
-
     }
 
 

@@ -61,9 +61,7 @@ namespace dexih.transforms
             IsOpen = true;
 
             requestQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
-            
-            if (requestQuery.Filters == null)
-                requestQuery.Filters = new Filters();
+            requestQuery.Filters ??= new Filters();
 
             if (Mappings != null)
             {
