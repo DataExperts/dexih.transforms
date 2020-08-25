@@ -117,7 +117,7 @@ namespace dexih.transforms.tests
             var parent = await GetDbReader(connection, Helpers.CreateParentTableData());
             var child = await GetDbReader(connection, Helpers.CreateChildTableData());
             
-            var mappings = new Mappings {new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))};
+            var mappings = new Mappings {new MapJoin(new TableColumn("parent_id", ETypeCode.Int32), new TableColumn("parent_id", ETypeCode.Int32))};
             var transformJoin = new TransformJoin(child, parent, mappings, joinStrategy, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "child");
 
             var parentName = new TableColumn("name") {ReferenceTable = "parent"};
@@ -125,7 +125,7 @@ namespace dexih.transforms.tests
             var groupMappings = new Mappings(false)
             {
                 new MapGroup(parentName),
-                new MapAggregate(new TableColumn("child_id"), new TableColumn("child_count", ETypeCode.Int32), EAggregate.Count)
+                new MapAggregate(new TableColumn("child_id", ETypeCode.Int32), new TableColumn("child_count", ETypeCode.Int32), EAggregate.Count)
             };
             var group = new TransformGroup(transformJoin, groupMappings);
 
