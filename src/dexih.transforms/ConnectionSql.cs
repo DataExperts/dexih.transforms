@@ -460,10 +460,10 @@ namespace dexih.connections.sql
             column.OutputColumn?.Name == null
                 ? (alias == null && column.Column.ReferenceTable == null
                     ? AddDelimiter(column.Column.Name)
-                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.Column.Name))
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "--" + column.Column.Name))
                 : (alias == null && column.Column.ReferenceTable == null
                     ? AddDelimiter(column.OutputColumn?.Name)
-                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "-" + column.OutputColumn?.Name));
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "--" + column.OutputColumn?.Name));
         private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
         
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
@@ -472,7 +472,7 @@ namespace dexih.connections.sql
 
             // if the query contains a join, we will need to add alias' to all the table/column names to ensure they are unique 
             // across joins.
-            var alias = query?.Alias; // ?? table.Name;
+            var alias = query?.Alias ?? table.Name;
             
             //if the query doesn't have any columns, then use all columns from the table.
             Dictionary<string, (string name, string alias)> columns;

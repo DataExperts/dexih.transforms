@@ -115,7 +115,7 @@ namespace dexih.connections.sql.npgsql
             await new SelectQueryTests(_output).SelectQuery(connection, database);
         }
 
-        [Theory]
+          [Theory]
         [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
@@ -126,6 +126,15 @@ namespace dexih.connections.sql.npgsql
             await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
         }
         
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinTwoTablesDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinTwoTablesDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
         
         [Theory]
         [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
@@ -136,6 +145,17 @@ namespace dexih.connections.sql.npgsql
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task Sqlite_JoinAndGroupDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinAndGroupDatabase(connection, joinStrategy, usedJoinStrategy);
         }
     }
 }

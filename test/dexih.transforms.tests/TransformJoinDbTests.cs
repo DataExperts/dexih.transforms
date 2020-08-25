@@ -29,7 +29,8 @@ namespace dexih.transforms.tests
 
             var source = await GetDbReader(connection, Helpers.CreateSortedTestData());
             var join = await GetDbReader(connection, Helpers.CreateSortedJoinData());
-
+            // source.TableAlias = "source";
+            join.TableAlias = "sorted_join";
             var mappings = new Mappings {new MapJoin(new TableColumn("StringColumn"), new TableColumn("StringColumn"))};
             var transformJoin = new TransformJoin(source, join, mappings, joinStrategy, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, null);
 
@@ -60,10 +61,10 @@ namespace dexih.transforms.tests
             var grandChild = await GetDbReader(connection, Helpers.CreateGrandChildTableData());
             
             var mappings = new Mappings {new MapJoin(new TableColumn("child_id"), new TableColumn("child_id"))};
-            var transformJoin = new TransformJoin(grandChild, child, mappings, EJoinStrategy.Database, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "grandChild");
+            var transformJoin = new TransformJoin(grandChild, child, mappings, EJoinStrategy.Database, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, null);
 
-            var mappings2 = new Mappings {new MapJoin(new TableColumn("parent_id") {ReferenceTable = "child"}, new TableColumn("parent_id"))};
-            var transformJoin2 = new TransformJoin(transformJoin, parent, mappings2, joinStrategy, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, "child");
+            var mappings2 = new Mappings {new MapJoin(new TableColumn("parent_id"), new TableColumn("parent_id"))};
+            var transformJoin2 = new TransformJoin(transformJoin, parent, mappings2, joinStrategy, EDuplicateStrategy.All, EJoinNotFoundStrategy.NullJoin, null, null);
 
             Assert.Equal(8, transformJoin2.FieldCount);
 
