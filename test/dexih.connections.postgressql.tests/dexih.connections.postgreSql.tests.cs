@@ -107,7 +107,7 @@ namespace dexih.connections.sql.npgsql
         }
 
         [Fact]
-        public async Task Sqlite_SelectQuery()
+        public async Task Postgresql_SelectQuery()
         {
             var database = "Test-" + Guid.NewGuid();
             var connection = GetConnection();
@@ -120,7 +120,7 @@ namespace dexih.connections.sql.npgsql
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task Postgresql_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
@@ -130,7 +130,7 @@ namespace dexih.connections.sql.npgsql
         [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_JoinTwoTablesDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task Postgresql_JoinTwoTablesDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinTwoTablesDatabase(connection, joinStrategy, usedJoinStrategy);
@@ -141,7 +141,7 @@ namespace dexih.connections.sql.npgsql
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task Postgresql_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
@@ -152,7 +152,7 @@ namespace dexih.connections.sql.npgsql
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_JoinAndGroupDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task Postgresql_JoinAndGroupDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinAndGroupDatabase(connection, joinStrategy, usedJoinStrategy);
