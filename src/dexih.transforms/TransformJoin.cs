@@ -360,9 +360,11 @@ namespace dexih.transforms
                 {
                     if (mapping is MapJoin mapJoin)
                     {
+                        var inputColumn = mapJoin.InputColumn.Copy();
+                        // inputColumn.ReferenceTable = CacheTable.Name;
                         var joinColumn = mapJoin.JoinColumn.Copy();
                         joinColumn.ReferenceTable = GetReferenceTableAlias;
-                        var joinFilter = new Filter(mapJoin.InputColumn, mapJoin.Compare, joinColumn);
+                        var joinFilter = new Filter(inputColumn, mapJoin.Compare, joinColumn);
                         joinFilters.Add(joinFilter);
                     }
                     else
@@ -378,6 +380,7 @@ namespace dexih.transforms
 
                 if (canJoin)
                 {
+                    // add in any upstream joins.
                     var referenceTable = _referenceTable.Copy();
                     foreach(var column in referenceTable.Columns)
                     {
@@ -394,38 +397,51 @@ namespace dexih.transforms
 
                     if (requestQuery?.Joins.Count > 0)
                     {
-                        SelectQuery.Joins.AddRange(requestQuery.Joins);
+                        foreach (var requestJoin in requestQuery.Joins)
+                        {
+                            foreach (var joinFilter in requestJoin.JoinFilters)
+                            {
+                                joinFilter.Column1.ReferenceTable ??= GetReferenceTableAlias;
+                                joinFilter.Column2.ReferenceTable ??= GetReferenceTableAlias;
+                            }
+
+                            SelectQuery.Joins.Add(requestJoin);
+                        }
                     }
                 }
             }
             
-            if(requestQuery?.Columns.Count > 0)
+            // if the join is null, then we can push down query to the database.
+            if (join == null)
             {
-                void AllocateSelectColumn(SelectColumn selectColumn)
+                // if columns have been requested, then allocate them to the primary or reference table queries
+                if (requestQuery?.Columns.Count > 0)
                 {
-                    if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null && (SelectQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                    void AllocateSelectColumn(SelectColumn selectColumn)
                     {
-                        SelectQuery.Columns ??= new SelectColumns();
-                        if (!SelectQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                        if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null && (SelectQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
                         {
-                            selectColumn.Column.ReferenceTable = SelectQuery.Alias;
-                            SelectQuery.Columns.Add(selectColumn);
+                            SelectQuery.Columns ??= new SelectColumns();
+                            if (!SelectQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                            {
+                                var copy = selectColumn.CloneProperties();
+                                copy.Column.ReferenceTable = PrimaryTransform.TableAlias;
+                                SelectQuery.Columns.Add(copy);
+                            }
+                        }
+
+                        if (_referenceTable.Columns[selectColumn.Column] != null && (referenceQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
+                        {
+                            referenceQuery.Columns ??= new SelectColumns();
+                            if (!referenceQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
+                            {
+                                var copy = selectColumn.CloneProperties();
+                                copy.Column.ReferenceTable = referenceQuery.Alias;
+                                referenceQuery.Columns.Add(copy);
+                            }
                         }
                     }
-
-                    if (_referenceTable.Columns[selectColumn.Column] != null && (referenceQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
-                    {
-                        referenceQuery.Columns ??= new SelectColumns();
-                        if (!referenceQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
-                        {
-                            selectColumn.Column.ReferenceTable = referenceQuery.Alias;
-                            referenceQuery.Columns.Add(selectColumn);
-                        }
-                    }
-
-                }
-                if (join == null)
-                {
+                    
                     foreach (var column in requestQuery.GetAllColumns())
                     {
                         AllocateSelectColumn(new SelectColumn(column));
@@ -441,18 +457,24 @@ namespace dexih.transforms
                         AllocateSelectColumn(column);
                     }
                 }
-                else
+            }
+            else
+            {
+                SelectQuery.Columns ??= new SelectColumns();
+
+                if (requestQuery?.Columns.Count > 0)
                 {
                     TableColumn SetColumnReference(TableColumn column)
                     {
-                        var copy = column.CloneProperties();
+                        var copy = column.Copy();
                         if (copy.ReferenceTable == null)
                         {
                             if (PrimaryTransform.CacheTable.Columns[column] != null)
                             {
                                 copy.ReferenceTable = SelectQuery.Alias;
                             }
-                            if (_referenceTable.Columns[column] != null)
+
+                            else if (_referenceTable.Columns[column] != null)
                             {
                                 copy.ReferenceTable = referenceQuery.Alias;
                             }
@@ -460,10 +482,11 @@ namespace dexih.transforms
 
                         return copy;
                     }
-                    SelectQuery.Columns ??= new SelectColumns();
+
                     foreach (var column in requestQuery.Columns)
                     {
-                        SelectQuery.Columns.Add(new SelectColumn(SetColumnReference(column.Column), column.Aggregate, column.OutputColumn));
+                        SelectQuery.Columns.Add(new SelectColumn(SetColumnReference(column.Column),
+                            column.Aggregate, column.OutputColumn));
                     }
 
                     foreach (var column in requestQuery.Groups)
@@ -475,17 +498,15 @@ namespace dexih.transforms
                     // if the join can be pushed down, then group by's also can.
                     SelectQuery.GroupFilters = requestQuery.GroupFilters;
                 }
-                
-                // CacheTable.Columns.Clear();
-                // foreach (var selectColumn in SelectQuery.Columns)
-                // {
-                //     CacheTable.Columns.Add(selectColumn.Column);
-                // }
-                // foreach (var selectColumn in referenceQuery.Columns)
-                // {
-                //     CacheTable.Columns.Add(selectColumn.Column);
-                // }
-                
+                else
+                {
+                    foreach (var column in CacheTable.Columns)
+                    {
+                        var columnCopy = column.Copy();
+                        columnCopy.ReferenceTable ??= SelectQuery.Alias;
+                        SelectQuery.Columns.Add(new SelectColumn(columnCopy, EAggregate.None));
+                    }
+                }
             }
             
             //we need to translate filters and sorts to source column names before passing them through.

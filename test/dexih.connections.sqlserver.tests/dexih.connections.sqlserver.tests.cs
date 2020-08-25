@@ -88,7 +88,7 @@ namespace dexih.connections.sql.sqlserver
         }
         
         [Fact]
-        public async Task Sqlite_SelectQuery()
+        public async Task SqlServer_SelectQuery()
         {
             var database = "Test-" + Guid.NewGuid();
             var connection = GetConnection();
@@ -96,27 +96,47 @@ namespace dexih.connections.sql.sqlserver
             await new SelectQueryTests(_output).SelectQuery(connection, database);
         }
 
-        [Theory]
+             [Theory]
         [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task SqlServer_Join(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinDatabase(connection, joinStrategy, usedJoinStrategy);
         }
         
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task SqlServer_JoinTwoTablesDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinTwoTablesDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
         
         [Theory]
         [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
         [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
         [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
-        public async Task Sqlite_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        public async Task SqlServer_JoinDatabaseFilterNull(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinDatabaseJoinMissingException(connection, joinStrategy, usedJoinStrategy);
+        }
+        
+        [Theory]
+        [InlineData(EJoinStrategy.Auto, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Database, EJoinStrategy.Database)]
+        [InlineData(EJoinStrategy.Sorted, EJoinStrategy.Sorted)]
+        [InlineData(EJoinStrategy.Hash, EJoinStrategy.Hash)]
+        public async Task SqlServer_JoinAndGroupDatabase(EJoinStrategy joinStrategy, EJoinStrategy usedJoinStrategy)
+        {
+            var connection = GetConnection();
+            await new TransformJoinDbTests().JoinAndGroupDatabase(connection, joinStrategy, usedJoinStrategy);
         }
 
 

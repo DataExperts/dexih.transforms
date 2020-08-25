@@ -365,38 +365,51 @@ namespace dexih.functions.Query
 
         public IEnumerable<TableColumn> GetAllColumns()
         {
-            foreach (var column in Columns)
+            if (Columns != null)
             {
-                yield return column.Column;
-            }
-
-            foreach (var column in Groups)
-            {
-                yield return column;
-            }
-
-            foreach (var filter in Filters)
-            {
-                if (filter.Column1 != null)
+                foreach (var column in Columns)
                 {
-                    yield return filter.Column1;
-                }
-
-                if (filter.Column2 != null)
-                {
-                    yield return filter.Column2;
+                    yield return column.Column;
                 }
             }
 
-            foreach (var joinFilter in Joins.SelectMany(join => join.JoinFilters))
+            if (Groups != null)
             {
-                if (joinFilter.Column1 != null)
+                foreach (var column in Groups)
                 {
-                    yield return joinFilter.Column1;
+                    yield return column;
                 }
-                if (joinFilter.Column2 != null)
+            }
+
+            if (Filters != null)
+            {
+                foreach (var filter in Filters)
                 {
-                    yield return joinFilter.Column2;
+                    if (filter.Column1 != null)
+                    {
+                        yield return filter.Column1;
+                    }
+
+                    if (filter.Column2 != null)
+                    {
+                        yield return filter.Column2;
+                    }
+                }
+            }
+
+            if (Joins != null)
+            {
+                foreach (var joinFilter in Joins.SelectMany(join => join.JoinFilters))
+                {
+                    if (joinFilter.Column1 != null)
+                    {
+                        yield return joinFilter.Column1;
+                    }
+
+                    if (joinFilter.Column2 != null)
+                    {
+                        yield return joinFilter.Column2;
+                    }
                 }
             }
         }
