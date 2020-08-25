@@ -464,7 +464,7 @@ namespace dexih.connections.sql
                 : (alias == null && column.Column.ReferenceTable == null
                     ? AddDelimiter(column.OutputColumn?.Name)
                     : AddDelimiter((column.Column.ReferenceTable ?? alias) + "--" + column.OutputColumn?.Name));
-        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}-{column.Name}");
+        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}--{column.Name}");
         
         private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
