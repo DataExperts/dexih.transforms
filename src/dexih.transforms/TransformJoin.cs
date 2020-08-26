@@ -360,12 +360,23 @@ namespace dexih.transforms
                 {
                     if (mapping is MapJoin mapJoin)
                     {
-                        var inputColumn = mapJoin.InputColumn.Copy();
+                        var inputColumn = mapJoin.InputColumn?.Copy();
                         // inputColumn.ReferenceTable = CacheTable.Name;
-                        var joinColumn = mapJoin.JoinColumn.Copy();
-                        joinColumn.ReferenceTable = GetReferenceTableAlias;
-                        var joinFilter = new Filter(inputColumn, mapJoin.Compare, joinColumn);
-                        joinFilters.Add(joinFilter);
+                        var joinColumn = mapJoin.JoinColumn?.Copy();
+                        if (joinColumn != null)
+                        {
+                            joinColumn.ReferenceTable = GetReferenceTableAlias;
+                        }
+
+                        var filter = new Filter()
+                        {
+                            Column1 = inputColumn,
+                            Column2 = joinColumn,
+                            Value1 = mapJoin.InputValue,
+                            Value2 = mapJoin.JoinValue,
+                            Operator = mapJoin.Compare
+                        };
+                        joinFilters.Add(filter);
                     }
                     else
                     {
@@ -401,8 +412,15 @@ namespace dexih.transforms
                         {
                             foreach (var joinFilter in requestJoin.JoinFilters)
                             {
-                                joinFilter.Column1.ReferenceTable ??= GetReferenceTableAlias;
-                                joinFilter.Column2.ReferenceTable ??= GetReferenceTableAlias;
+                                if (joinFilter.Column1 != null)
+                                {
+                                    joinFilter.Column1.ReferenceTable ??= GetReferenceTableAlias;
+                                }
+
+                                if (joinFilter.Column2 != null)
+                                {
+                                    joinFilter.Column2.ReferenceTable ??= GetReferenceTableAlias;
+                                }
                             }
 
                             SelectQuery.Joins.Add(requestJoin);
