@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -578,146 +579,155 @@ namespace dexih.connections.sql
                 }
                 
                 index++;
-                
-                if (filter.Value1 == null && filter.Column1 == null)
+
+                if (filter.Column1 == null && filter.Column2 != null && filter.Operator == ECompare.IsNull)
                 {
-                    throw new ConnectionException("The filter has no values or columns specified for the primary value.");
+                    sql.Append($"({GetColumn(filter.Column2)} {GetSqlCompare(ECompare.IsNull)} ");
                 }
-
-                sql.Append("( ");
-
-                if (filter.Column1 != null)
+                else
                 {
-                    if (filter.Column1.IsInput && filter.Value2 == null)
+                    if (filter.Value1 == null && filter.Column1 == null && filter.Operator != ECompare.IsNull)
                     {
-                        var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column1Default";
+                        throw new ConnectionException(
+                            "The filter has no values or columns specified for the primary value.");
+                    }
+
+                    sql.Append("( ");
+
+                    if (filter.Column1 != null)
+                    {
+                        if (filter.Column1.IsInput && filter.Value2 == null)
+                        {
+                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column1Default";
+                            if (cmd != null)
+                            {
+                                var param = CreateParameter(
+                                    cmd, parameterName,
+                                    filter.Column1.DataType,
+                                    filter.Column1.Rank,
+                                    ParameterDirection.Input,
+                                    filter.Column1.DefaultValue);
+                                cmd.Parameters.Add(param);
+                            }
+
+                            sql.Append($" {parameterName} ");
+                        }
+                        else
+                        {
+                            if (IsAggregate(filter.Column1.Name))
+                            {
+                                sql.Append($" {filter.Column1.Name} ");
+                            }
+                            else
+                            {
+                                sql.Append($" {GetColumn(filter.Column1)} ");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value1";
                         if (cmd != null)
                         {
-                            var param = CreateParameter(
-                                cmd, parameterName, 
-                                filter.Column1.DataType, 
-                                filter.Column1.Rank,
+                            var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0,
                                 ParameterDirection.Input,
-                                filter.Column1.DefaultValue);
+                                filter.Value1);
                             cmd.Parameters.Add(param);
                         }
 
                         sql.Append($" {parameterName} ");
                     }
+
+                    if (filter.Operator == ECompare.IsEqual && filter.Column2 == null && filter.Value2 == null)
+                    {
+                        sql.Append(GetSqlCompare(ECompare.IsNull) + " ");
+                    }
                     else
                     {
-                        if (IsAggregate(filter.Column1.Name))
+                        sql.Append(GetSqlCompare(filter.Operator) + " ");
+
+                        if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
                         {
-                            sql.Append($" {filter.Column1.Name} ");
-                        }
-                        else
-                        {
-                            sql.Append($" {GetColumn(filter.Column1)} ");    
-                        }
-                    }
-                }
-                else
-                {
-                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value1";
-                    if (cmd != null)
-                    {
-                        var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0, ParameterDirection.Input,
-                            filter.Value1);
-                        cmd.Parameters.Add(param);
-                    }
-
-                    sql.Append($" {parameterName} ");
-                }
-
-                if (filter.Operator == ECompare.IsEqual && filter.Column2 == null && filter.Value2 == null)
-                {
-                    sql.Append(GetSqlCompare(ECompare.IsNull) + " ");
-                }
-                else
-                {
-                    sql.Append(GetSqlCompare(filter.Operator) + " ");
-
-                    if (filter.Operator != ECompare.IsNull && filter.Operator != ECompare.IsNotNull)
-                    {
-                        if (filter.Column2 != null)
-                            if (filter.Column2.IsInput)
-                            {
-                                var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
-                                if (cmd != null)
+                            if (filter.Column2 != null)
+                                if (filter.Column2.IsInput)
                                 {
-                                    var param = CreateParameter(cmd, parameterName, filter.Column2.DataType,
-                                        filter.Column2.Rank, ParameterDirection.Input,
-                                        filter.Column2.DefaultValue);
-                                    cmd.Parameters.Add(param);
+                                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
+                                    if (cmd != null)
+                                    {
+                                        var param = CreateParameter(cmd, parameterName, filter.Column2.DataType,
+                                            filter.Column2.Rank, ParameterDirection.Input,
+                                            filter.Column2.DefaultValue);
+                                        cmd.Parameters.Add(param);
+                                        sql.Append($" {parameterName} ");
+                                    }
+                                }
+                                else
+                                {
+                                    if (IsAggregate(filter.Column2.Name))
+                                    {
+                                        sql.Append($" {filter.Column2.Name} ");
+                                    }
+                                    else
+                                    {
+                                        sql.Append($" {GetColumn(filter.Column2)} ");
+                                    }
+                                }
+                            else
+                            {
+                                var value2 = filter.Value2;
+
+                                if (value2 is JsonElement jsonElement)
+                                {
+                                    if (jsonElement.ValueKind == JsonValueKind.Array)
+                                    {
+                                        value2 = jsonElement.ToObject<string[]>();
+                                    }
+                                    else
+                                    {
+                                        value2 = jsonElement.ToObject<string>();
+                                    }
+                                }
+
+                                if (value2 != null && value2.GetType().IsArray)
+                                {
+                                    var array = (from object value in (Array) value2 select value?.ToString()).ToList();
+
+                                    var index1 = index;
+                                    if (array.Count == 0)
+                                    {
+                                        sql.Append("(null)");
+                                    }
+                                    else
+                                    {
+                                        sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
+                                                   {
+                                                       var parameterName =
+                                                           $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
+                                                       if (cmd != null)
+                                                       {
+                                                           var param = CreateParameter(cmd, parameterName,
+                                                               filter.BestDataType(), 0, ParameterDirection.Input, c);
+                                                           cmd.Parameters.Add(param);
+                                                       }
+
+                                                       return $"{parameterName}";
+                                                   })) +
+                                                   ") ");
+                                    }
+                                }
+                                else
+                                {
+                                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
+                                    if (cmd != null)
+                                    {
+                                        var param = CreateParameter(cmd, parameterName, filter.BestDataType(),
+                                            filter.RankValue2(), ParameterDirection.Input,
+                                            value2);
+                                        cmd.Parameters.Add(param);
+                                    }
+
                                     sql.Append($" {parameterName} ");
                                 }
-                            }
-                            else
-                            {
-                                if (IsAggregate(filter.Column2.Name))
-                                {
-                                    sql.Append($" {filter.Column2.Name} ");
-                                }
-                                else
-                                {
-                                    sql.Append($" {GetColumn(filter.Column2)} ");    
-                                }
-                            }
-                        else
-                        {
-                            var value2 = filter.Value2;
-
-                            if (value2 is JsonElement jsonElement)
-                            {
-                                if (jsonElement.ValueKind == JsonValueKind.Array)
-                                {
-                                    value2 = jsonElement.ToObject<string[]>();
-                                }
-                                else
-                                {
-                                    value2 = jsonElement.ToObject<string>();
-                                }
-                            }
-
-                            if (value2 != null && value2.GetType().IsArray)
-                            {
-                                var array = (from object value in (Array) value2 select value?.ToString()).ToList();
-
-                                var index1 = index;
-                                if (array.Count == 0)
-                                {
-                                    sql.Append("(null)");
-                                }
-                                else
-                                {
-                                    sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
-                                       {
-                                           var parameterName =
-                                               $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
-                                           if (cmd != null)
-                                           {
-                                               var param = CreateParameter(cmd, parameterName,
-                                                   filter.BestDataType(), 0, ParameterDirection.Input, c);
-                                               cmd.Parameters.Add(param);
-                                           }
-
-                                           return $"{parameterName}";
-                                       })) +
-                                       ") ");
-                                }
-                            }
-                            else
-                            {
-                                var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
-                                if (cmd != null)
-                                {
-                                    var param = CreateParameter(cmd, parameterName, filter.BestDataType(),
-                                        filter.RankValue2(), ParameterDirection.Input,
-                                        value2);
-                                    cmd.Parameters.Add(param);
-                                }
-
-                                sql.Append($" {parameterName} ");
                             }
                         }
                     }
@@ -727,11 +737,11 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1 != null)
                     {
-                        sql.Append($" or ${GetColumn(filter.Column1)} is null ");
+                        sql.Append($" or ${GetColumn(filter.Column1)} {GetSqlCompare(ECompare.IsNull)} ");
                     }
                     if (filter.Column2 != null)
                     {
-                        sql.Append($" or ${GetColumn(filter.Column2)} is null ");
+                        sql.Append($" or ${GetColumn(filter.Column2)} {GetSqlCompare(ECompare.IsNull)} ");
                     }
                 }
 
