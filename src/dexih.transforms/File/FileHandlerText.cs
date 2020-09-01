@@ -276,10 +276,20 @@ namespace dexih.transforms.File
                     {
                         var mapping = _csvOrdinalMappings[colPos];
                         var value = _csvReader[mapping.Position];
-                        if (string.IsNullOrEmpty(value))
+                        if (value is null)
                         {
                             row[colPos] = null;
-                            
+                        }
+                        else if (string.IsNullOrEmpty(value))
+                        {
+                            if (!_fileConfiguration.SetWhiteSpaceCellsToNull && mapping.TypeCode == ETypeCode.String)
+                            {
+                                row[colPos] = value;
+                            }
+                            else
+                            {
+                                row[colPos] = null;
+                            }
                         }
                         else
                         {
@@ -304,11 +314,7 @@ namespace dexih.transforms.File
 //                            row[colPos] = null;
 //                        }
 
-                        if (_fileConfiguration.SetWhiteSpaceCellsToNull && row[colPos] is string &&
-                            string.IsNullOrWhiteSpace((string) row[colPos]))
-                        {
-                            row[colPos] = null;
-                        }
+
                     }
 
                     if (fileProperties != null)
