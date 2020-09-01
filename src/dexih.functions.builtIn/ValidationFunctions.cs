@@ -38,6 +38,13 @@ namespace dexih.functions.BuiltIn
             return true;
         }
         
+        [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Null to Blank", Description = "Converts a null value into a blank/empty string.", GenericType = EGenericType.All)]
+        public string NullToBlank(
+            [TransformFunctionParameter(Description = "Value to test for nulls")] string value)
+        {
+            return value ?? "";
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Validate, Category = "Validation", Name = "Validate Maximum Length", Description = "Checks if the string exceeds the length, and trims the string when true.")]
         public bool MaxLength(
              [TransformFunctionParameter(Description = "Value to test for length")] string value,

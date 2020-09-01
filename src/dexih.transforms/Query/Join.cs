@@ -10,7 +10,7 @@ namespace dexih.functions.Query
     {
         public Join()
         {
-            
+            JoinId = Guid.NewGuid().ToString();
         }
 
         public Join(EJoinType joinType, Table table, Filters joinFilters)
@@ -18,6 +18,7 @@ namespace dexih.functions.Query
             JoinType = joinType;
             JoinTable = table;
             JoinFilters = joinFilters;
+            JoinId = Guid.NewGuid().ToString();
         }
         
         public Join(EJoinType joinType, Table table, string alias, Filters joinFilters)
@@ -26,6 +27,7 @@ namespace dexih.functions.Query
             JoinFilters = joinFilters;
             JoinTable = table;
             Alias = alias;
+            JoinId = Guid.NewGuid().ToString();
         }
 
         [DataMember(Order = 0)]
@@ -46,6 +48,6 @@ namespace dexih.functions.Query
         /// <summary>
         /// Unique id to remember the join.
         /// </summary>
-        public string JoinId { get; } = Guid.NewGuid().ToString();
+        public string JoinId { get; set; }
     }
 }

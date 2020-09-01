@@ -159,7 +159,28 @@ namespace dexih.transforms
 
                         if (_hasRows == false)
                         {
-                            await _streamWriter.WriteAsync("]}");
+                            await _streamWriter.WriteAsync("]");
+                            if (_showTransformProperties)
+                            {
+                                if (_reader is Transform transform)
+                                {
+                                    if (_showTransformProperties)
+                                    {
+                                        var properties = transform.GetTransformProperties(true);
+                                        var propertiesSerialized = properties.Serialize();
+                                        await _streamWriter.WriteAsync(", \"transformProperties\":" + propertiesSerialized);
+                                    }
+
+                                    var status = transform.GetTransformStatus();
+                                    
+                                    if (status != null)
+                                    {
+                                        await _streamWriter.WriteAsync($", \"status\":" + status.Serialize());
+                                    }
+                                }
+                            }
+                            
+                            await _streamWriter.WriteAsync("}");
                         }
 
                         _first = false;
