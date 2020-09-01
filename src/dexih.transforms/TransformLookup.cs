@@ -54,16 +54,21 @@ namespace dexih.transforms
             SelectQuery.Columns = null;
 
             // pushdown any filters to the primary transform
-            foreach (var filter in requestQuery.Filters)
+            if (requestQuery?.Filters != null)
             {
-                // if the filter columns are in the primary transform use the filter.
-                if ((filter.Column1 == null || (filter.Column1 != null && PrimaryTransform.CacheTable.Columns[filter.Column1] != null)) && 
-                    (filter.Column2 == null || (filter.Column2 != null && PrimaryTransform.CacheTable.Columns[filter.Column2] != null)))
+                foreach (var filter in requestQuery.Filters)
                 {
-                    SelectQuery.Filters.Add(filter);
+                    // if the filter columns are in the primary transform use the filter.
+                    if ((filter.Column1 == null || (filter.Column1 != null &&
+                                                    PrimaryTransform.CacheTable.Columns[filter.Column1] != null)) &&
+                        (filter.Column2 == null || (filter.Column2 != null &&
+                                                    PrimaryTransform.CacheTable.Columns[filter.Column2] != null)))
+                    {
+                        SelectQuery.Filters.Add(filter);
+                    }
                 }
             }
-            
+
             _primaryFieldCount = PrimaryTransform.FieldCount;
             _referenceFieldCount = ReferenceTransform.FieldCount;
 
