@@ -512,7 +512,7 @@ namespace dexih.transforms
                         SelectQuery.Groups.Add(SetColumnReference(column));
                     }
 
-                    SelectQuery.Sorts = requestQuery.Sorts;
+                    SelectQuery.Sorts = new Sorts(requestQuery.Sorts.Select(c => new Sort(SetColumnReference(c.Column), c.Direction)));
                     
                     // if the join can be pushed down, then group by's also can.
                     SelectQuery.GroupFilters = requestQuery.GroupFilters;
