@@ -39,7 +39,7 @@ namespace dexih.transforms
             AuditKey = auditKey;
             IsOpen = true;
             
-            requestQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            requestQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
             
             // get only the required columns
             requestQuery.Columns = new SelectColumns(Mappings.GetRequiredColumns());

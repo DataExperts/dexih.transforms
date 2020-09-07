@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using dexih.functions;
@@ -12,7 +11,6 @@ using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
 using Dexih.Utils.DataType;
-using Microsoft.Extensions.Logging;
 
 namespace dexih.transforms
 {

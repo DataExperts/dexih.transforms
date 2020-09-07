@@ -63,7 +63,7 @@ namespace dexih.transforms
             }
             else
             {
-                requestQuery = requestQuery.CloneProperties<SelectQuery>(true);
+                requestQuery = requestQuery.CloneProperties(true);
             }
             
             var primarySorts = new Sorts();

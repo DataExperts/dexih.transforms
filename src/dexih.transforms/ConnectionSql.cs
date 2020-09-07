@@ -3,9 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -337,7 +335,7 @@ namespace dexih.connections.sql
                         }
                         catch (Exception ex)
                         {
-                            throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql.ToString()}.", ex);
+                            throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql}.", ex);
                         }
                     }
                 }

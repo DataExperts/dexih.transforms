@@ -233,7 +233,7 @@ namespace dexih.connections.postgressql
                     }
                     catch (Exception ex)
                     {
-                        throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql.ToString()}.", ex);
+                        throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql}.", ex);
                     }
                 }
             }

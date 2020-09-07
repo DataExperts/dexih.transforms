@@ -43,7 +43,7 @@ namespace dexih.transforms
             {
                 MaxOutputRows = requestQuery.Rows;
             }
-            var newSelectQuery = requestQuery?.CloneProperties<SelectQuery>() ?? new SelectQuery();
+            var newSelectQuery = requestQuery?.CloneProperties() ?? new SelectQuery();
             
             // TODO Allow mapping to translate group columns and push-down and group-by.
             newSelectQuery.Groups = new List<TableColumn>();

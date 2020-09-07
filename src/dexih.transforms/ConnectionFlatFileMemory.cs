@@ -73,6 +73,6 @@ namespace dexih.transforms
         }
 
         public override Task<bool> TestFileConnection(CancellationToken cancellationToken) => Task.FromResult(true);
-        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default) => Task.FromResult<bool>(true);
+        public override Task<bool> TableExists(Table table, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 }
