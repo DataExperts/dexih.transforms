@@ -316,7 +316,7 @@ namespace dexih.connections.sftp
             try
             {
                 await CreateDirectory(file, path, cancellationToken);
-                var filePath = await FixFileName(file, path, fileName, cancellationToken);
+                var filePath = FixFileName(file, path, fileName);
 
                 using (var client = GetSftpClient())
                 {
@@ -332,7 +332,7 @@ namespace dexih.connections.sftp
             }
         }
 
-        private Task<string> FixFileName(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
+        private string FixFileName(FlatFile file, EFlatFilePath path, string fileName)
          {
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
             var fileNameExtension = Path.GetExtension(fileName);
@@ -352,8 +352,8 @@ namespace dexih.connections.sftp
                  }
     
                  var filePath = CombinePath(fullPath, newFileName);
-    
-                 return Task.FromResult(filePath);
+
+                 return filePath;
              }
          }
 

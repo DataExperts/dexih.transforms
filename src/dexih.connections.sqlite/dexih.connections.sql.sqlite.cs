@@ -107,7 +107,7 @@ namespace dexih.connections.sqlite
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table, cancellationToken);
+                    await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -175,7 +175,7 @@ namespace dexih.connections.sqlite
                     }
                     catch (Exception ex)
                     {
-                        throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql.ToString()}.", ex);
+                        throw new ConnectionException($"Create table failed: {ex.Message}, sql command: {createSql}.", ex);
                     }
                 }
             }

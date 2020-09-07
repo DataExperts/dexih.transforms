@@ -534,7 +534,7 @@ namespace dexih.connections.mongo
 
                 var list = new List<Table>();
 
-                foreach (var collection in await collectionList.ToListAsync<BsonDocument>(cancellationToken: cancellationToken))
+                foreach (var collection in await collectionList.ToListAsync(cancellationToken: cancellationToken))
                 {
                     list.Add(new Table(collection["name"].AsString));
                 }

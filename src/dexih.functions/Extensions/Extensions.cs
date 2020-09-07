@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Dexih.Utils.DataType;
@@ -156,8 +154,20 @@ namespace dexih.functions
                 if (typeof(ICollection).IsAssignableFrom(type1))
                 {
                     var collection = (ICollection) Activator.CreateInstance(type1);
-                    var elementType = type1.GetProperty("Item").PropertyType;
-                    var add = type1.GetMethod("Add", new Type[] {elementType});
+
+                    var itemProperty = type1.GetProperty("Item");
+                    if (itemProperty == null)
+                    {
+                        throw new Exception($"The \"Item\" property does not exist in the type {type1.Name}.");
+                    }
+                    
+                    var elementType = itemProperty.PropertyType;
+                    var add = type1.GetMethod("Add", new[] {elementType});
+                    if (add == null)
+                    {
+                        throw new Exception($"The \"Add\" method does not exist in the type {type1.Name}.");
+                    }
+
                     foreach (var v in valueArray)
                     {
                         if (v.GetType() == elementType)

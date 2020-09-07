@@ -570,7 +570,7 @@ namespace dexih.connections.azure
                 {
                     entity = tableResult.Result as DynamicTableEntity;
                     value = GetEntityProperty<T>(entity.Properties[IncrementalValueName]); 
-                    entity.Properties[IncrementalValueName] = NewEntityProperty<T>(value);
+                    entity.Properties[IncrementalValueName] = NewEntityProperty(value);
                     entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
                 }
                     
@@ -599,7 +599,7 @@ namespace dexih.connections.azure
 
                 DynamicTableEntity entity = null;
                 entity = new DynamicTableEntity(table.Name, columnName);
-                entity.Properties.Add(IncrementalValueName, NewEntityProperty<T>(value));
+                entity.Properties.Add(IncrementalValueName, NewEntityProperty(value));
                 entity.Properties.Add(LockGuidName, new EntityProperty(Guid.NewGuid()));
 
                 //update the record with the new incremental value and the guid.

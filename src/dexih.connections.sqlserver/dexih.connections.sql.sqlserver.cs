@@ -203,7 +203,7 @@ namespace dexih.connections.sqlserver
                 //if table exists, then drop it.
                 if (tableExists)
                 {
-                    var dropResult = await DropTable(table, cancellationToken);
+                    await DropTable(table, cancellationToken);
                 }
 
                 var createSql = new StringBuilder();
@@ -452,7 +452,7 @@ namespace dexih.connections.sqlserver
                 await using (var connection = await NewConnection(cancellationToken))
                 await using (var cmd = CreateCommand(connection, "create database " + AddDelimiter(databaseName)))
                 {
-                    var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
 
                 DefaultDatabase = databaseName;

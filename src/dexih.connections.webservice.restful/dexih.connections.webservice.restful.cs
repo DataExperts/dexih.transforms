@@ -342,11 +342,8 @@ namespace dexih.connections.webservice.restful
 
                 var responseStatusOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseStatus);
                 var responseSuccessOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseSuccess);
-                var responseDataOrdinal = restFunction.GetOrdinal(EDeltaType.ResponseData);
-				var urlOrdinal = restFunction.GetOrdinal(EDeltaType.Url);
+                var urlOrdinal = restFunction.GetOrdinal(EDeltaType.Url);
 				var errorOrdinal = restFunction.GetOrdinal(EDeltaType.Error);
-
-                var lookupResult = new List<object[]>();
 
                 void PopulateRow(object[] baseRow)
                 {
@@ -388,7 +385,7 @@ namespace dexih.connections.webservice.restful
 
 				if (response.isSuccess)
 				{
-					FileHandlerBase fileHandler = null;
+					FileHandlerBase fileHandler;
 
 					switch (restFunction.FormatType)
 					{

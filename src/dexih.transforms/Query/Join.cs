@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using Dexih.Utils.CopyProperties;
 
 
 namespace dexih.functions.Query
