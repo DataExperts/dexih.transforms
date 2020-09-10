@@ -116,10 +116,9 @@ namespace dexih.functions.Parameter
         {
             if (Column != null)
             {
-                return new[] {new SelectColumn(Column)};
+                yield return new SelectColumn(Column);
             }
-
-            return new SelectColumn[0];
         }
+
     }
 }

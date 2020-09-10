@@ -110,6 +110,11 @@ namespace dexih.transforms.Mapping
             return new SelectColumn[0];
         }
 
+        public virtual IEnumerable<TableColumn> GetOutputColumns(bool includeAggregate)
+        {
+            yield break;
+        }
+        
         public virtual IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
             return new SelectColumn[0];

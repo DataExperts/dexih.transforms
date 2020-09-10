@@ -367,7 +367,7 @@ namespace dexih.functions
         /// <returns></returns>
         private IEnumerable<object[]> IndexLookup(IEnumerable<(int columnOrdinal, object value)> filters)
         {
-            if (_indexes == null) return null;
+            if (_indexes == null) yield break;
             
             var sortedFilter = filters.OrderBy(c => c.columnOrdinal).ToArray();
 
@@ -380,20 +380,14 @@ namespace dexih.functions
                     {
                         if(index.TryGetValue(filter.Select(c=>c.value).ToArray(), out var rowIndexes))
                         {
-                            var rows = new object[rowIndexes.Count][];
-                            for (var i = 0; i < rowIndexes.Count; i++)
+                            foreach (var t in rowIndexes)
                             {
-                                rows[i] = Data[rowIndexes[i]];
+                                yield return Data[t];
                             }
-                            return rows;
                         }
-                        
-                        return new List<object[]>();
                     }
                 }
             }
-
-            return null;
         }
         
         #endregion

@@ -181,6 +181,11 @@ namespace dexih.transforms.Mapping
             }
         }
 
+        public override IEnumerable<TableColumn> GetOutputColumns(bool includeAggregate)
+        {
+            yield return OutputColumn;
+        }
+
         public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
             switch (Aggregate)

@@ -85,6 +85,11 @@ namespace dexih.functions.Parameter
 	    {
 		    return Parameters.SelectMany(c => c.GetRequiredColumns());
 	    }
+	    
+	    public override IEnumerable<TableColumn> GetOutputColumns()
+	    {
+		    return Parameters.SelectMany(c => c.GetOutputColumns());
+	    }
 
 	    public override void InitializeOrdinal(Table table, Table joinTable = null)
 	    {

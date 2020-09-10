@@ -153,7 +153,7 @@ namespace dexih.transforms.Mapping
 
         public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
-            return new[] {new SelectColumn(NodeColumn)};
+            yield return new SelectColumn(NodeColumn);
         }
         
         public override bool MatchesSelectQuery(SelectQuery selectQuery)

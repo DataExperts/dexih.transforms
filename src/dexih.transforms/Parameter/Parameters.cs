@@ -77,39 +77,39 @@ namespace dexih.functions.Parameter
             }
         }
         
+        //
+        // public TableColumn[] OutputTableColumns(Parameter returnParameter, ICollection<Parameter> outputs)
+        // {
+        //     var columns = new List<TableColumn>();
+        //
+        //     AddOutputColumn(returnParameter, columns);
+        //
+        //     if (outputs != null)
+        //     {
+        //         foreach (var output in outputs)
+        //         {
+        //             AddOutputColumn(output, columns);
+        //         }
+        //     }
+        //
+        //     return columns.ToArray();
+        // }
 
-        public TableColumn[] OutputTableColumns(Parameter returnParameter, ICollection<Parameter> outputs)
-        {
-            var columns = new List<TableColumn>();
-
-            AddOutputColumn(returnParameter, columns);
-
-            if (outputs != null)
-            {
-                foreach (var output in outputs)
-                {
-                    AddOutputColumn(output, columns);
-                }
-            }
-
-            return columns.ToArray();
-        }
-
-        private void AddOutputColumn(Parameter parameter, List<TableColumn> columns)
-        {
-            if (parameter != null)
-            {
-                if (parameter is ParameterColumn parameterColumn)
-                {
-                    columns.Add(parameterColumn.Column);
-                }
-
-                if (parameter is ParameterArray parameterArray)
-                {
-                    columns.AddRange(parameterArray.TableColumns());
-                }
-            }
-        }
+        // private void AddOutputColumn(Parameter parameter, List<TableColumn> columns)
+        // {
+        //     if (parameter != null)
+        //     {
+        //         if (parameter is ParameterColumn parameterColumn)
+        //         {
+        //             columns.Add(parameterColumn.Column);
+        //         }
+        //
+        //         if (parameter is ParameterArray parameterArray)
+        //         {
+        //             columns.AddRange(parameterArray.TableColumns());
+        //         }
+        //     }
+        // }
 
 
         /// <summary>

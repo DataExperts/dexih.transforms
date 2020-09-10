@@ -176,21 +176,33 @@ namespace dexih.transforms
 	        {
 		        foreach (var mapping in Mappings)
 		        {
-			        if (mapping is MapColumn mapColumn)
+			        switch (mapping)
 			        {
-				        if (mapColumn.InputColumn != null && mapColumn.OutputColumn.Compare(targetColumn))
-				        {
-					        return (true, mapColumn.InputColumn.Copy(), null);
-				        }
+				        case MapColumn mapColumn:
+					        if (mapColumn.InputColumn != null && mapColumn.OutputColumn.Compare(targetColumn))
+					        {
+						        return (true, mapColumn.InputColumn.Copy(), null);
+					        }
+
+					        break;
+				        case MapInputColumn mapInputColumn:
+					        if (mapInputColumn.InputColumn != null && mapInputColumn.InputColumn.Compare(targetColumn))
+					        {
+						        return (true, null, mapInputColumn.InputValue);
+					        }
+
+					        break;
+				        default:
+					        // if the column is mapped through another type of mapping, then it can't be translated.
+					        var columns = mapping.GetOutputColumns(false);
+					        if (columns.Any(c => c.Compare(targetColumn)))
+					        {
+						        return (false, null, null);
+					        }
+
+					        break;
 			        }
 
-			        if (mapping is MapInputColumn mapInputColumn)
-			        {
-				        if (mapInputColumn.InputColumn != null && mapInputColumn.InputColumn.Compare(targetColumn))
-				        {
-					        return (true, null, mapInputColumn.InputValue);
-				        }
-			        }
 		        }
 		        
 		        if (Mappings.PassThroughColumns)

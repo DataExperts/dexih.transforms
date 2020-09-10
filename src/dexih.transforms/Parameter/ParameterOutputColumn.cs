@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Dexih.Utils.DataType;
 
 
@@ -90,6 +91,11 @@ namespace dexih.functions.Parameter
         public override Parameter Copy()
         {
             return new ParameterOutputColumn(Name, Column);
+        }
+
+        public override IEnumerable<TableColumn> GetOutputColumns()
+        {
+            yield return Column;
         }
 
 
