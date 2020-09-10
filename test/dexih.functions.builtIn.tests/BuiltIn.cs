@@ -113,56 +113,202 @@ namespace dexih.functions.builtIn.tests
                 var date1 =  DateTime.Parse("2015-09-24");
                 var date2 = DateTime.Parse("2015-09-25");
 
-                return new[]
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DayOfMonth), new object[] {date1}, 24};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DaysInMonth), new object[] {date1}, 30};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DayOfWeekName), new object[] {date1}, "Thursday"};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DayOfWeekNumber), new object[] {date1}, 4};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.WeekOfYear), new object[] {date1}, 39};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DayOfYear), new object[] {date1}, 267};
+                yield return new object[] {typeof(DateFunctions), nameof(DateFunctions.Month), new object[] {date1}, 9};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ShortMonth), new object[] {date1}, "Sep"};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.LongMonth), new object[] {date1}, "September"};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.Year), new object[] {date1}, 2015};
+                yield return new object[]
                 {
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfMonth), new object[] {date1}, 24},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DaysInMonth), new object[] {date1}, 30},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfWeekName), new object[] {date1}, "Thursday"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfWeekNumber), new object[] {date1}, 4},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.WeekOfYear), new object[] {date1}, 39},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DayOfYear), new object[] {date1}, 267},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.Month), new object[] {date1}, 9},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ShortMonth), new object[] {date1}, "Sep"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.LongMonth), new object[] {date1}, "September"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.Year), new object[] {date1}, 2015},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToLongDateString), new object[] {date1}, "Thursday, 24 September 2015"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToLongTimeString), new object[] {date1}, "12:00:00 AM"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToShortDateString), new object[] {date1}, "24/09/2015"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.ToShortTimeString), new object[] {date1}, "12:00 AM"},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DateToString), new object[] {date1, "dd MMM yyyy"}, "24 Sep 2015"},
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsLeapYear), new object[] {date1}, false},
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekend), new object[] { date1 }, false},
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekDay), new object[] { date1 }, true},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddDays), new object[] { date1, 1 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddHours), new object[] { date1, 24 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMilliseconds), new object[] { date1, 86400000 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMinutes), new object[] { date1, 1440 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddMonths), new object[] { date1, 1 }, DateTime.Parse("24 Oct 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddSeconds), new object[] { date1, 86400 }, DateTime.Parse("25 Sep 2015")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AddYears), new object[] { date1, 1 }, DateTime.Parse("24 Sep 2016")},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.DaysBetween), new object[] { date1, date2 }, 1d},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.HoursBetween), new object[] { date1, date2 }, 24d},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.MinutesBetween), new object[] { date1, date2 }, 1440d},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.SecondsBetween), new object[] { date1, date2 }, 86400d},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.MillisecondsBetween), new object[] { date1, date2 }, 86400000d},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2016-09-24") }, 1},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  date1 }, 0},
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] { date1,  DateTime.Parse("2017-09-25") }, 2},
-                    new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Add), new object[] { 1m, new [] {2m} }, 3m},
-                    new object[] { typeof(MathFunctions), nameof(MathFunctions.Ceiling), new object[] { 6.4m }, (decimal)7 },
-                    new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] { 6m, 2m }, (decimal)3 },
-                    new object[] { typeof(MathFunctions), nameof(MathFunctions.Floor), new object[] { 6.4m }, (decimal)6 },
-                    new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Multiply), new object[] { 6m, new [] {2m} }, (decimal)12 },
-                    new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Negate), new object[] { 6m }, (decimal) (-6)},
-                    new object[] { typeof(MathFunctions), nameof(MathFunctions.Remainder), new object[] { 6m, 4m }, (decimal)2 },
-                    new object[] { typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Subtract), new object[] { 6m, new [] { 2m} }, (decimal)4 },
-                    new object[] { typeof(ConditionFunctions<DateTime>), nameof(ConditionFunctions<int>.IsEqual), new object[] { new [] { DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015")} }, true },
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetween), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("25 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetweenInclusive), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015") }, true },
-                    new object[] { typeof(DateFunctions), nameof(DateFunctions.UnixTimeStampToDate), new object[] { 1518739200 }, new DateTime(2018, 2, 16, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime() },
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, false },
-                    new object[] { typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect), new object[] { DateTime.Parse("26 Sep 2015"), DateTime.Parse("29 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("29 Sep 2015") }, true },
+                    typeof(DateFunctions), nameof(DateFunctions.ToLongDateString), new object[] {date1},
+                    "Thursday, 24 September 2015"
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.ToLongTimeString), new object[] {date1}, "12:00:00 AM"
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.ToShortDateString), new object[] {date1}, "24/09/2015"
+                };
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToShortTimeString), new object[] {date1}, "12:00 AM"};
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.DateToString), new object[] {date1, "dd MMM yyyy"},
+                    "24 Sep 2015"
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsLeapYear), new object[] {date1},
+                    false
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekend), new object[] {date1}, false
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsWeekDay), new object[] {date1}, true
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddDays), new object[] {date1, 1},
+                    DateTime.Parse("25 Sep 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddHours), new object[] {date1, 24},
+                    DateTime.Parse("25 Sep 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddMilliseconds), new object[] {date1, 86400000},
+                    DateTime.Parse("25 Sep 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddMinutes), new object[] {date1, 1440},
+                    DateTime.Parse("25 Sep 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddMonths), new object[] {date1, 1},
+                    DateTime.Parse("24 Oct 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddSeconds), new object[] {date1, 86400},
+                    DateTime.Parse("25 Sep 2015")
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AddYears), new object[] {date1, 1},
+                    DateTime.Parse("24 Sep 2016")
+                };
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.DaysBetween), new object[] {date1, date2}, 1d};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.HoursBetween), new object[] {date1, date2}, 24d};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.MinutesBetween), new object[] {date1, date2}, 1440d};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.SecondsBetween), new object[] {date1, date2}, 86400d};
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.MillisecondsBetween), new object[] {date1, date2},
+                    86400000d
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate),
+                    new object[] {date1, DateTime.Parse("2016-09-24")}, 1
+                };
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate), new object[] {date1, date1}, 0};
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.AgeInYearsAtDate),
+                    new object[] {date1, DateTime.Parse("2017-09-25")}, 2
+                };
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Add), new object[] {1m, new[] {2m}},
+                    3m
+                };
+                yield return new object[]
+                    {typeof(MathFunctions), nameof(MathFunctions.Ceiling), new object[] {6.4m}, (decimal) 7};
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6m, 2m},
+                    (decimal) 3
+                };
+                yield return new object[]
+                    {typeof(MathFunctions), nameof(MathFunctions.Floor), new object[] {6.4m}, (decimal) 6};
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Multiply),
+                    new object[] {6m, new[] {2m}}, (decimal) 12
+                };
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Negate), new object[] {6m},
+                    (decimal) (-6)
+                };
+                yield return new object[]
+                    {typeof(MathFunctions), nameof(MathFunctions.Remainder), new object[] {6m, 4m}, (decimal) 2};
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Subtract),
+                    new object[] {6m, new[] {2m}}, (decimal) 4
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<DateTime>), nameof(ConditionFunctions<int>.IsEqual),
+                    new object[] {new[] {DateTime.Parse("25 Sep 2015"), DateTime.Parse("25 Sep 2015")}}, true
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetween),
+                    new object[]
+                        {DateTime.Parse("26 Sep 2015"), DateTime.Parse("25 Sep 2015"), DateTime.Parse("27 Sep 2015")},
+                    true
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.IsBetweenInclusive),
+                    new object[]
+                        {DateTime.Parse("26 Sep 2015"), DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015")},
+                    true
+                };
+                yield return new object[]
+                {
+                    typeof(DateFunctions), nameof(DateFunctions.UnixTimeStampToDate), new object[] {1518739200},
+                    new DateTime(2018, 2, 16, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime()
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect),
+                    new object[]
+                    {
+                        DateTime.Parse("26 Sep 2015"), DateTime.Parse("27 Sep 2015"), DateTime.Parse("28 Sep 2015"),
+                        DateTime.Parse("29 Sep 2015")
+                    },
+                    false
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect),
+                    new object[]
+                    {
+                        DateTime.Parse("26 Sep 2015"), DateTime.Parse("28 Sep 2015"), DateTime.Parse("28 Sep 2015"),
+                        DateTime.Parse("29 Sep 2015")
+                    },
+                    false
+                };
+                yield return new object[]
+                {
+                    typeof(ConditionFunctions<>), nameof(ConditionFunctions<int>.RangeIntersect),
+                    new object[]
+                    {
+                        DateTime.Parse("26 Sep 2015"), DateTime.Parse("29 Sep 2015"), DateTime.Parse("28 Sep 2015"),
+                        DateTime.Parse("29 Sep 2015")
+                    },
+                    true
                 };
             }
         }

@@ -390,6 +390,48 @@ namespace dexih.functions.BuiltIn
                     return false;
             }
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Switch Or", 
+                Description = "Returns true when one of the conditions is met"),
+        ]
+        public bool SwitchOr([TransformFunctionLinkedParameter("When")] object[] when, [TransformFunctionLinkedParameter("When")] object[] equals)
+        {
+            for(var i = 0; i < when.Length; i++)
+            {
+                if (i > equals.Length)
+                {
+                    break;
+                }
+
+                if (Operations.Equal(when[i], equals[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Condition, Category = "Boolean Condition", Name = "Switch And", 
+                Description = "Returns true when all of the conditions are met"),
+        ]
+        public bool SwitchAnd([TransformFunctionLinkedParameter("When")] object[] when, [TransformFunctionLinkedParameter("When")] object[] equals)
+        {
+            for(var i = 0; i < when.Length; i++)
+            {
+                if (i > equals.Length)
+                {
+                    break;
+                }
+
+                if (!Operations.Equal(when[i], equals[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
     }
 }

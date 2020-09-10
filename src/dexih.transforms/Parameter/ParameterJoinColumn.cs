@@ -84,7 +84,8 @@ namespace dexih.functions.Parameter
 
         public override IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            return new[] {new SelectColumn(Column)};
+            yield return new SelectColumn(Column);
         }
+ 
     }
 }

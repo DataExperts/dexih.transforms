@@ -101,7 +101,12 @@ namespace dexih.functions.Parameter
         /// <returns></returns>
         public virtual IEnumerable<SelectColumn> GetRequiredColumns()
         {
-            return new SelectColumn[0];
+            yield break;
+        }
+
+        public virtual IEnumerable<TableColumn> GetOutputColumns()
+        {
+            yield break;
         }
 
         /// <summary>
@@ -110,7 +115,7 @@ namespace dexih.functions.Parameter
         /// <returns></returns>
         public virtual IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            return new SelectColumn[0];
+            yield break;
         }
 
     }

@@ -121,6 +121,11 @@ namespace dexih.transforms.Mapping
             yield return new SelectColumn(InputColumn);
         }
 
+        public override IEnumerable<TableColumn> GetOutputColumns(bool includeAggregate)
+        {
+            yield return OutputColumn;
+        }
+
         public override bool MatchesSelectQuery(SelectQuery selectQuery)
         {
             if(selectQuery.Columns == null || 

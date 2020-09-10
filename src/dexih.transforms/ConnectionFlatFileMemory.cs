@@ -47,7 +47,7 @@ namespace dexih.transforms
 
         public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path, string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var files = _files.Where(c => c.Key.path == path).Select(c => c.Key.fileName).ToArray();
+            var files = _files.Where(c => c.Key.path == path).Select(c => c.Key.fileName);
             foreach (var fileName in files)
             {
                 yield return new FileProperties()

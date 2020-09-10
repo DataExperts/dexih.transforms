@@ -116,6 +116,12 @@ namespace dexih.transforms.Mapping
             if (Column1 != null) { yield return new SelectColumn(Column1);}
             if (Column2 != null) { yield return new SelectColumn(Column2);}
         }
+        
+        public override IEnumerable<TableColumn> GetOutputColumns(bool includeAggregate)
+        {
+            yield break;
+        }
+
 
         public override bool MatchesSelectQuery(SelectQuery selectQuery)
         {

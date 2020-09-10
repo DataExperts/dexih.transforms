@@ -310,6 +310,26 @@ namespace dexih.transforms.Mapping
             return columns2;
         }
         
+        public override IEnumerable<TableColumn> GetOutputColumns(bool includeAggregate)
+        {
+            foreach (var column in Parameters.Outputs.SelectMany(c => c.GetOutputColumns()))
+            {
+                yield return column;
+            }
+            foreach (var column in Parameters.ResultOutputs.SelectMany(c => c.GetOutputColumns()))
+            {
+                yield return column;
+            }
+            foreach (var column in Parameters.ReturnParameters.SelectMany(c => c.GetOutputColumns()))
+            {
+                yield return column;
+            }
+            foreach (var column in Parameters.ResultReturnParameters.SelectMany(c => c.GetOutputColumns()))
+            {
+                yield return column;
+            }
+        }
+        
         public override bool MatchesSelectQuery(SelectQuery selectQuery)
         {
             if(selectQuery.Filters == null || 
