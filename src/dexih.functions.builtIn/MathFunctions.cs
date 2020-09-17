@@ -2,6 +2,7 @@
 
 namespace dexih.functions.BuiltIn
 {
+   
     public class MathFunctions
     {
 
@@ -165,7 +166,6 @@ namespace dexih.functions.BuiltIn
             return decimal.Floor(value);
         }
 
-        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Remainder",
             Description = "Computes the remainder after dividing two Decimal values.")]
         public decimal Remainder(decimal value1, decimal value2)

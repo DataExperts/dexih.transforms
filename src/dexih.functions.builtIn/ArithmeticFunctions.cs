@@ -1,8 +1,16 @@
-﻿using Dexih.Utils.DataType;
+﻿using System;
+using Dexih.Utils.DataType;
 using System.Linq;
 
 namespace dexih.functions.BuiltIn
 {
+    public enum EDivideByZero
+    {
+        Error,
+        Zero,
+        Infinity
+    }
+    
     public class ArithmeticFunctions<T>
     {
 
@@ -22,8 +30,34 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide",
             Description = "Divides two specified Decimal values.", GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
-        public T Divide(T value1, T value2)
+        public T Divide(T value1, T value2, EDivideByZero divideByZero = EDivideByZero.Error)
         {
+            if (Equals(value2, default(T)))
+            {
+                switch (divideByZero)
+                {
+                    case EDivideByZero.Error:
+                        throw new DivideByZeroException("Cannot divide by zero.  Change the DivideByZero value to correct this.");
+                    case EDivideByZero.Zero:
+                        return default;
+                    case EDivideByZero.Infinity:
+                        var type = typeof(T);
+                        if (type == typeof(double))
+                        {
+                            return (T)(object) double.PositiveInfinity;
+                        } else if (type == typeof(float))
+                        {
+                            return (T)(object) float.PositiveInfinity;
+                        }
+                        else
+                        {
+                            throw new DivideByZeroException("Divide by zero failed as Infinity can only be returned for double/float types.");
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(divideByZero), divideByZero, null);
+                }
+            }
+
             return Operations.Divide(value1, value2);
         }
 
