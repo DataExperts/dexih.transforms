@@ -244,6 +244,11 @@ namespace dexih.functions.builtIn.tests
                 };
                 yield return new object[]
                 {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {-6d, 0d, EDivideByZero.Infinity},
+                    double.NegativeInfinity
+                };
+                yield return new object[]
+                {
                     typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6d, 0d, EDivideByZero.Zero},
                     0d
                 };

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Dexih.Utils.DataType;
 using System.Linq;
 
@@ -6,8 +7,13 @@ namespace dexih.functions.BuiltIn
 {
     public enum EDivideByZero
     {
-        Error,
+        [Description("Error")]
+        Error = 1,
+        
+        [Description("Zero/Null")]
         Zero,
+        
+        [Description("Inifinity")]
         Infinity
     }
     
@@ -18,7 +24,7 @@ namespace dexih.functions.BuiltIn
             Description = "Returns a value indicating the sign of a decimal number.", GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
         public int Sign(T value)
         {
-            return Operations.Compare(value, default(T));
+            return Operations.Compare(value, default);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Add",
@@ -44,9 +50,17 @@ namespace dexih.functions.BuiltIn
                         var type = typeof(T);
                         if (type == typeof(double))
                         {
+                            if (Sign(value1) < 0)
+                            {
+                                return (T)(object) double.NegativeInfinity;
+                            }
                             return (T)(object) double.PositiveInfinity;
                         } else if (type == typeof(float))
                         {
+                            if (Sign(value1) < 0)
+                            {
+                                return (T)(object) float.NegativeInfinity;
+                            }
                             return (T)(object) float.PositiveInfinity;
                         }
                         else
