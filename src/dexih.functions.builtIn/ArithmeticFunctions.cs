@@ -1,8 +1,22 @@
-﻿using Dexih.Utils.DataType;
+﻿using System;
+using System.ComponentModel;
+using Dexih.Utils.DataType;
 using System.Linq;
 
 namespace dexih.functions.BuiltIn
 {
+    public enum EDivideByZero
+    {
+        [Description("Error")]
+        Error = 1,
+        
+        [Description("Zero/Null")]
+        Zero,
+        
+        [Description("Inifinity")]
+        Infinity
+    }
+    
     public class ArithmeticFunctions<T>
     {
 
@@ -10,7 +24,7 @@ namespace dexih.functions.BuiltIn
             Description = "Returns a value indicating the sign of a decimal number.", GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
         public int Sign(T value)
         {
-            return Operations.Compare(value, default(T));
+            return Operations.Compare(value, default);
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Add",
@@ -22,8 +36,42 @@ namespace dexih.functions.BuiltIn
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Maths", Name = "Divide",
             Description = "Divides two specified Decimal values.", GenericType = EGenericType.Numeric, GenericTypeDefault = ETypeCode.Decimal)]
-        public T Divide(T value1, T value2)
+        public T Divide(T value1, T value2, EDivideByZero divideByZero = EDivideByZero.Error)
         {
+            if (Equals(value2, default(T)))
+            {
+                switch (divideByZero)
+                {
+                    case EDivideByZero.Error:
+                        throw new DivideByZeroException("Cannot divide by zero.  Change the DivideByZero value to correct this.");
+                    case EDivideByZero.Zero:
+                        return default;
+                    case EDivideByZero.Infinity:
+                        var type = typeof(T);
+                        if (type == typeof(double))
+                        {
+                            if (Sign(value1) < 0)
+                            {
+                                return (T)(object) double.NegativeInfinity;
+                            }
+                            return (T)(object) double.PositiveInfinity;
+                        } else if (type == typeof(float))
+                        {
+                            if (Sign(value1) < 0)
+                            {
+                                return (T)(object) float.NegativeInfinity;
+                            }
+                            return (T)(object) float.PositiveInfinity;
+                        }
+                        else
+                        {
+                            throw new DivideByZeroException("Divide by zero failed as Infinity can only be returned for double/float types.");
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(divideByZero), divideByZero, null);
+                }
+            }
+
             return Operations.Divide(value1, value2);
         }
 

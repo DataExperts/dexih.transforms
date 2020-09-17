@@ -82,6 +82,11 @@ namespace dexih.connections.postgressql
                 var columns = table.Columns.Where(c => c.DeltaType != EDeltaType.DbAutoIncrement).ToArray();
                 var ordinals = new int[columns.Length];
                 var types = new NpgsqlDbType[columns.Length];
+
+                if (columns.Length == 0)
+                {
+                    throw new ConnectionException("The bulk insert failed as there are no columns defined.");
+                }
                     
                 for(var i = 0; i< columns.Length; i++)
                 {

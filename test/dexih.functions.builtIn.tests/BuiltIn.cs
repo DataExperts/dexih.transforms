@@ -234,8 +234,23 @@ namespace dexih.functions.builtIn.tests
                     {typeof(MathFunctions), nameof(MathFunctions.Ceiling), new object[] {6.4m}, (decimal) 7};
                 yield return new object[]
                 {
-                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6m, 2m},
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6m, 2m, EDivideByZero.Error},
                     (decimal) 3
+                };
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6d, 0d, EDivideByZero.Infinity},
+                    double.PositiveInfinity
+                };
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {-6d, 0d, EDivideByZero.Infinity},
+                    double.NegativeInfinity
+                };
+                yield return new object[]
+                {
+                    typeof(ArithmeticFunctions<>), nameof(ArithmeticFunctions<int>.Divide), new object[] {6d, 0d, EDivideByZero.Zero},
+                    0d
                 };
                 yield return new object[]
                     {typeof(MathFunctions), nameof(MathFunctions.Floor), new object[] {6.4m}, (decimal) 6};
