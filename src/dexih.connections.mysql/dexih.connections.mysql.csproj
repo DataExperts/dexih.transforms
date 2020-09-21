@@ -16,7 +16,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.69.8" />
+    <PackageReference Include="MySqlConnector" Version="0.69.9" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dexih.transforms\dexih.transforms.csproj" />

@@ -5,6 +5,7 @@ using System.IO;
  using System.Linq;
  using System.Threading;
 using System.Threading.Tasks;
+ using dexih.functions;
  using dexih.functions.Query;
  using dexih.transforms.Exceptions;
  using NetTopologySuite.Geometries;
@@ -34,6 +35,8 @@ using System.Threading.Tasks;
         private List<int> _ordinals;
         private string _endWrite;
         private readonly SelectQuery _selectQuery = null;
+        
+        private TableColumn[] columns = null;
 
         public StreamJson(DbDataReader reader, long maxRows = -1, string topNode = null)
         {
@@ -106,8 +109,8 @@ using System.Threading.Tasks;
                             }
                         }
                         
-                        var columns = transform.CacheTable.Columns;
-                        for (var i = 0; i < columns.Count; i++)
+                        columns = transform.CacheTable.Columns.ToArray();
+                        for (var i = 0; i < columns.Length; i++)
                         {
                             if (!columns[i].IsParent)
                             {
@@ -188,7 +191,15 @@ using System.Threading.Tasks;
                                 continue;
                             }
 
-                            jObject[_reader.GetName(i)] = JToken.FromObject(_reader[i]);
+                            var value = _reader[i];
+                            
+                            if (columns?[i] != null)
+                            {
+                                value = columns[i].FormatValue(value);
+                            }
+                            
+                            jObject[_reader.GetName(i)] = JToken.FromObject(value);
+                            
                         }
 
                         var row = jObject.ToString();

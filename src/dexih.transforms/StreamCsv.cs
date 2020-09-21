@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Exceptions;
 
@@ -24,6 +26,7 @@ namespace dexih.transforms
         private readonly char[] _quoteCharacters = new[] { '"', ' ', ',' };
 
         private bool _isFirst = true;
+        private TableColumn[] columns = null;
 
         public StreamCsv(DbDataReader reader)
         {
@@ -99,6 +102,11 @@ namespace dexih.transforms
                             if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "
                                 s[j] = "\"" + s[j] + "\"";
                         }
+                        
+                        if (transform.CacheTable.Columns.Any(c => c.Format != null))
+                        {
+                            columns = transform.CacheTable.Columns.ToArray();
+                        }
 
                         _streamWriter.WriteLine(string.Join(",", s));
                     }
@@ -147,7 +155,18 @@ namespace dexih.transforms
                         var s = new string[_reader.FieldCount];
                         for (var j = 0; j < _reader.FieldCount; j++)
                         {
-                            s[j] = _reader.GetString(j);
+                            string value;
+                            
+                            if (columns?[j] != null)
+                            {
+                                value = columns[j].FormatValue(_reader[j]).ToString();
+                            }
+                            else
+                            {
+                                value = _reader.GetString(j);
+                            }
+                            
+                            s[j] = value;
                             if (s[j].Contains("\"")) //replace " with ""
                                 s[j] = s[j].Replace("\"", "\"\"");
                             if (s[j].IndexOfAny(_quoteCharacters) != -1) //add "'s around any string with space or "

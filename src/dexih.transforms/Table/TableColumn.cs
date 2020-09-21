@@ -142,6 +142,9 @@ namespace dexih.functions
         [DataMember(Order = 20)]
         public TableColumns ChildColumns { get; set; }
 
+        [DataMember(Order = 21)]
+        public string Format { get; set; }
+        
         public bool IsArray() => Rank > 0;
 
         public bool IsAutoIncrement() => DeltaType == EDeltaType.DbAutoIncrement || DeltaType == EDeltaType.AutoIncrement;
@@ -263,6 +266,7 @@ namespace dexih.functions
                 IsParent = IsParent,
                 IsIncrementalUpdate = IsIncrementalUpdate,
                 Rank = Rank,
+                Format =  Format
             };
 
             if (includeChildColumns && ChildColumns != null && ChildColumns.Count > 0)
@@ -362,6 +366,11 @@ namespace dexih.functions
                    Name == other.Name;
         }
 
+        public object FormatValue(object value)
+        {
+            return Operations.Format(value, Format);
+        }
+
         public string DBML()
         {
             var desc = new StringBuilder();
@@ -454,7 +463,8 @@ namespace dexih.functions
                 IsMandatory == other.IsMandatory &&
                 SecurityFlag == other.SecurityFlag &&
                 IsInput == other.IsInput &&
-                IsIncrementalUpdate == other.IsIncrementalUpdate;
+                IsIncrementalUpdate == other.IsIncrementalUpdate &&
+                Format == other.Format;
         }
 
         public override bool Equals(object obj)
@@ -488,6 +498,7 @@ namespace dexih.functions
                 hashCode = (hashCode * 397) ^ (int) SecurityFlag;
                 hashCode = (hashCode * 397) ^ IsInput.GetHashCode();
                 hashCode = (hashCode * 397) ^ IsIncrementalUpdate.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Format != null ? Format.GetHashCode() : 0);
                 return hashCode;
             }
         }

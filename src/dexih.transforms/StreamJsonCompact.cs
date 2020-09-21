@@ -37,6 +37,8 @@ namespace dexih.transforms
         private readonly string _name;
         private readonly bool _showTransformProperties;
 
+        private TableColumn[] columns = null;
+
         public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null,
             int maxFieldSize = -1, ViewConfig viewConfig = null, bool showTransformProperties = true)
         {
@@ -120,6 +122,12 @@ namespace dexih.transforms
                         }
 
                         var columnSerializeObject = ColumnObject(transform.CacheTable.Columns).Serialize();
+
+                        if (transform.CacheTable.Columns.Any(c => c.Format != null))
+                        {
+                            columns = transform.CacheTable.Columns.ToArray();
+                        }
+                        
                         _streamWriter.Write(columnSerializeObject);
                     }
                     else
@@ -213,6 +221,11 @@ namespace dexih.transforms
                             {
                                 _valuesArray[i] =
                                     valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
+                            }
+
+                            if (columns?[i] != null)
+                            {
+                                _valuesArray[i] = columns[i].FormatValue(_valuesArray[i]);
                             }
                         }
 
