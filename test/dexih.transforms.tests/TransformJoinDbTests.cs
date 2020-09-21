@@ -71,7 +71,6 @@ namespace dexih.transforms.tests
             await transformJoin2.Open(1, null, CancellationToken.None);
             Assert.True(transformJoin2.JoinAlgorithm == usedJoinStrategy);
 
-            var pos = 0;
             var parentName = new TableColumn("name") { ReferenceTable = "parent"};
 
             await transformJoin2.ReadAsync();
