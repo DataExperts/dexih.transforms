@@ -223,9 +223,13 @@ namespace dexih.transforms
                                     valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
                             }
 
-                            if (columns?[i] != null)
+                            if (columns?[i] != null && columns[i].Format != null)
                             {
-                                _valuesArray[i] = columns[i].FormatValue(_valuesArray[i]);
+                                var formatted = columns[i].FormatValue(_valuesArray[i]);
+                                if (!Equals(_valuesArray[i], formatted))
+                                {
+                                    _valuesArray[i] = new {f = columns[i].FormatValue(_valuesArray[i]), r = _valuesArray[i]};    
+                                }
                             }
                         }
 
