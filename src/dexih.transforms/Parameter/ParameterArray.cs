@@ -42,31 +42,31 @@ namespace dexih.functions.Parameter
 			    switch (DataType)
 			    {
 				    case ETypeCode.Byte:
-					    return Parameters.Select(c => (byte) c.Value).ToArray();
+					    return Parameters.Select(c => (byte) (c.Value??0)).ToArray();
 				    case ETypeCode.SByte:
-					    return Parameters.Select(c => (sbyte) c.Value).ToArray();
+					    return Parameters.Select(c => (sbyte) (c.Value??0)).ToArray();
 				    case ETypeCode.UInt16:
-					    return Parameters.Select(c => (ushort) c.Value).ToArray();
+					    return Parameters.Select(c => (ushort) (c.Value??0)).ToArray();
 				    case ETypeCode.UInt32:
-					    return Parameters.Select(c => (int) c.Value).ToArray();
+					    return Parameters.Select(c => (int) (c.Value??0)).ToArray();
 				    case ETypeCode.UInt64:
-					    return Parameters.Select(c => (ulong) c.Value).ToArray();
+					    return Parameters.Select(c => (ulong) (c.Value??0l)).ToArray();
 				    case ETypeCode.Int16:
-					    return Parameters.Select(c => (short) c.Value).ToArray();
+					    return Parameters.Select(c => (short) (c.Value??0)).ToArray();
 				    case ETypeCode.Int32:
-					    return Parameters.Select(c => (int) c.Value).ToArray();
+					    return Parameters.Select(c => (int) (c.Value??0)).ToArray();
 				    case ETypeCode.Int64:
-					    return Parameters.Select(c => (long) c.Value).ToArray();
+					    return Parameters.Select(c => (long) (c.Value??0l)).ToArray();
 				    case ETypeCode.Decimal:
-					    return Parameters.Select(c => (decimal) c.Value).ToArray();
+					    return Parameters.Select(c => (decimal) (c.Value??0m)).ToArray();
 				    case ETypeCode.Double:
-					    return Parameters.Select(c => (double) c.Value).ToArray();
+					    return Parameters.Select(c => (double) (c.Value??0d)).ToArray();
 				    case ETypeCode.Single:
-					    return Parameters.Select(c => (float) c.Value).ToArray();
+					    return Parameters.Select(c => (float) (c.Value??0d)).ToArray();
 				    case ETypeCode.String:
 					    return Parameters.Select(c => (string) c.Value).ToArray();
 				    case ETypeCode.Boolean:
-					    return Parameters.Select(c => (bool) c.Value).ToArray();
+					    return Parameters.Select(c => (bool) (c.Value??false)).ToArray();
 				    case ETypeCode.DateTime:
 				    case ETypeCode.Date:
 					    return Parameters.Select(c => (DateTime) c.Value).ToArray();

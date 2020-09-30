@@ -15,8 +15,6 @@ namespace dexih.functions.ml
     
     public static class Helpers
     {
-
-        
         public const string PredictedLabel = "Label";
 
         public static DynamicTypeProperty NewDynamicTypeProperty(string label, EEncoding? encoding)
@@ -38,6 +36,12 @@ namespace dexih.functions.ml
         {
             if (dynamicList == null)
             {
+                // create default labels if non specified
+                if (labels == null)
+                {
+                    labels = values.Select((value, index) => $"label{index}").ToArray();
+                }
+                
                 var baseFields = labels.Select((label, index) => NewDynamicTypeProperty(label, encoding[index]));
                 DynamicTypeProperty[] fields;
 
@@ -116,8 +120,8 @@ namespace dexih.functions.ml
 
             foreach(var field in fields.Where(c => c.Encoding == EEncoding.HotEncode))
             {
-                var outColumn = field.Name + "Encoded";
-                var estimator = mlContext.Transforms.Categorical.OneHotEncoding(outColumn, field.Name);
+                var outColumn = field.CleanName + "Encoded";
+                var estimator = mlContext.Transforms.Categorical.OneHotEncoding(outColumn, field.CleanName);
                 if (pipeline == null)
                 {
                     pipeline = estimator;
@@ -131,8 +135,8 @@ namespace dexih.functions.ml
             
             foreach(var field in fields.Where(c => c.Encoding == EEncoding.FeaturizeText))
             {
-                var outColumn = field.Name + "Featurized";
-                var estimator = mlContext.Transforms.Text.FeaturizeText(outColumn, field.Name);
+                var outColumn = field.CleanName + "Featurized";
+                var estimator = mlContext.Transforms.Text.FeaturizeText(outColumn, field.CleanName);
                 if (pipeline == null)
                 {
                     pipeline = estimator;
@@ -144,7 +148,7 @@ namespace dexih.functions.ml
                 labels.Add(outColumn);
             }
             
-            labels.AddRange(fields.Where(c => c.Encoding == EEncoding.None).Select(c => c.Name) );
+            labels.AddRange(fields.Where(c => c.Encoding == EEncoding.None).Select(c => c.CleanName) );
             
             var featuresEstimator = mlContext.Transforms.Concatenate(featuresColumnName, labels.ToArray());
             

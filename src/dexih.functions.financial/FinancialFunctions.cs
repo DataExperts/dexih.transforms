@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Excel.FinancialFunctions;
 
 namespace dexih.functions.financial
@@ -441,7 +442,7 @@ namespace dexih.functions.financial
     {
       return Financial.Rate(nper, pmt, pv, fv, typ, guess);
     }
-
+    
     /// <summary>
     ///  The amount received at maturity for a fully invested security ([learn more](http://office.microsoft.com/en-us/excel/HP052092331033.aspx))
     /// </summary>
@@ -558,5 +559,22 @@ namespace dexih.functions.financial
       return Financial.YieldMat(settlement, maturity, issue, rate, pr, basis);
     }
 
+    /// <summary>
+    ///  Returns a compound annual growth (CAGR) or equivalent interest rate (RRI) for the growth of an investment.
+    /// </summary>
+    [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
+      Name = "Compound annual growth rate",
+      Description = "Compound annual growth rate (CAGR) of an investment over a period of years")]
+    public double CAGR([TransformFunctionParameter(Description = "Number of periods for the investment")] int nPer, 
+      [TransformFunctionParameter(Description = "Present Value for the investment")] double Pv, 
+      [TransformFunctionParameter(Description = "Future Value for the investment")] double Fv)
+    {
+      if (nPer == 0)
+      {
+        throw new Exception("The number of periods cannot be 0.");
+      }
+      return Math.Pow((Fv - Pv), (1 / nPer)) - 1;
+    }
+    
   }
 }

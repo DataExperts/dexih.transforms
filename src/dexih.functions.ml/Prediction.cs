@@ -14,12 +14,12 @@ namespace dexih.functions.ml
     
     public class Prediction
     {
-        // instance of the predition engine.
+        // instance of the prediction engine.
         private readonly object _predictionEngine;
         
         // method to run the "predict"
         private readonly MethodInfo _predictMethod;
-        private Type _dataType;
+        private readonly Type _dataType;
         
 
         /// <summary>
@@ -42,6 +42,16 @@ namespace dexih.functions.ml
             
             var mlContext = new MLContext();
             var model = Helpers.LoadModel(mlContext, modelBytes, out _);
+            
+            var createPredictionEngineBase = mlContext.Model.GetType().GetMethods().First(c => c.Name == "CreatePredictionEngine" && c.IsGenericMethod && c.GetParameters().Length == 4);
+            var createPredictionEngine = createPredictionEngineBase.MakeGenericMethod(_dataType, type);
+            _predictionEngine = createPredictionEngine.Invoke(mlContext.Model, new object[] {model, true, null, null});
+            _predictMethod = _predictionEngine.GetType().GetMethods().First(c => c.Name == "Predict" && c.GetParameters().Length == 1);
+        }
+
+        public Prediction(Type type, Type dataType, MLContext mlContext, ITransformer model)
+        {
+            _dataType = dataType;
             var createPredictionEngineBase = mlContext.Model.GetType().GetMethods().First(c => c.Name == "CreatePredictionEngine" && c.IsGenericMethod && c.GetParameters().Length == 4);
             var createPredictionEngine = createPredictionEngineBase.MakeGenericMethod(_dataType, type);
             _predictionEngine = createPredictionEngine.Invoke(mlContext.Model, new object[] {model, true, null, null});
@@ -51,6 +61,13 @@ namespace dexih.functions.ml
         public T Run<T>(object[] values)
         {
             var data = DynamicType.CreateDynamicItem(_dataType, values);
+            var parameters = new object[] {data};
+            var prediction = (T) _predictMethod.Invoke(_predictionEngine, parameters);
+            return prediction;
+        }
+        
+        public T Run<T>(object data)
+        {
             var parameters = new object[] {data};
             var prediction = (T) _predictMethod.Invoke(_predictionEngine, parameters);
             return prediction;

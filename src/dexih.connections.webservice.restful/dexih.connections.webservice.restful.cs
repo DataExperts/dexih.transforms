@@ -138,19 +138,19 @@ namespace dexih.connections.webservice.restful
 
 
                 //This column is use to capture the entire response from the web services call.
-                col = new TableColumn()
-                {
-                    Name = "Response",
-                    IsInput = false,
-                    LogicalName = "Response",
-                    DataType = newRestFunction.FormatType,
-                    DeltaType = EDeltaType.ResponseData,
-                    MaxLength = null,
-                    Description = "Response content from the service",
-                    AllowDbNull = true,
-                    IsUnique = false
-                };
-                newRestFunction.Columns.Add(col);
+                // col = new TableColumn()
+                // {
+                //     Name = "Response",
+                //     IsInput = false,
+                //     LogicalName = "Response",
+                //     DataType = newRestFunction.FormatType,
+                //     DeltaType = EDeltaType.ResponseData,
+                //     MaxLength = null,
+                //     Description = "Response content from the service",
+                //     AllowDbNull = true,
+                //     IsUnique = false
+                // };
+                // newRestFunction.Columns.Add(col);
 
                 col = new TableColumn()
                 {

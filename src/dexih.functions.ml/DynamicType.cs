@@ -52,6 +52,7 @@ namespace dexih.functions.ml
 		    return action;
 	    }
 
+
 	    /// <summary>
 	    /// Creates a type based on the property/type values specified in the properties
 	    /// </summary>
@@ -71,11 +72,11 @@ namespace dexih.functions.ml
             {
 	            if (property.Type.Name == "ReadOnlyMemory`1")
 	            {
-		            classCode.AppendLine($"public string {property.Name} {{get; set; }}");
+		            classCode.AppendLine($"public string {property.CleanName} {{get; set; }}");
 	            }
 	            else
 	            {
-		            classCode.AppendLine($"public {property.Type.Name} {property.Name} {{get; set; }}");    
+		            classCode.AppendLine($"public {property.Type.Name} {property.CleanName} {{get; set; }}");    
 	            }
 	            
             }

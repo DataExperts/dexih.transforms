@@ -9,6 +9,7 @@ namespace dexih.functions.ml
         private DynamicList _dynamicList;
         private Prediction _prediction;
 
+        private ITransformer _trainedModel;
 
         public class ClusterPrediction
         {
@@ -112,6 +113,48 @@ namespace dexih.functions.ml
             return _prediction.Run<ClusterPrediction>(value);
         }
         
+        [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", 
+            Name = "Clustering (K-Means) Analysis - Train & Predict", 
+            Description = "Using k-means clustering builds a temporary model and assigns clusters.", 
+            ResultMethod = nameof(ClusteringKMeansRunResult), ResetMethod = nameof(Reset))]
+        public void ClusteringKMeansRun(
+            [TransformFunctionLinkedParameter("Data Fields")] object[] value,
+            [TransformFunctionLinkedParameter("Data Fields"), ParameterDefault("None")] EEncoding[] encoding)
+        {
+            _dynamicList = _dynamicList.AddData(null, value, encoding);
+        }
+        
+        public ClusterPrediction ClusteringKMeansRunResult(
+            int numberOfClusters,
+            [TransformFunctionVariable(EFunctionVariable.Index)]int index)
+        {
+            if (_trainedModel == null)
+            {
+                // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
+                // as a catalog of available operations and as the source of randomness.
+                var mlContext = new MLContext();
+                if (_dynamicList == null)
+                {
+                    return null;
+                }
+
+                var trainData = _dynamicList.GetDataView(mlContext);
+
+                var featuresColumnName = "Features";
+                var pipeline = Helpers.CreatePipeline(mlContext, _dynamicList.Fields, featuresColumnName, false)
+                    .Append(
+                        mlContext.Clustering.Trainers.KMeans(featuresColumnName, numberOfClusters: numberOfClusters));
+
+                _trainedModel = pipeline.Fit(trainData);
+                
+                _prediction = new Prediction(typeof(ClusterPrediction), _dynamicList.Type, mlContext, _trainedModel);
+            }
+
+            var value = _dynamicList.GetData(index);
+            
+            return _prediction.Run<ClusterPrediction>(value);
+        }
+
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Machine Learning", Name = "Clustering (Stochastic Dual Coordinate Ascent) Analysis - Train", Description = "Builds a model using Stochastic Dual Coordinate Ascent clustering based on the training data.", ResultMethod = nameof(ClusteringSdcaTrainResult), ResetMethod = nameof(Reset))]
         public void ClusteringSdcaTrain(
             string predictorLabel,
@@ -137,7 +180,7 @@ namespace dexih.functions.ml
             }
             var trainData = _dynamicList.GetDataView(mlContext);
 
-            var inputFields = _dynamicList.Fields.Select(c => c.Name).Where(c => c != Helpers.PredictedLabel).ToArray();
+            var inputFields = _dynamicList.Fields.Select(c => c.CleanName).Where(c => c != Helpers.PredictedLabel).ToArray();
 
             var dataProcessPipeline = 
                 mlContext.Transforms.Conversion.MapValueToKey(outputColumnName: "KeyColumn", inputColumnName: Helpers.PredictedLabel)

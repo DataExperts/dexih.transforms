@@ -67,7 +67,7 @@ namespace dexih.functions.financial
         /// </summary>
         [TransformFunction(FunctionType = EFunctionType.Aggregate, Category = "Financial", Name = "Modified Internal Rate of Return",
             Description =
-                "The mofieid internal rate of return where positive and negative cash flows are financed at different rates", ResetMethod = nameof(Reset), ResultMethod = nameof(MirrResult))]
+                "The internal rate of return where positive and negative cash flows are financed at different rates", ResetMethod = nameof(Reset), ResultMethod = nameof(MirrResult))]
         public void Mirr(double value)
         {
             _cacheData.Add(value);

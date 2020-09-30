@@ -42,9 +42,13 @@ namespace dexih.transforms.Mapping
 
         public override Task<bool> ProcessInputRowAsync(FunctionVariables functionVariables, object[] row, object[] joinRow = null, CancellationToken cancellationToken = default)
         {
-            Count++;
             var value = _inputOrdinal == -1 ? InputColumn.DefaultValue : row[_inputOrdinal];
-            
+
+            if (value != null)
+            {
+                Count++;
+            }
+
             if(Value == null && value != null)
             {
                 Value = value;
@@ -116,10 +120,17 @@ namespace dexih.transforms.Mapping
                         value = Value;
                         break;
                     case EAggregate.Average:
-                    // average may have a different output datatype than input, so parse it.  
-                    // TODO: Find way to avoid parse as this causes minor performance.
-                        var input = Operations.Parse(OutputColumn.DataType, Value);
-                        value = Count == 0 ? 0 : Operations.DivideInt(OutputColumn.DataType, input, Count);
+                        // average may have a different output datatype than input, so parse it.  
+                        // TODO: Find way to avoid parse as this causes minor performance.
+                        if (Value == null)
+                        {
+                            value = null;
+                        }
+                        else
+                        {
+                            var input = Operations.Parse(OutputColumn.DataType, Value);
+                            value = Count == 0 ? 0 : Operations.DivideInt(OutputColumn.DataType, input, Count);
+                        }
                         break;
                 }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using Dexih.Utils.DataType;
 
 namespace dexih.functions.ml
@@ -17,6 +18,9 @@ namespace dexih.functions.ml
             TypeCode = DataType.GetTypeCode(type, out _);
         }
         public string Name { get; }
+
+        public string CleanName => Regex.Replace(Name, @"[^0-9a-zA-Z:,]+", "");
+
         public Type Type { get; }
 
         public EEncoding? Encoding { get; }

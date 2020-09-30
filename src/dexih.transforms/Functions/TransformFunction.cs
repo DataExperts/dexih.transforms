@@ -377,7 +377,7 @@ namespace dexih.functions
 
 						if (enumType == null)
 						{
-							throw new FunctionException("The class enumArray was specied, however the enumType is null");
+							throw new FunctionException("The class enumArray was specified, however the enumType is null");
 						}
 						var newArray = Array.CreateInstance(enumType, array.Length);
 
@@ -395,10 +395,8 @@ namespace dexih.functions
 
 							i++;
 						}
-
 						parameters[pos] = newArray;
 						
-
 						break;
 					case EParameterClass.Cancellation:
 						parameters[pos] = cancellationToken;

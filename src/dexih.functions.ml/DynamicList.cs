@@ -11,7 +11,7 @@ namespace dexih.functions.ml
         private readonly Action<object[]> _addAction;
         private readonly IEnumerable<object> _data;
 
-        public DynamicTypeProperty[] Fields;
+        public readonly DynamicTypeProperty[] Fields;
         
         
         public DynamicList(string[] labels, Type defaultType)
@@ -35,6 +35,11 @@ namespace dexih.functions.ml
         public void Add(object[] item)
         {
             _addAction.Invoke(item);
+        }
+
+        public object GetData(int index)
+        {
+            return _data.ElementAt(index);
         }
         
         

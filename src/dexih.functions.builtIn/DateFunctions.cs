@@ -184,6 +184,13 @@ namespace dexih.functions.builtIn
             return dateValue.Year;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Quarter",
+            Description = "The quarter (1 = Jan-Mar, 2 = Apr/Jun, 3 = Jul/Sep, 4 = Oct/Dec")]
+        public int Quarter(DateTime dateValue)
+        {
+            return dateValue.Month / 3;
+        }
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Date Only",
             Description = "Extract Date Only from a date/time field")]
         [TransformFunctionParameter(Type = ETypeCode.Date)]
