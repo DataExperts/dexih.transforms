@@ -316,13 +316,16 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Periods of Investment",
       Description = "The number of periods for an investment")]
-    public double NPer(double rate, double pmt, double pv, double fv, PaymentDue typ = PaymentDue.BeginningOfPeriod)
+    public double NPer(
+      [TransformFunctionParameter(Name="Interest Rate", Description = "The interest rate per period")]double rate, 
+      [TransformFunctionParameter(Name="Payment Made", Description = "The payment made each period")]double pmt, 
+      [TransformFunctionParameter(Name="Present Value", Description = "The present value")]double pv, 
+      [TransformFunctionParameter(Name="Future Value", Description = "The future value")]double fv, 
+      [TransformFunctionParameter(Name="Payment Due", Description = "When payments are made, beginning or end of period")]PaymentDue typ = PaymentDue.BeginningOfPeriod)
     {
       return Financial.NPer(rate, pmt, pv, fv, typ);
     }
-
-
-
+    
     /// <summary>
     ///  The price per $100 face value of a security with an odd first period ([learn more](http://office.microsoft.com/en-us/excel/HP052092041033.aspx))
     /// </summary>
@@ -563,17 +566,17 @@ namespace dexih.functions.financial
     ///  Returns a compound annual growth (CAGR) or equivalent interest rate (RRI) for the growth of an investment.
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
-      Name = "Compound annual growth rate",
-      Description = "Compound annual growth rate (CAGR) of an investment over a period of years")]
-    public double CAGR([TransformFunctionParameter(Description = "Number of periods for the investment")] int nPer, 
-      [TransformFunctionParameter(Description = "Present Value for the investment")] double Pv, 
-      [TransformFunctionParameter(Description = "Future Value for the investment")] double Fv)
+      Name = "Interest rate for the growth of an investment (RRI)",
+      Description = "The equivalent interest rate for the growth of an investment (RRI) or Component annual Growth Rate (CAGR)")]
+    public double RRI([TransformFunctionParameter(Name="Periods", Description = "Number of periods for the investment")] int nPer, 
+      [TransformFunctionParameter(Name = "Present Value", Description = "Present Value for the investment")] double Pv, 
+      [TransformFunctionParameter(Name="Future Value", Description = "Future Value for the investment")] double Fv)
     {
       if (nPer == 0)
       {
         throw new Exception("The number of periods cannot be 0.");
       }
-      return Math.Pow((Fv - Pv), (1 / nPer)) - 1;
+      return Math.Pow((Fv / Pv), (1 / (double) nPer)) - 1;
     }
     
   }
