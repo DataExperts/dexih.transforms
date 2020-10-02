@@ -16,9 +16,16 @@ namespace dexih.functions
                     return default;
                 }
 
-                if (value == "NaN")
+                switch (value)
                 {
-                    return float.NaN;
+                    case "NaN":
+                        return float.NaN;
+                    case "∞":
+                        return float.PositiveInfinity;
+                    case "-∞":
+                        return float.NegativeInfinity;
+                    default:
+                        return float.Parse(value);
                 }
             }
 
@@ -27,15 +34,28 @@ namespace dexih.functions
 
         public override void Write(Utf8JsonWriter writer, float value, JsonSerializerOptions options)
         {
-            if (float.IsNaN(value))
-            {
-                writer.WriteStringValue("NaN");    
-            }
-            else
+            if (float.IsFinite(value))
             {
                 writer.WriteNumberValue(value);
+                return;
             }
-            
+            if (float.IsNaN(value))
+            {
+                writer.WriteStringValue("NaN");
+                return;
+            }
+            if (float.IsPositiveInfinity(value))
+            {
+                writer.WriteStringValue("∞");
+                return;
+            }
+            if (float.IsNegativeInfinity(value))
+            {
+                writer.WriteStringValue("-∞");
+                return;
+            }
+
+            throw new JsonException($"The float value {value} could not be converted to json.");
         }
 
     }

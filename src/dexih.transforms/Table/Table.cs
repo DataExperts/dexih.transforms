@@ -530,6 +530,14 @@ namespace dexih.functions
             return table;
         }
 
+        public void ResetFormats(bool force = false)
+        {
+            foreach (var column in Columns)
+            {
+                column.ResetFormat(force);
+            }
+        }
+
         /// <summary>
         /// Creates a copy of the table, excluding cached data, and sort columns
         /// </summary>

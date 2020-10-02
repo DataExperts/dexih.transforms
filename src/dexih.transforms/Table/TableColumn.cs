@@ -371,6 +371,36 @@ namespace dexih.functions
             return Operations.Format(value, Format);
         }
 
+        public void ResetFormat(bool force = false)
+        {
+            if (force || string.IsNullOrEmpty(Format))
+            {
+                switch (DataType)
+                {
+                    case ETypeCode.Int16:
+                    case ETypeCode.Int32:
+                    case ETypeCode.Int64:
+                    case ETypeCode.UInt16:
+                    case ETypeCode.UInt32:
+                    case ETypeCode.UInt64:
+                        Format = "#,##0";
+                        break;
+                    case ETypeCode.Single:
+                    case ETypeCode.Decimal:
+                    case ETypeCode.Double:
+                        if (Precision == null)
+                        {
+                            Format = "#,##0.00";
+                        }
+                        else
+                        {
+                            Format = "#,##0." + new string('0', Precision.Value);
+                        }
+                        break;
+                }
+            }
+        }
+
         public string DBML()
         {
             var desc = new StringBuilder();

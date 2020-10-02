@@ -439,7 +439,7 @@ namespace dexih.functions.financial
     /// <summary>
     ///  The interest rate per period of an annuity ([learn more](http://office.microsoft.com/en-us/excel/HP052092321033.aspx))
     /// </summary>
-    [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Rate per period of an annuity",
+    [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Interest rate per period of an annuity",
       Description = "The interest rate per period of an annuity")]
     public double Rate(double nper, double pmt, double pv, double fv, PaymentDue typ = PaymentDue.BeginningOfPeriod, double guess = 0.1)
     {
@@ -567,15 +567,21 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Interest rate for the growth of an investment (RRI)",
-      Description = "The equivalent interest rate for the growth of an investment (RRI) or Component annual Growth Rate (CAGR)")]
-    public double RRI([TransformFunctionParameter(Name="Periods", Description = "Number of periods for the investment")] int nPer, 
+      Description = "The equivalent interest rate for the growth of an investment (RRI) or Component Annual Growth Rate (CAGR)")]
+    public double? RRI([TransformFunctionParameter(Name="Periods", Description = "Number of periods for the investment")] int nPer, 
       [TransformFunctionParameter(Name = "Present Value", Description = "Present Value for the investment")] double Pv, 
       [TransformFunctionParameter(Name="Future Value", Description = "Future Value for the investment")] double Fv)
     {
-      if (nPer == 0)
+      if (nPer < 1)
       {
-        throw new Exception("The number of periods cannot be 0.");
+        throw new Exception("The number of periods cannot be less than 1.");
       }
+
+      if (Pv == 0)
+      {
+        return null;
+      }
+      
       return Math.Pow((Fv / Pv), (1 / (double) nPer)) - 1;
     }
     

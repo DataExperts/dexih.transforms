@@ -11,14 +11,22 @@ namespace dexih.functions
             if (reader.TokenType == JsonTokenType.String)
             {
                 var value = reader.GetString();
+                
                 if (string.IsNullOrEmpty(value))
                 {
                     return default;
                 }
 
-                if (value == "NaN")
+                switch (value)
                 {
-                    return double.NaN;
+                    case "NaN":
+                        return double.NaN;
+                    case "∞":
+                        return double.PositiveInfinity;
+                    case "-∞":
+                        return double.NegativeInfinity;
+                    default:
+                        return double.Parse(value);
                 }
             }
 
@@ -27,15 +35,28 @@ namespace dexih.functions
 
         public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
         {
-            if (double.IsNaN(value))
-            {
-                writer.WriteStringValue("NaN");    
-            }
-            else
+            if (double.IsFinite(value))
             {
                 writer.WriteNumberValue(value);
+                return;
             }
-            
+            if (double.IsNaN(value))
+            {
+                writer.WriteStringValue("NaN");
+                return;
+            }
+            if (double.IsPositiveInfinity(value))
+            {
+                writer.WriteStringValue("∞");
+                return;
+            }
+            if (double.IsNegativeInfinity(value))
+            {
+                writer.WriteStringValue("-∞");
+                return;
+            }
+
+            throw new JsonException($"The double value {value} could not be converted to json.");
         }
 
     }
