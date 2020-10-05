@@ -195,6 +195,10 @@ namespace dexih.functions
             {
                 paramType = parameterInfo.ParameterType.GetGenericArguments()[0];
             }
+            else if(Nullable.GetUnderlyingType(parameterInfo.ParameterType) != null)
+            {
+                paramType = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
+            }
             else if (parameterInfo.ParameterType.IsByRef)
             {
                 paramType = parameterInfo.ParameterType.GetElementType();
@@ -305,6 +309,7 @@ namespace dexih.functions
                 ListOfValues = parameterAttribute?.ListOfValues ?? EnumValues(paramType),
                 DefaultValue = DefaultValue(parameterInfo)?.ToString(),
                 IsPassword = parameterInfo.GetCustomAttribute<TransformFunctionPassword>() != null,
+                DefaultFormat = parameterAttribute?.DefaultFormat
             };
         }
 

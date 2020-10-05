@@ -48,6 +48,8 @@ namespace dexih.functions
         
         [DataMember(Order = 13)]
         public bool IsPassword { get; set; }
-        
+
+        [DataMember(Order = 14)]
+        public string DefaultFormat { get; set; }
     }
 }

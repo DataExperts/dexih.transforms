@@ -373,31 +373,31 @@ namespace dexih.functions
 
         public void ResetFormat(bool force = false)
         {
-            if (force || string.IsNullOrEmpty(Format))
+            if (!force && !string.IsNullOrEmpty(Format)) return;
+            
+            switch (DataType)
             {
-                switch (DataType)
-                {
-                    case ETypeCode.Int16:
-                    case ETypeCode.Int32:
-                    case ETypeCode.Int64:
-                    case ETypeCode.UInt16:
-                    case ETypeCode.UInt32:
-                    case ETypeCode.UInt64:
-                        Format = "#,##0";
-                        break;
-                    case ETypeCode.Single:
-                    case ETypeCode.Decimal:
-                    case ETypeCode.Double:
-                        if (Precision == null)
-                        {
-                            Format = "#,##0.00";
-                        }
-                        else
-                        {
-                            Format = "#,##0." + new string('0', Precision.Value);
-                        }
-                        break;
-                }
+                case ETypeCode.Int16:
+                case ETypeCode.Int32:
+                case ETypeCode.Int64:
+                case ETypeCode.UInt16:
+                case ETypeCode.UInt32:
+                case ETypeCode.UInt64:
+                    Format = "#,##0";
+                    break;
+                case ETypeCode.Single:
+                case ETypeCode.Decimal:
+                case ETypeCode.Double:
+                    if (Precision == null)
+                    {
+                        // default option 4 digits.
+                        Format = "#,##0.####";
+                    }
+                    else
+                    {
+                        Format = "#,##0." + new string('0', Precision.Value);
+                    }
+                    break;
             }
         }
 

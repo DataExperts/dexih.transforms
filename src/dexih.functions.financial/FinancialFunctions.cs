@@ -38,7 +38,8 @@ namespace dexih.functions.financial
     ///  The accrued interest for a security that pays periodic interest ([learn more](http://office.microsoft.com/en-us/excel/HP052089791033.aspx))
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Accrued Interest (Periodic)",
-      Description = "The accrued interest for a security that pays periodic interest.")]
+      Description = "The accrued interest for a security that pays periodic interest."),
+     TransformFunctionParameter(Name = "Interest Rate", DefaultFormat = "#.##%")]
     public double AccrInt(DateTime issue, DateTime firstInterest, DateTime settlement, double rate, double par,
       Frequency frequency = Frequency.Annual, DayCountBasis basis = DayCountBasis.Actual365, AccrIntCalcMethod calcMethod = AccrIntCalcMethod.FromFirstToSettlement)
     {
@@ -49,7 +50,8 @@ namespace dexih.functions.financial
     ///  The accrued interest for a security that pays interest at maturity ([learn more](http://office.microsoft.com/en-us/excel/HP052089801033.aspx))
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Accrued Interest (Maturity)",
-      Description = "The accrued interest for a security that pays interest at maturity.")]
+      Description = "The accrued interest for a security that pays interest at maturity."),
+     TransformFunctionParameter(Name = "Interest Rate", DefaultFormat = "#.##%")]
     public double AccrIntM(DateTime issue, DateTime settlement, double rate, double par, DayCountBasis basis = DayCountBasis.Actual365)
     {
       return Financial.AccrIntM(issue, settlement, rate, par, basis);
@@ -63,7 +65,8 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Prorated Linear Depreciation (AmorDegrc)",
-      Description = "The prorated linear depreciation of an asset for each accounting period.")]
+      Description = "The prorated linear depreciation of an asset for each accounting period."),
+     TransformFunctionParameter(Name = "Depreciation")]
     public double AmorDegrc(double cost, DateTime datePurchased, DateTime firstPeriod, double salvage, double period,
       double rate, DayCountBasis basis = DayCountBasis.Actual365)
     {
@@ -75,7 +78,8 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Prorated Linear Depreciation (AmorLinc)",
-      Description = "The prorated linear depreciation of an asset for each accounting period.")]
+      Description = "The prorated linear depreciation of an asset for each accounting period."),
+     TransformFunctionParameter(Name = "Depreciation")]
     public double AmorLinc(double cost, DateTime datePurchased, DateTime firstPeriod, double salvage, double period,
       double rate, DayCountBasis basis = DayCountBasis.Actual365)
     {
@@ -87,7 +91,8 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Coupon Days (Beginning to Settlement)",
-      Description = "The number of days from the beginning of the coupon period to the settlement date.")]
+      Description = "The number of days from the beginning of the coupon period to the settlement date."),
+     TransformFunctionParameter(Name = "Days")]
     public double CoupDaysBS(DateTime settlement, DateTime maturity, Frequency frequency = Frequency.Annual, DayCountBasis basis = DayCountBasis.Actual365)
     {
       return Financial.CoupDaysBS(settlement, maturity, frequency, basis);
@@ -99,7 +104,8 @@ namespace dexih.functions.financial
     ///  This equality should stand. The differs from Excel by +/- one or two days when the date spans a leap year.
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial", Name = "Coupon Days",
-      Description = " The number of days in the coupon period that contains the settlement date")]
+      Description = " The number of days in the coupon period that contains the settlement date"),
+     TransformFunctionParameter(Name = "Days")]
     public double CoupDays(DateTime settlement, DateTime maturity, Frequency frequency = Frequency.Annual, DayCountBasis basis = DayCountBasis.Actual365)
     {
       return Financial.CoupDays(settlement, maturity, frequency, basis);
@@ -110,7 +116,8 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Coupon Days (Settlement to Next)",
-      Description = "The number of days from the settlement date to the next coupon date")]
+      Description = "The number of days from the settlement date to the next coupon date"),
+     TransformFunctionParameter(Name = "Days")]
     public double CoupDaysNC(DateTime settlement, DateTime maturity, Frequency frequency = Frequency.Annual, DayCountBasis basis = DayCountBasis.Actual365)
     {
       return Financial.CoupDaysNC(settlement, maturity, frequency, basis);
@@ -567,7 +574,8 @@ namespace dexih.functions.financial
     /// </summary>
     [TransformFunction(FunctionType = EFunctionType.Map, Category = "Financial",
       Name = "Interest rate for the growth of an investment (RRI)",
-      Description = "The equivalent interest rate for the growth of an investment (RRI) or Component Annual Growth Rate (CAGR)")]
+      Description = "The equivalent interest rate for the growth of an investment (RRI) or Component Annual Growth Rate (CAGR)"),
+    TransformFunctionParameter(Name = "Interest Rate", DefaultFormat = "#.##%")]
     public double? RRI([TransformFunctionParameter(Name="Periods", Description = "Number of periods for the investment")] int nPer, 
       [TransformFunctionParameter(Name = "Present Value", Description = "Present Value for the investment")] double Pv, 
       [TransformFunctionParameter(Name="Future Value", Description = "Future Value for the investment")] double Fv)

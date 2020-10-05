@@ -411,9 +411,11 @@ namespace dexih.functions.BuiltIn
             _cacheList.Add(value);
         }
 
-        public T MovingAverageResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int preCount, int postCount)
+        public T MovingAverageResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, 
+            [TransformFunctionParameter(Name = "Pre-Count (inc current)")] int preCount = 1, 
+            [TransformFunctionParameter(Name = "Future-Count")]int postCount = 0)
         {
-            var lowIndex = index < preCount ? 0 : index - preCount;
+            var lowIndex = index < preCount - 1 ? 0 : index - preCount + 1;
             var valueCount = _cacheList.Count;
             var highIndex = postCount + index + 1;
             if (highIndex > valueCount) highIndex = valueCount;
@@ -446,9 +448,11 @@ namespace dexih.functions.BuiltIn
             _cacheList.Add(value);
         }
 
-        public T MovingSumResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, int preCount, int postCount)
+        public T MovingSumResult([TransformFunctionVariable(EFunctionVariable.Index)]int index, 
+            [TransformFunctionParameter(Name = "Pre-Count (inc current)")] int preCount = 1, 
+            [TransformFunctionParameter(Name = "Future-Count")]int postCount = 0)
         {
-            var lowIndex = index < preCount ? 0 : index - preCount;
+            var lowIndex = index < preCount - 1 ? 0 : index - preCount + 1;
             var valueCount = _cacheList.Count;
             var highIndex = postCount + index + 1;
             if (highIndex > valueCount) highIndex = valueCount;

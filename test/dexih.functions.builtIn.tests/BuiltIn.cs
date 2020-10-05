@@ -462,7 +462,7 @@ namespace dexih.functions.builtIn.tests
                         Index = i,
                     };
                     var aggregateResult = transformFunction
-                        .RunResult(functionVariables, new object[] {2, 2}, out _, CancellationToken.None).returnValue;
+                        .RunResult(functionVariables, new object[] {3, 2}, out _, CancellationToken.None).returnValue;
                     Assert.NotNull(aggregateResult);
                     Assert.Equal(expectedResult[i], aggregateResult);
                 }
@@ -567,7 +567,7 @@ namespace dexih.functions.builtIn.tests
                         Index = i,
                     };
                     var aggregateResult = transformFunction
-                        .RunResult(functionVariables, new object[] {1, 1}, out _, CancellationToken.None).returnValue;
+                        .RunResult(functionVariables, new object[] {2, 1}, out _, CancellationToken.None).returnValue;
                     Assert.NotNull(aggregateResult);
                     Assert.Equal(expectedResult[i], aggregateResult);
                 }

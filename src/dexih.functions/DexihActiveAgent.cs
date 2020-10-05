@@ -58,5 +58,7 @@ namespace dexih.functions
         [DataMember(Order = 13)]
         public NamingStandards NamingStandards { get; set; }
 
+        [DataMember(Order = 14)]
+        public bool AutoUpgrade { get; set; }
     }
 }
