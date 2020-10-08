@@ -327,7 +327,7 @@ namespace dexih.transforms
                     var fillCount = 0;
                     while (Operations.LessThan(fillSeriesValue, finishValue))
                     {
-                        await CreateFillerRow(currentRow, fillSeriesValue, cancellationToken);
+                        await CreateFillerRow(currentRow, fillSeriesValue, false, cancellationToken);
                         fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
                         hasFilled = true;
 
@@ -346,7 +346,7 @@ namespace dexih.transforms
                     var fillCount = 0;
                     while (Operations.LessThanOrEqual(fillSeriesValue, _seriesFinish))
                     {
-                        await CreateFillerRow(currentRow, fillSeriesValue, cancellationToken);
+                        await CreateFillerRow(currentRow, fillSeriesValue, true, cancellationToken);
                         fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
                         hasFilled = true;
                         
@@ -365,7 +365,7 @@ namespace dexih.transforms
                 var fillCount = 0;
                 while (Operations.LessThan(fillSeriesValue, currentSeriesValue))
                 {
-                    await CreateFillerRow(currentRow, fillSeriesValue, cancellationToken);
+                    await CreateFillerRow(currentRow, fillSeriesValue, false, cancellationToken);
                     fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
                     hasFilled = true;
 
@@ -386,7 +386,7 @@ namespace dexih.transforms
         /// <param name="seriesValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task CreateFillerRow(object[] currentRow, IComparable seriesValue, CancellationToken cancellationToken)
+        private async Task CreateFillerRow(object[] currentRow, IComparable seriesValue, bool forecast, CancellationToken cancellationToken)
         {
             // if the series is not greater then create a dummy one, and continue the loop
             var fillerRow = new object[PrimaryTransform.FieldCount];
@@ -394,7 +394,7 @@ namespace dexih.transforms
             Mappings.CreateFillerRow(currentRow, fillerRow, seriesValue);
             
             var (_, ignore) = await Mappings.ProcessInputData(
-                new FunctionVariables() {SeriesValue = seriesValue},
+                new FunctionVariables() {SeriesValue = seriesValue, Forecast = forecast},
                 fillerRow, null, cancellationToken);
 
             if (ignore)
