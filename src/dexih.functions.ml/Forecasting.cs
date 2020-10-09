@@ -78,7 +78,7 @@ namespace dexih.functions.ml
             [TransformFunctionVariable(EFunctionVariable.Index)]int index,
             [TransformFunctionParameter(Name = "Window Size", Description = "The length of the window on the series for building the trajectory matrix (parameter L)."), ParameterDefault("7")]int windowSize,
             [TransformFunctionParameter(Name = "Series Length", Description = "The length of series that is kept in buffer for modeling (parameter N)."), ParameterDefault("30")]int seriesLength,
-            [TransformFunctionParameter(Name = "Confidence Level", Description = "The confidence level (between 0-1)."), ParameterDefault("30")]int confidenceLevel
+            [TransformFunctionParameter(Name = "Confidence Level", Description = "The confidence level (between 0-1)."), ParameterDefault("0.95")]float confidenceLevel
             )
         {
 
@@ -116,7 +116,7 @@ namespace dexih.functions.ml
                 _predictions = forecastEngine.Predict();
             }
 
-            if (index <= _data.Count)
+            if (index < _data.Count)
             {
                 return null;
             }

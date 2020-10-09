@@ -34,5 +34,12 @@
     <ItemGroup>
         <ProjectReference Include="..\dexih.functions\dexih.functions.csproj" />
     </ItemGroup>
-
+    <ItemGroup>
+        <Content Include="runtimes\osx-x64\native\libiomp5.dylib" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\linux-x64\native\libiomp5.so" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>
