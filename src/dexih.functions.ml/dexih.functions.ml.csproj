@@ -40,7 +40,7 @@
         </Content>
         <Content Include="runtimes\linux-x64\native\libiomp5.so" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' ">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            ntent>
+        </Content>
         <Content Include="runtimes\osx-x64\native\libiomp5.dylib" Link="\libiomp5.dylib" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
