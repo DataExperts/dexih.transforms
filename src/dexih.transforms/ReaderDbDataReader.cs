@@ -111,9 +111,9 @@ namespace dexih.transforms
 
         public DbDataReader InReader { get; set; }
 
-        protected override void CloseConnections()
+        protected override Task CloseConnections()
         {
-            InReader?.Close();
+            return InReader?.CloseAsync();
         }
 
         public override string TransformName { get; } = "Generic Database Reader";

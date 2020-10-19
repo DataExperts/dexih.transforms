@@ -21,9 +21,10 @@ namespace dexih.transforms
             _fileHandler = fileHandler;
         }
         
-        protected override void CloseConnections()
+        protected override Task CloseConnections()
         {
             _fileHandler?.Dispose();
+            return Task.CompletedTask;
         }
 
         public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)

@@ -63,11 +63,11 @@ namespace dexih.transforms.Mapping
 
             if (OutputTransform == null)
             {
-                _cachedTransform = new TransformCache(Transform) {Name = "Internal Caching"};
+                _cachedTransform = new TransformMemoryCache(Transform) {Name = "Internal Caching"};
             }
             else
             {
-                _cachedTransform = new TransformCache(OutputTransform) {Name = "Internal Caching"};
+                _cachedTransform = new TransformMemoryCache(OutputTransform) {Name = "Internal Caching"};
             }
 
             // await _cachedTransform.Open(cancellationToken);

@@ -107,7 +107,7 @@ namespace dexih.transforms
         /// This only applied to transforms which are the base reader. 
         /// </summary>
         public bool IgnoreQuery { get; set; }
-        
+
         #endregion
 
         #region Statistics
@@ -1561,7 +1561,6 @@ namespace dexih.transforms
 
             try
             {
-
                 //starts  a timer that can be used to measure downstream transform and database performance.
                 TransformTimer.Start();
 
@@ -1662,7 +1661,7 @@ namespace dexih.transforms
                     }
                     catch (Exception ex)
                     {
-                        Close();
+                        await CloseAsync();
                         throw new TransformException(
                             $"The transform {Name} failed comparing the incremental update column.  " + ex.Message, ex);
                     }
@@ -1672,7 +1671,7 @@ namespace dexih.transforms
             {
                 if (_nextRow == null || MaxOutputRows > 0 && TransformRows >= MaxOutputRows)
                 {
-                    Close();
+                    await CloseAsync();
                 }
                 else
                 {
@@ -1729,7 +1728,7 @@ namespace dexih.transforms
         /// <returns></returns>
         public async Task<Transform> CreateCachedTransform(CancellationToken cancellationToken = default)
         {
-            var transform = new TransformCache(this) {Name = "Internal Caching"};
+            var transform = new TransformMemoryCache(this) {Name = "Internal Caching"};
             await transform.Open(AuditKey, null, cancellationToken);
             return transform;
         }
@@ -2051,16 +2050,22 @@ namespace dexih.transforms
             Close();
             base.Dispose();
         }
+        
+        public async Task DisposeAsync()
+        {
+            await CloseAsync();
+            base.DisposeAsync();
+        }
 
-        public override void Close()
+        public override async Task CloseAsync()
         {
             try
             {
                 if (!IsReaderFinished && IsOpen)
                 {
-                    PrimaryTransform?.Close();
-                    ReferenceTransform?.Close();
-                    CloseConnections();
+                    PrimaryTransform?.CloseAsync();
+                    ReferenceTransform?.CloseAsync();
+                    await CloseConnections();
                     IsReaderFinished = true;
                     IsOpen = false;
                 }
@@ -2068,12 +2073,16 @@ namespace dexih.transforms
             {
 
             }
-
-            // Reset();
         }
 
-        protected virtual void CloseConnections()
+        public override void Close()
         {
+            CloseAsync().Wait();
+        }
+
+        protected virtual Task CloseConnections()
+        {
+            return Task.CompletedTask;
         }
 
         public override bool NextResult()
@@ -2113,6 +2122,11 @@ namespace dexih.transforms
             public void Dispose()
             {
                 _transform.Close();
+            }
+            
+            public Task DisposeAsync()
+            {
+                return _transform.CloseAsync();
             }
         }
 

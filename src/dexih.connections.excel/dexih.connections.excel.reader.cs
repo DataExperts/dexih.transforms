@@ -26,9 +26,10 @@ namespace dexih.connections.excel
             CacheTable = table;
         }
 
-        protected override void CloseConnections()
+        protected override Task CloseConnections()
         {
             _excelPackage?.Dispose();
+            return Task.CompletedTask;
         }
         
         public override string TransformName { get; } = "Excel Reader";

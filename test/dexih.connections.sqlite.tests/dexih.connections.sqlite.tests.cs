@@ -2,7 +2,10 @@
 using System;
 using System.Threading.Tasks;
 using dexih.connections.sqlite;
+using dexih.functions;
+using dexih.functions.Query;
 using dexih.transforms;
+using dexih.transforms.Mapping;
 using dexih.transforms.tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -145,6 +148,39 @@ namespace dexih.connections.sql
         {
             var connection = GetConnection();
             await new TransformJoinDbTests().JoinAndGroupDatabase(connection, joinStrategy, usedJoinStrategy);
+        }
+
+        [Theory]
+        [InlineData("StringColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("StringColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("IntColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("IntColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DecimalColumn", ESortDirection.Descending, "SortColumn")]
+        [InlineData("DateColumn", ESortDirection.Ascending, "IntColumn")]
+        [InlineData("DateColumn", ESortDirection.Descending, "SortColumn")]
+        public async Task Sqlite_TransformCache(string column, ESortDirection sortDirection, string checkColumn)
+        {
+            var source = Helpers.CreateUnSortedTestData();
+            var connection = GetConnection();
+            var transformCache = new TransformStorageCache(source, connection);
+            var selectQuery = new SelectQuery()
+            {
+                Sorts = new Sorts((column, sortDirection))
+            };
+            await transformCache.Open(selectQuery);
+
+            var sortCount = 0;
+
+            Assert.Equal(6, transformCache.FieldCount);
+
+            while (await transformCache.ReadAsync())
+            {
+                sortCount++;
+                Assert.Equal(sortCount, transformCache[checkColumn]);
+            }
+            
+            Assert.Equal(10, sortCount);
         }
     }
 }

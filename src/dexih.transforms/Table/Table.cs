@@ -21,6 +21,7 @@ namespace dexih.functions
         {
             Data = new TableCache(0);
             Columns = new TableColumns();
+            Indexes = new List<TableIndex>();
         }
 
         public Table(string tableName, TableColumns columns, TableCache data = null) 
@@ -29,6 +30,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = columns??new TableColumns();
+            Indexes = new List<TableIndex>();
             Data = data?? new TableCache();
         }
 
@@ -38,6 +40,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
+            Indexes = new List<TableIndex>();
             foreach (var column in columns)
                 Columns.Add(column);
 
@@ -50,6 +53,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = columns;
+            Indexes = new List<TableIndex>();
             Data = new TableCache(maxRows);
         }
 
@@ -59,6 +63,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
 			Columns = new TableColumns();
+            Indexes = new List<TableIndex>();
 			Data = new TableCache(maxRows);
 		}
 
@@ -69,6 +74,7 @@ namespace dexih.functions
             LogicalName = DefaultLogicalName();
             BaseTableName = CleanString(tableName);
             Columns = new TableColumns();
+            Indexes = new List<TableIndex>();
             Data = new TableCache(maxRows);
         }
 
@@ -199,7 +205,12 @@ namespace dexih.functions
         /// </summary>
         [DataMember(Order = 11)]
         public int MaxImportLevels { get; set; } = 10;
-
+        
+        /// <summary>
+        /// Adds an index to underlying (sql) tables.
+        /// </summary>
+        [DataMember(Order = 12)]
+        public List<TableIndex> Indexes { get; set; }
 
         #endregion
 
@@ -310,12 +321,12 @@ namespace dexih.functions
             return isMatch;
         }
 
-        public void AddIndex(string column)
+        public void AddLookupIndex(string column)
         {
-            AddIndex(new [] {column});
+            AddLookupIndex(new [] {column});
         }
         
-        public void AddIndex(IEnumerable<string> columns)
+        public void AddLookupIndex(IEnumerable<string> columns)
         {
             var sortedColumns = columns.OrderBy(c => c).ToArray();
             var columnOrdinals = sortedColumns.Select(GetOrdinal).ToArray();

@@ -29,11 +29,6 @@ namespace dexih.transforms
             return null;
         }
         
-        protected override void CloseConnections()
-        {
-
-        }
-
         public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             AuditKey = auditKey;

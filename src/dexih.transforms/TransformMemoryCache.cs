@@ -6,9 +6,9 @@ using dexih.functions.Query;
 namespace dexih.transforms
 {
     /// <summary>
-    /// Transform which caches all data from the inTransform.
+    /// Transform which caches all data from the inTransform when the open is called.
     /// </summary>
-    public class TransformCache: Transform
+    public class TransformMemoryCache: Transform
     {
         private readonly Transform _transform;
 
@@ -16,7 +16,7 @@ namespace dexih.transforms
         /// 
         /// </summary>
         /// <param name="inTransform"></param>
-        public TransformCache(Transform inTransform)
+        public TransformMemoryCache(Transform inTransform)
         {
             _transform = inTransform;
             CacheTable = _transform.CacheTable.Copy();

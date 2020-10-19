@@ -165,7 +165,7 @@ namespace dexih.connections.test
                 new TableColumn("child_id", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
-            table.AddIndex("parent_id");
+            table.AddLookupIndex("parent_id");
 
             return table;
         }
@@ -189,7 +189,7 @@ namespace dexih.connections.test
                 new TableColumn("grandChild_id", ETypeCode.Int32, EDeltaType.NaturalKey),
                 new TableColumn("name", ETypeCode.String, EDeltaType.TrackingField)
             );
-            table.AddIndex("child_id");
+            table.AddLookupIndex("child_id");
 
             return table;
         }

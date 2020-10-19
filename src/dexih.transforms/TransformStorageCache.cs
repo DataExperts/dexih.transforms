@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using dexih.connections.sql;
 using dexih.functions;
 using dexih.functions.Query;
 using dexih.transforms.Mapping;
@@ -11,100 +13,105 @@ using Dexih.Utils.CopyProperties;
 namespace dexih.transforms
 {
     [Transform(
-        Name = "Sort",
-        Description = "Sort a table by one or more columns.",
-        TransformType = ETransformType.Sort
+        Name = "Storage Cache",
+        Description = "Caches data to storage before passing on.  Allows sorts/groups/joins to pushdown.",
+        TransformType = ETransformType.Internal
     )]
-    public class TransformSort : Transform
+    public class TransformStorageCache : Transform
     {
-        private bool _alreadySorted;
-        private bool _firstRead;
-        private SortedRowsDictionary<object> _sortedDictionary;
-        private SortedDictionary<object[], object[]>.KeyCollection.Enumerator _iterator;
+        public ConnectionSql ConnectionSql { get; set; }
 
-        private Sorts _sortFields;
+        private Transform _cachePrimary;
+        private Transform _cacheReference;
+        private Table _tablePrimary;
+        private Table _tableReference;
 
-        public TransformSort()
+        private bool _firstRead = true;
+        
+        public TransformStorageCache()
         {
         }
 
-        public TransformSort(Transform inTransform, Mappings mappings)
+        public TransformStorageCache(Transform inTransform, ConnectionSql connectionSql)
         {
-            Mappings = mappings;
+            ConnectionSql = connectionSql;
             SetInTransform(inTransform);
         }
-
-        public TransformSort(Transform inTransform, Sorts sortFields)
-        {
-            Mappings = new Mappings();
-            foreach(var sortField in sortFields)
-            {
-                Mappings.Add(new MapSort(sortField.Column, sortField.Direction));
-            }
-
-            SetInTransform(inTransform);
-            
-            CacheTable = PrimaryTransform.CacheTable;
-            
-            _sortFields = sortFields;
-        }
-
-        public TransformSort(Transform inTransform, string columnName, ESortDirection sortDirection = ESortDirection.Ascending)
-        {
-            var column = new TableColumn(columnName);
-            Mappings = new Mappings {new MapSort(column, sortDirection)};
-            SetInTransform(inTransform);
-        }
-
+        
         public override bool RequiresSort => false;
         
-        public override string TransformName { get; } = "Sort";
+        public override string TransformName { get; } = "Storage Cache";
 
         public override Dictionary<string, object> TransformProperties()
         {
-            return null;
+            return _cachePrimary?.TransformProperties();
         }
 
         public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
-            _firstRead = true;
-
-            if (_sortFields == null)
-            {
-                _sortFields = new Sorts(Mappings.OfType<MapSort>().Select(c => new Sort(c.InputColumn, c.SortDirection)));
-            }
-
             AuditKey = auditKey;
             IsOpen = true;
+            _firstRead = true;
 
-            SelectQuery newSelectQuery;
+            var unique = ShortGuid.NewGuid().ToString().Replace("-", "");
+            _tablePrimary = PrimaryTransform.CacheTable.Copy(true);
+            _tablePrimary.Name = "primary-" + unique;
 
-            var requiredSorts = RequiredSortFields();
-
-            if (requestQuery != null && requestQuery.Sorts.SequenceStartsWith(requiredSorts))
-            {
-                newSelectQuery = requestQuery.CloneProperties();
-            }
-            else
-            {
-                newSelectQuery = new SelectQuery()
-                {
-                    Sorts = requiredSorts,
-                    Filters = requestQuery?.Filters?? new Filters()
-                };
-            }
+            var newSelectQuery = requestQuery?.CloneProperties();
             
+            if (newSelectQuery != null)
+            {
+                // reset the delta types to ensure unnecessary indexes are not created.
+                foreach (var column in _tablePrimary.Columns)
+                {
+                    column.DeltaType = EDeltaType.TrackingField;
+                }
+                _tablePrimary.Columns.RebuildOrdinals();
+
+                // make sort columns an index
+                if (newSelectQuery.Groups?.Count > 0)
+                {
+                    var index = new TableIndex()
+                    {
+                        Name = "index_group_" + unique,
+                        Columns = newSelectQuery.Groups.Select(c => new TableIndexColumn(c.Name))
+                            .ToList()
+                    };
+                    _tablePrimary.Indexes.Add(index);
+                } 
+                else if (newSelectQuery.Sorts?.Count > 0)
+                {
+                    var index = new TableIndex()
+                    {
+                        Name = "index_sort_" + unique,
+                        Columns = newSelectQuery.Sorts.Select(c => new TableIndexColumn(c.Column.Name, c.Direction))
+                            .ToList()
+                    };
+                    _tablePrimary.Indexes.Add(index);
+                }
+                // TODO Add joins to the created indexes.
+
+            }
+
             SetRequestQuery(newSelectQuery, true);
 
-            var returnValue = await PrimaryTransform.Open(auditKey, newSelectQuery, cancellationToken);
+            await ConnectionSql.CreateTable(_tablePrimary, true, cancellationToken);
 
-            CacheTable = PrimaryTransform.CacheTable.Copy();
-            CacheTable.OutputSortFields = _sortFields;
-
-            //check if the transform has already sorted the data, using sql or a presort.
-            _alreadySorted = SortFieldsMatch(_sortFields, PrimaryTransform.SortFields);
-
-            GeneratedQuery = _alreadySorted ? PrimaryTransform.GeneratedQuery : GetGeneratedQuery(newSelectQuery);
+            _cachePrimary = ConnectionSql.GetTransformReader(_tablePrimary);
+            _cachePrimary.TableAlias = PrimaryTransform.TableAlias;
+            _cachePrimary.Open(newSelectQuery, cancellationToken);
+            GeneratedQuery = _cachePrimary.GeneratedQuery;
+            CacheTable = _cachePrimary.CacheTable.Copy();
+            CacheTable.OutputSortFields = GeneratedQuery.Sorts;
+            
+            if (ReferenceTransform != null)
+            {
+                _tableReference = ReferenceTransform.CacheTable.Copy(true);
+                _tableReference.Name = "reference-" + (new ShortGuid());
+                await ConnectionSql.CreateTable(_tablePrimary, true, cancellationToken);
+            }
+            
+            var returnValue = await PrimaryTransform.Open(auditKey, requestQuery, cancellationToken);
             
             return returnValue;
         }
@@ -113,12 +120,13 @@ namespace dexih.transforms
         {
             var generatedQuery = new SelectQuery()
             {
-                Columns = PrimaryTransform.Columns,
-                Sorts = _sortFields,
+                Columns = _cachePrimary.Columns,
+                Sorts = _cachePrimary.SortFields,
                 Filters = PrimaryTransform.Filters,
                 Joins = PrimaryTransform.Joins,
-                Groups = PrimaryTransform.Groups,
-                GroupFilters = PrimaryTransform.GroupFilters,
+                Groups = _cachePrimary.Groups,
+                GroupFilters = _cachePrimary.GroupFilters,
+                Alias = PrimaryTransform.TableAlias
             };
 
             return generatedQuery;
@@ -126,78 +134,52 @@ namespace dexih.transforms
 
         protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
         {
-            if(_alreadySorted)
+            // for the first read, load the cache table in full
+            if(_firstRead)
             {
-                if (await PrimaryTransform.ReadAsync(cancellationToken))
-                {
-                    var values = new object[PrimaryTransform.FieldCount];
-                    PrimaryTransform.GetValues(values);
-                    return values;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            if (_firstRead) //load the entire record into a sorted list.
-            {
-                _sortedDictionary = new SortedRowsDictionary<object>(_sortFields.Select(c=>c.Direction).ToList());
-
-                var rowcount = 0;
-                while (await PrimaryTransform.ReadAsync(cancellationToken))
-                {
-                    var values = new object[PrimaryTransform.FieldCount];
-                    var sortFields = new object[_sortFields.Count + 1];
-
-                    PrimaryTransform.GetValues(values);
-
-                    for(var i = 0; i < sortFields.Length-1; i++)
-                    {
-                        sortFields[i] = PrimaryTransform[_sortFields[i].Column];
-                    }
-                    sortFields[^1] = rowcount; //add row count as last key field to ensure matching rows remain in original order.
-
-                    _sortedDictionary.Add(sortFields, values);
-                    rowcount++;
-                    TransformRowsSorted++;
-                }
                 _firstRead = false;
-                if (rowcount == 0)
-                    return null;
-
-                _iterator = _sortedDictionary.Keys.GetEnumerator();
-                _iterator.MoveNext();
-                return _sortedDictionary[_iterator.Current];
+                await ConnectionSql.ExecuteInsertBulk(_tablePrimary, PrimaryTransform, cancellationToken);
             }
 
-            var success = _iterator.MoveNext();
-            if (success)
-                return _sortedDictionary[_iterator.Current];
+            if (await _cachePrimary.ReadAsync(cancellationToken))
+            {
+                var values = new object[PrimaryTransform.FieldCount];
+                _cachePrimary.GetValues(values);
+                return values;
+            }
             else
             {
-                _sortedDictionary = null; //free up memory after all rows are read.
+                await _cachePrimary.CloseAsync();
+                await ConnectionSql.DropTable(_tablePrimary, cancellationToken);
                 return null;
             }
         }
-
+        
+        protected override async Task CloseConnections()
+        {
+            if (_cachePrimary.IsOpen)
+            {
+                await _cachePrimary.CloseAsync();
+                await ConnectionSql.DropTable(_tablePrimary, CancellationToken.None);
+            }
+        }
+        
         public override bool ResetTransform()
         {
-            _sortedDictionary = null;
             _firstRead = true;
-
             return true;
         }
-
-
+        
         public override Sorts RequiredSortFields()
         {
-            return _sortFields;
+            return _cachePrimary.SortFields;
         }
 
         public override Sorts RequiredReferenceSortFields()
         {
             return null;
         }
+        
     }
 
 

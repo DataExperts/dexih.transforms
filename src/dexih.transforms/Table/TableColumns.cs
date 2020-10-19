@@ -310,7 +310,7 @@ namespace dexih.functions
             return _tableColumns.GetEnumerator();
         }
 
-        private void RebuildOrdinals()
+        public void RebuildOrdinals()
         {
             _columnOrdinals.Clear();
             _deltaOrdinals.Clear();

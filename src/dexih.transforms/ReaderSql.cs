@@ -17,6 +17,8 @@ namespace dexih.connections.sql
 
         private List<int> _fieldOrdinals;
         private int _fieldCount;
+
+        private bool _firstRead = true;
         
         public ReaderSql(ConnectionSql connection, Table table)
         {
@@ -40,11 +42,11 @@ namespace dexih.connections.sql
             return null;
         }
 
-        protected override void CloseConnections()
+        protected override async Task CloseConnections()
         {
-            _sqlReader?.Close();
+            await _sqlReader?.CloseAsync();
             _sqlReader?.Dispose();
-            _sqlConnection?.Close();
+            await _sqlConnection?.CloseAsync();
             _sqlConnection?.Dispose();
         }
         
@@ -59,6 +61,7 @@ namespace dexih.connections.sql
             {
                 AuditKey = auditKey;
                 IsOpen = true;
+                _firstRead = true;
 
                 if (requestQuery != null)
                 {
@@ -91,11 +94,27 @@ namespace dexih.connections.sql
                     // }
                 }
                 
-                _sqlConnection = await ((ConnectionSql)ReferenceConnection).NewConnection(cancellationToken);
-                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, requestQuery, cancellationToken);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException($"Open reader failed. {ex.Message}", ex);
+            }
+        }
+
+        public override bool ResetTransform() => IsOpen;
+
+        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
+        {
+            if (_firstRead)
+            {
+                _firstRead = false;
+                _sqlConnection = await ((ConnectionSql) ReferenceConnection).NewConnection(cancellationToken);
+                _sqlReader =
+                    await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, SelectQuery, cancellationToken);
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();
-                
+
                 for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
@@ -111,32 +130,23 @@ namespace dexih.connections.sql
                         if (ordinal < 0)
                         {
                             ordinal = CacheTable.GetOrdinal(fieldName);
-                            if(ordinal < 0 && (field[0] == CacheTable.Name || field[0] == TableAlias))
+                            if (ordinal < 0 && (field[0] == CacheTable.Name || field[0] == TableAlias))
                             {
                                 ordinal = CacheTable.GetOrdinal(field[1]);
                             }
                         }
                     }
-                    
+
                     if (ordinal < 0)
                     {
-                        throw new ConnectionException($"The reader could not be opened as column {fieldName} could not be found in the table {CacheTable.Name}.");
+                        throw new ConnectionException(
+                            $"The reader could not be opened as column {fieldName} could not be found in the table {CacheTable.Name}.");
                     }
+
                     _fieldOrdinals.Add(ordinal);
                 }
-
-                return true;
             }
-            catch(Exception ex)
-            {
-                throw new ConnectionException($"Open reader failed. {ex.Message}", ex);
-            }
-        }
 
-        public override bool ResetTransform() => IsOpen;
-
-        protected override async Task<object[]> ReadRecord(CancellationToken cancellationToken = default)
-        {
             if (_sqlReader == null)
             {
                 throw new ConnectionException("The read record failed as the connection has not been opened.");

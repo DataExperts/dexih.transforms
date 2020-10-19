@@ -165,6 +165,12 @@ namespace dexih.connections.sqlite
                         $"create index {AddDelimiter($"index_{table.Name}_nk")} on {AddDelimiter(table.Name)} ({string.Join(", ", naturalKey.Select(c => AddDelimiter(c.Name)))});");
                 }
 
+                foreach (var index in table.Indexes)
+                {
+                    createSql.AppendLine(
+                        $"create index {AddDelimiter(index.Name)} on {AddDelimiter(table.Name)} ({string.Join(", ", index.Columns.Select(c => AddDelimiter(c.ColumnName)))});");
+                }
+
                 await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())
                 {
@@ -184,6 +190,49 @@ namespace dexih.connections.sqlite
                 throw new ConnectionException($"Create table {table.Name} failed. {ex.Message}", ex);
             }
 
+        }
+        
+        public override async Task<bool> DropTable(Table table, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await using (var connection = await NewConnection(cancellationToken))
+                await using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = $"drop table {SqlTableName(table)}";
+                    await command.ExecuteNonQueryAsync(cancellationToken);
+
+                    // if there are no remaining tables, then clean the Sqlite file up.
+                    var tables = await GetTableList(cancellationToken);
+                    if (tables.Count == 0)
+                    {
+                        var files = new[]
+                        {
+                            Server + "/" + DefaultDatabase + ".sqlite",
+                            Server + "/" + DefaultDatabase + ".sqlite-wal",
+                            Server + "/" + DefaultDatabase + ".sqlite-shm",
+                        };
+
+                        foreach (var file in files)
+                        {
+                            var fileExists = File.Exists(file);
+
+                            if (fileExists)
+                            {
+                                File.Delete(file);
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+                
+                
+            }
+            catch (Exception ex)
+            {
+                throw new ConnectionException($"Drop table {table.Name} failed.  {ex.Message}", ex);
+            }
         }
 
         protected override string GetSqlType(TableColumn column)
@@ -265,70 +314,7 @@ namespace dexih.connections.sqlite
 
             return sqlType;
         }
-
-
-        /// <summary>
-        /// Gets the start quote to go around the values in sql insert statement based in the column type.
-        /// </summary>
-        /// <returns></returns>
-//        protected override string GetSqlFieldValueQuote(ETypeCode typeCode, int rank, object value)
-//        {
-//            string returnValue;
-//
-//            if (value == null || value.GetType().ToString() == "System.DBNull")
-//                return "null";
-//
-//            //if (value is string && type != ETypeCode.String && string.IsNullOrWhiteSpace((string)value))
-//            //    return "null";
-//
-//            if (rank > 0)
-//            {
-//                return "'" + AddEscape(value.ToString()) + "'";
-//            }
-//            
-//            switch (typeCode)
-//            {
-//                case ETypeCode.Byte:
-//                case ETypeCode.Single:
-//                case ETypeCode.Int16:
-//                case ETypeCode.Int32:
-//                case ETypeCode.Int64:
-//                case ETypeCode.SByte:
-//                case ETypeCode.UInt16:
-//                case ETypeCode.UInt32:
-//                case ETypeCode.UInt64:
-//                case ETypeCode.Double:
-//                case ETypeCode.Decimal:
-//                    returnValue = AddEscape(value.ToString());
-//                    break;
-//                case ETypeCode.Boolean:
-//                    returnValue = (bool) value ? "1" : "0";
-//                    break;
-//				case ETypeCode.String:
-//                case ETypeCode.Text:
-//                case ETypeCode.Json:
-//                case ETypeCode.Xml:
-//                case ETypeCode.Guid:
-//                case ETypeCode.Unknown:
-//                    returnValue = "'" + AddEscape(value.ToString()) + "'";
-//                    break;
-//                case ETypeCode.DateTime:
-//                case ETypeCode.Time:
-//                    //sqlite does not have date fields, so convert to format that will work for greater/less compares
-//                    if (value is DateTime)
-//                        returnValue = "'" + AddEscape(((DateTime) value).ToString("yyyy-MM-dd HH:mm:ss.ff")) + "'";
-//                    else if (value is TimeSpan)
-//                        returnValue = "'" + AddEscape(((TimeSpan) value).ToString()) + "'";
-//                    else
-//                        returnValue = "'" + AddEscape((string) value) + "'";
-//                    break;
-//                default:
-//                    throw new Exception($"The datatype {typeCode} is not compatible with the sql insert statement.");
-//            }
-//
-//            return returnValue;
-//        }
-
+        
 
         public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
