@@ -2063,8 +2063,16 @@ namespace dexih.transforms
             {
                 if (!IsReaderFinished && IsOpen)
                 {
-                    PrimaryTransform?.CloseAsync();
-                    ReferenceTransform?.CloseAsync();
+                    if (PrimaryTransform != null)
+                    {
+                        await PrimaryTransform?.CloseAsync();
+                    }
+
+                    if (ReferenceTransform != null)
+                    {
+                        await ReferenceTransform?.CloseAsync();
+                    }
+
                     await CloseConnections();
                     IsReaderFinished = true;
                     IsOpen = false;

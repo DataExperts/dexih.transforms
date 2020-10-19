@@ -44,10 +44,17 @@ namespace dexih.connections.sql
 
         protected override async Task CloseConnections()
         {
-            await _sqlReader?.CloseAsync();
-            _sqlReader?.Dispose();
-            await _sqlConnection?.CloseAsync();
-            _sqlConnection?.Dispose();
+            if (_sqlReader != null)
+            {
+                await _sqlReader?.CloseAsync();
+                _sqlReader?.Dispose();
+            }
+
+            if (_sqlConnection != null)
+            {
+                await _sqlConnection?.CloseAsync();
+                _sqlConnection?.Dispose();
+            }
         }
         
         public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
