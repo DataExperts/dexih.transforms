@@ -201,33 +201,38 @@ namespace dexih.connections.sqlite
                 {
                     command.CommandText = $"drop table {SqlTableName(table)}";
                     await command.ExecuteNonQueryAsync(cancellationToken);
-
-                    // if there are no remaining tables, then clean the Sqlite file up.
-                    var tables = await GetTableList(cancellationToken);
-                    if (tables.Count == 0)
+                }
+                
+                // if there are no remaining tables, then clean the Sqlite file up.
+                var tables = await GetTableList(cancellationToken);
+                if (tables.Count == 0)
+                {
+                    var files = new[]
                     {
-                        var files = new[]
-                        {
-                            Server + "/" + DefaultDatabase + ".sqlite",
-                            Server + "/" + DefaultDatabase + ".sqlite-wal",
-                            Server + "/" + DefaultDatabase + ".sqlite-shm",
-                        };
+                        Server + "/" + DefaultDatabase + ".sqlite",
+                        Server + "/" + DefaultDatabase + ".sqlite-wal",
+                        Server + "/" + DefaultDatabase + ".sqlite-shm",
+                    };
 
-                        foreach (var file in files)
-                        {
-                            var fileExists = File.Exists(file);
+                    foreach (var file in files)
+                    {
+                        var fileExists = File.Exists(file);
 
-                            if (fileExists)
+                        if (fileExists)
+                        {
+                            // try to delete the files as they're not needed, if it fails, just catch and continue.
+                            try
                             {
                                 File.Delete(file);
                             }
+                            catch (IOException)
+                            {
+                            }
                         }
                     }
-
-                    return true;
                 }
-                
-                
+
+                return true;                
             }
             catch (Exception ex)
             {
@@ -589,84 +594,6 @@ namespace dexih.connections.sqlite
             return ETypeCode.Unknown;
         }
 
-//        public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries,
-//            CancellationToken cancellationToken = default)
-//        {
-//            try
-//            {
-//
-//                var autoIncrementSql = table.GetDeltaColumn(EDeltaType.AutoIncrement) == null
-//                    ? ""
-//                    : " select last_insert_rowid() from [" + table.Name + "]";
-//                long identityValue = 0;
-//
-//                using (var connection = await NewConnection())
-//                {
-//                    var insert = new StringBuilder();
-//                    var values = new StringBuilder();
-//
-//                    using (var transaction = connection.BeginTransaction())
-//                    {
-//                        foreach (var query in queries)
-//                        {
-//                            cancellationToken.ThrowIfCancellationRequested();
-//
-//                            insert.Clear();
-//                            values.Clear();
-//
-//                            insert.Append("INSERT INTO " + AddDelimiter(table.Name) + " (");
-//                            values.Append("VALUES (");
-//
-//                            for (var i = 0; i < query.InsertColumns.Count; i++)
-//                            {
-//                                insert.Append("[" + query.InsertColumns[i].Column.Name + "],");
-//                                values.Append("@col" + i.ToString() + ",");
-//                            }
-//
-//                            var insertCommand = insert.Remove(insert.Length - 1, 1).ToString() + ") " +
-//                                                   values.Remove(values.Length - 1, 1).ToString() + "); " +
-//                                                   autoIncrementSql;
-//
-//                            try
-//                            {
-//                                using (var cmd = connection.CreateCommand())
-//                                {
-//                                    cmd.CommandText = insertCommand;
-//                                    cmd.Transaction = transaction;
-//
-//                                    for (var i = 0; i < query.InsertColumns.Count; i++)
-//                                    {
-//                                        var param = new SqliteParameter
-//                                        {
-//                                            ParameterName = "@col" + i.ToString(),
-//                                            Value = ConvertParameterType(query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank, query.InsertColumns[i].Value),
-//                                            DbType = GetDbType(query.InsertColumns[i].Column.DataType)
-//                                        };
-//
-//                                        cmd.Parameters.Add(param);
-//                                    }
-//
-//                                    var identity = await cmd.ExecuteScalarAsync(cancellationToken);
-//                                    identityValue = Convert.ToInt64(identity);
-//
-//                                }
-//                            }
-//                            catch (Exception ex)
-//                            {
-//                                throw new ConnectionException($"The insert query failed.  {ex.Message}");
-//                            }
-//                        }
-//                        transaction.Commit();
-//                    }
-//
-//                    return identityValue; //sometimes reader returns -1, when we want this to be error condition.
-//                }
-//            }
-//            catch(Exception ex)
-//            {
-//                throw new ConnectionException($"Insert into table {table.Name} failed. {ex.Message}", ex);
-//            }
-//        }
     }
 
 }
