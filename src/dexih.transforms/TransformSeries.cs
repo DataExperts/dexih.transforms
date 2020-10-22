@@ -34,12 +34,13 @@ namespace dexih.transforms
         
         private IComparable _seriesStart;
         private IComparable _seriesFinish;
+        private int _seriesProject;
 
         private MapSeries _seriesMapping;
 
         private Queue<(IComparable seriesValue, object[] row)> _cachedRows;
 
-        public override bool RequiresSort => Mappings.OfType<MapGroup>().Any();
+        public override bool RequiresSort => true;
 
         public override string TransformName { get; } = "Series";
 
@@ -114,6 +115,7 @@ namespace dexih.transforms
                 _seriesMapping = seriesMappings[0];
                 _seriesStart = (IComparable) _seriesMapping.GetSeriesStart();
                 _seriesFinish = (IComparable)_seriesMapping.GetSeriesFinish();
+                _seriesProject = _seriesMapping.SeriesProject;
                 _cachedRows = new Queue<(IComparable seriesValue, object[] row)>();
             }
             
@@ -200,8 +202,8 @@ namespace dexih.transforms
                 }
                 else
                 {
-                    var previousSeriesValue = previousRow == null ? null : (IComparable) _seriesMapping.NextValue(0, previousRow);
-                    var nextSeriesValue = (IComparable) _seriesMapping.NextValue(0, currentRow);
+                    var previousSeriesValue = previousRow == null ? null : (IComparable) _seriesMapping.SeriesValue(false, previousRow);
+                    var nextSeriesValue = (IComparable) _seriesMapping.SeriesValue(false, currentRow);
             
                     if (previousSeriesValue == null || Equals(nextSeriesValue, previousSeriesValue))
                     {
@@ -256,7 +258,7 @@ namespace dexih.transforms
                     // if the row returned null, this means all the records were filtered
                     groupChanged = false;
                     outputRow.row = new object[FieldCount];
-                    var nextSeriesValue = (IComparable) _seriesMapping.NextValue(0, currentRow);
+                    var nextSeriesValue = (IComparable) _seriesMapping.SeriesValue(false, currentRow);
                     await Mappings.ProcessInputData(new FunctionVariables() {SeriesValue = nextSeriesValue},
                         currentRow, null, cancellationToken);
                 }
@@ -305,7 +307,7 @@ namespace dexih.transforms
             {
                 if (_seriesStart != null)
                 {
-                    var currentSeriesValue = currentRow != null ? (IComparable)_seriesMapping.NextValue(0, currentRow) : _seriesFinish;
+                    var currentSeriesValue = currentRow != null ? (IComparable)_seriesMapping.SeriesValue(false, currentRow) : _seriesFinish;
                     
                     if (currentSeriesValue == null)
                     {
@@ -328,7 +330,7 @@ namespace dexih.transforms
                     while (Operations.LessThan(fillSeriesValue, finishValue))
                     {
                         await CreateFillerRow(currentRow, fillSeriesValue, false, cancellationToken);
-                        fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
+                        fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue);
                         hasFilled = true;
 
                         if (fillCount++ > 10000)
@@ -339,15 +341,27 @@ namespace dexih.transforms
                 }
             } else if (currentRow == null)
             {
-                if (_seriesFinish != null)
+                if (_seriesFinish != null || _seriesProject > 0)
                 {
-                    var currentSeriesValue = (IComparable)_seriesMapping.NextValue(1, previousRow);
+                    var currentSeriesValue = (IComparable)_seriesMapping.SeriesValue(true, previousRow);
                     var fillSeriesValue = currentSeriesValue;
                     var fillCount = 0;
-                    while (Operations.LessThanOrEqual(fillSeriesValue, _seriesFinish))
+                    var projectionCount = 0;
+                    while (true)
                     {
+                        // if the series has passed the series finish, then start calculating the projections.
+                        if (_seriesFinish == null || Operations.GreaterThan(fillSeriesValue, _seriesFinish))
+                        {
+                            projectionCount++;
+
+                            if (projectionCount > _seriesProject)
+                            {
+                                break;
+                            }
+                        }
+
                         await CreateFillerRow(currentRow, fillSeriesValue, true, cancellationToken);
-                        fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
+                        fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue);
                         hasFilled = true;
                         
                         if (fillCount++ > 10000)
@@ -360,13 +374,13 @@ namespace dexih.transforms
             // if there is a previousRow, then generate fillers between the previous and current.
             else
             {
-                var currentSeriesValue = (IComparable)_seriesMapping.NextValue(0, currentRow);
-                var fillSeriesValue = (IComparable) _seriesMapping.NextValue(1, previousRow);
+                var currentSeriesValue = (IComparable)_seriesMapping.SeriesValue(false, currentRow);
+                var fillSeriesValue = (IComparable) _seriesMapping.SeriesValue(true, previousRow);
                 var fillCount = 0;
                 while (Operations.LessThan(fillSeriesValue, currentSeriesValue))
                 {
                     await CreateFillerRow(currentRow, fillSeriesValue, false, cancellationToken);
-                    fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue, 1);
+                    fillSeriesValue = (IComparable) _seriesMapping.CalculateNextValue(fillSeriesValue);
                     hasFilled = true;
 
                     if (fillCount++ > 10000)
@@ -413,7 +427,7 @@ namespace dexih.transforms
             if (_cachedRows != null)
             {
                 // if there is not series finish the fillers may not have run from the Start to the current
-                var seriesValue = (IComparable)_seriesMapping.NextValue(0, previousRow);
+                var seriesValue = (IComparable)_seriesMapping.SeriesValue(false, previousRow);
                 await ProcessAggregate(seriesValue, cancellationToken);
 
                 if (_seriesMapping.SeriesFill)

@@ -58,7 +58,7 @@ namespace dexih.transforms.tests
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, true, null, null));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, 1, true, null, null, 0));
             
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
@@ -119,7 +119,7 @@ namespace dexih.transforms.tests
             };
             
             mappings.Add(new MapFunction(mavg, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, 1, false, null, null, 0));
             
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
@@ -182,7 +182,7 @@ namespace dexih.transforms.tests
                 }
             };
             mappings.Add(new MapFunction(highest, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, false, null, null));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn"), ESeriesGrain.Day, 1, false, null, null, 0));
 
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
@@ -239,7 +239,7 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             mappings.Add(new MapFunction(fillValue, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, true, Convert.ToDateTime("2015/01/04"), Convert.ToDateTime("2015/01/06")));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, 1, true, Convert.ToDateTime("2015/01/04"), Convert.ToDateTime("2015/01/06"), 0));
             
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
@@ -301,8 +301,8 @@ namespace dexih.transforms.tests
 
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             mappings.Add(new MapFunction(fillValue, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, true,
-                Convert.ToDateTime("2015/01/04"), null));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, 1, true,
+                Convert.ToDateTime("2015/01/04"), null, 0));
 
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();
@@ -365,7 +365,7 @@ namespace dexih.transforms.tests
             
             mappings.Add(new MapGroup(new TableColumn("StringColumn")));
             mappings.Add(new MapFunction(fillValue, parameters, EFunctionCaching.NoCache));
-            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, true, null, Convert.ToDateTime("2015/01/06")));
+            mappings.Add(new MapSeries(new TableColumn("DateColumn", ETypeCode.DateTime), ESeriesGrain.Day, 1, true, null, Convert.ToDateTime("2015/01/06"), 0));
             
             var transformGroup = new TransformSeries(source, mappings);
             await transformGroup.Open();

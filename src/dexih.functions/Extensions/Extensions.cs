@@ -208,5 +208,6 @@ namespace dexih.functions
             var temp = s.Split(oldChars, StringSplitOptions.RemoveEmptyEntries);
             return String.Join( newVal, temp );
         }
+        
     }
 }

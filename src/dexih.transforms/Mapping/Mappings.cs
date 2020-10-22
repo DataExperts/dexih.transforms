@@ -246,17 +246,17 @@ namespace dexih.transforms.Mapping
             return groups;
         }
 
-        /// <summary>
-        /// Returns the series value + count
-        /// </summary>
-        /// <param name="count"></param>
-        /// <param name="row"></param>
-        /// <returns></returns>
-        public object GetSeriesValue(int count, object[] row = null)
-        {
-            var series = _primaryMappings.OfType<MapSeries>().FirstOrDefault()?.NextValue(count, row);
-            return series;
-        }
+        // /// <summary>
+        // /// Returns the series value + count
+        // /// </summary>
+        // /// <param name="count"></param>
+        // /// <param name="row"></param>
+        // /// <returns></returns>
+        // public object GetSeriesValue(int count, object[] row = null)
+        // {
+        //     var series = _primaryMappings.OfType<MapSeries>().FirstOrDefault()?.NextValue(count, row);
+        //     return series;
+        // }
 
         public void CreateFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
@@ -266,32 +266,32 @@ namespace dexih.transforms.Mapping
             }
         }
 
-        /// <summary>
-        /// Creates an empty output row with any series values advanced by the count.
-        /// </summary>
-        /// <param name="count"></param>
-        /// <param name="row"></param>
-        /// <returns></returns>
-        public void ProcessNextSeriesOutput(int count, object[] row = null)
-        {
-            foreach (var map in _primaryMappings)
-            {
-                if (map is MapSeries mapSeries)
-                {
-                    mapSeries.ProcessNextValueOutput(count, row);
-                }
-
-                if (map is MapGroup)
-                {
-                    map.MapOutputRow(row);
-                }
-
-//                if (map is MapFunction || map is MapAggregate)
-//                {
-//                    map.ProcessResultRow(0, row);
-//                }
-            }
-        }
+//         /// <summary>
+//         /// Creates an empty output row with any series values advanced by the count.
+//         /// </summary>
+//         /// <param name="count"></param>
+//         /// <param name="row"></param>
+//         /// <returns></returns>
+//         public void ProcessNextSeriesOutput(int count, object[] row = null)
+//         {
+//             foreach (var map in _primaryMappings)
+//             {
+//                 if (map is MapSeries mapSeries)
+//                 {
+//                     mapSeries.ProcessNextValueOutput(count, row);
+//                 }
+//
+//                 if (map is MapGroup)
+//                 {
+//                     map.MapOutputRow(row);
+//                 }
+//
+// //                if (map is MapFunction || map is MapAggregate)
+// //                {
+// //                    map.ProcessResultRow(0, row);
+// //                }
+//             }
+//         }
 
         /// <summary>
         /// Returns an array containing only the group field values for the join table.

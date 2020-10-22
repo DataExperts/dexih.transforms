@@ -222,11 +222,16 @@ namespace dexih.connections.postgressql
                     createSql.Append("CONSTRAINT \"PK_" + AddEscape(table.Name) + "\" PRIMARY KEY (" +
                                      AddDelimiter(key.Name) + "),");
                 }
-
-
+                
                 //remove the last comma
                 createSql.Remove(createSql.Length - 1, 1);
-                createSql.Append(")");
+                createSql.Append(");");
+                
+                foreach (var index in table.Indexes)
+                {
+                    createSql.AppendLine(
+                        $"create index {AddDelimiter(index.Name)} on {AddDelimiter(table.Name)} ({string.Join(", ", index.Columns.Select(c => AddDelimiter(c.ColumnName) + (c.Direction == ESortDirection.Ascending ? "ASC" : "DESC") ))});");
+                }
 
                 await using (var connection = await NewConnection(cancellationToken))
                 await using (var command = connection.CreateCommand())

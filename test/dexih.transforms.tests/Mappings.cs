@@ -225,7 +225,7 @@ namespace dexih.functions.tests
             
             var outputTable = new Table("output");
 
-            var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day, false, null, null);
+            var mapSeries = new MapSeries(inputColumn, outputColumn, ESeriesGrain.Day, 1, false, null, null, 0);
             
             mapSeries.InitializeColumns(inputTable);
             mapSeries.AddOutputColumns(outputTable);
@@ -237,7 +237,7 @@ namespace dexih.functions.tests
             // series value should have the non day elements removed.
             Assert.Equal(new DateTime(2018, 1,1, 0, 0, 0), outputRow[0]);
 
-            var nextValue = mapSeries.NextValue(1);
+            var nextValue = mapSeries.SeriesValue(true);
             Assert.Equal(new DateTime(2018, 1,2, 0, 0, 0), nextValue);
         }
     }

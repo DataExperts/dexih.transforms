@@ -23,32 +23,39 @@ namespace dexih.transforms.Mapping
     
     public class MapSeries: MapColumn
     {
-        public MapSeries(TableColumn inputColumn, TableColumn outputColumn, ESeriesGrain seriesGrain, bool seriesFill, object seriesStart, object seriesFinish)
+        public MapSeries(TableColumn inputColumn, TableColumn outputColumn, ESeriesGrain seriesGrain, int seriesStep, bool seriesFill, object seriesStart, object seriesFinish, int seriesProject)
         {
             InputColumn = inputColumn;
             OutputColumn = outputColumn;
             SeriesGrain = seriesGrain;
+            SeriesStep = seriesStep;
             SeriesFill = seriesFill;
             SeriesStart = seriesStart;
             SeriesFinish = seriesFinish;
+            SeriesProject = seriesProject;
         }
 
-        public MapSeries(TableColumn inputColumn, ESeriesGrain seriesGrain, bool seriesFill, object seriesStart, object seriesFinish)
+        public MapSeries(TableColumn inputColumn, ESeriesGrain seriesGrain, int seriesStep, bool seriesFill, object seriesStart, object seriesFinish, int seriesProject)
         {
             InputColumn = inputColumn;
             OutputColumn = inputColumn;
             SeriesGrain = seriesGrain;
-            SeriesGrain = seriesGrain;
+            SeriesStep = seriesStep;
             SeriesFill = seriesFill;
             SeriesStart = seriesStart;
             SeriesFinish = seriesFinish;
+            SeriesProject = seriesProject;
         }
 
         public ESeriesGrain SeriesGrain { get; set; }
+        
+        public int SeriesStep { get; set; }
         public DayOfWeek StartOfWeek { get; set; } = DayOfWeek.Sunday;
         public bool SeriesFill { get; set; }
         public object SeriesStart { get; set; }
         public object SeriesFinish { get; set; }
+        
+        public int SeriesProject { get; set; }
 
         public object GetSeriesStart()
         {
@@ -165,33 +172,32 @@ namespace dexih.transforms.Mapping
         
 
         
-        public object NextValue(int count, object[] row = null)
+        public object SeriesValue(bool next, object[] row = null)
         {
             var value = GetOutputValue(row);
-            return CalculateNextValue(value, count);
-            
+            return next ? CalculateNextValue(value) : value;
         }
 
-        public object CalculateNextValue(object value, int count)
+        public object CalculateNextValue(object value)
         {
             if (value is DateTime dateValue)
             {
                 switch (SeriesGrain)
                 {
                     case ESeriesGrain.Second:
-                        return dateValue.AddSeconds(count);
+                        return dateValue.AddSeconds(SeriesStep);
                     case ESeriesGrain.Minute:
-                        return dateValue.AddMinutes(count);
+                        return dateValue.AddMinutes(SeriesStep);
                     case ESeriesGrain.Hour:
-                        return dateValue.AddHours(count);
+                        return dateValue.AddHours(SeriesStep);
                     case ESeriesGrain.Day:
-                        return dateValue.AddDays(count);
+                        return dateValue.AddDays(SeriesStep);
                     case ESeriesGrain.Week:
-                        return dateValue.AddDays(count * 7);
+                        return dateValue.AddDays(SeriesStep * 7);
                     case ESeriesGrain.Month:
-                        return dateValue.AddMonths(count);
+                        return dateValue.AddMonths(SeriesStep);
                     case ESeriesGrain.Year:
-                        return dateValue.AddYears(count);
+                        return dateValue.AddYears(SeriesStep);
                     case ESeriesGrain.Number:
                         throw new Exception("Can generate an integer series on a date column.");
                     default:
@@ -209,7 +215,7 @@ namespace dexih.transforms.Mapping
                         throw new ArgumentOutOfRangeException($"Cannot create a series grain of {SeriesGrain} on the value {year}");
                     }
 
-                    return year + count;
+                    return year + SeriesStep;
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -226,17 +232,17 @@ namespace dexih.transforms.Mapping
                 switch (value)
                 {
                     case ushort valueShort:
-                        return valueShort + count;
+                        return valueShort + SeriesStep;
                     case uint valueUInt:
-                        return valueUInt + count;
+                        return valueUInt + SeriesStep;
                     case ulong valueULong:
-                        return valueULong + Convert.ToUInt64(count);
+                        return valueULong + Convert.ToUInt64(SeriesStep);
                     case short valueShort:
-                        return valueShort + count;
+                        return valueShort + SeriesStep;
                     case int valueInt:
-                        return valueInt + count;
+                        return valueInt + SeriesStep;
                     case long valueLong:
-                        return valueLong + count;
+                        return valueLong + SeriesStep;
                 }
             }
 
@@ -244,11 +250,11 @@ namespace dexih.transforms.Mapping
 
         }
 
-        public void ProcessNextValueOutput(int count, object[] row)
-        {
-            var value = NextValue(count);
-            row[OutputOrdinal] = value;
-        }
+        // public void ProcessNextValueOutput(int count, object[] row)
+        // {
+        //     var value = NextValue(count);
+        //     row[OutputOrdinal] = value;
+        // }
 
         public override void ProcessFillerRow(object[] row, object[] fillerRow, object seriesValue)
         {
