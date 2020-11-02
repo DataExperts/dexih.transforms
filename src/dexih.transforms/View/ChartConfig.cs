@@ -9,31 +9,55 @@ namespace dexih.repository
     {
         BarVertical = 1,
         BarHorizontal,
-        BarVertical2D,
-        BarHorizontal2D,
-        BarVerticalStacked,
-        BarHorizontalStacked,
-        BarVerticalNormalized,
-        BarHorizontalNormalized,
+        // BarVertical2D,
+        // BarHorizontal2D,
+        // BarVerticalStacked,
+        // BarHorizontalStacked,
+        // BarVerticalNormalized,
+        // BarHorizontalNormalized,
         Pie,
-        PieAdvanced,
-        PieGrid,
+        // PieAdvanced,
+        // PieGrid,
         Line,
-        Area,
+        // Area,
         Polar,
-        AreaStacked,
-        AreaNormalized,
+        // AreaStacked,
+        // AreaNormalized,
         Scatter,
         Error,
         Bubble,
-        ForceDirected,
-        HeatMap,
-        TreeMap,
-        Cards,
-        Gauge,
-        LinearGauge,
+        // ForceDirected,
+        // HeatMap,
+        // TreeMap,
+        // Cards,
+        // Gauge,
+        // LinearGauge,
         Map,
-        BarLineCombo
+        BarLineCombo,
+        Radar
+    }
+
+    public enum ELineCurve
+    {
+        Straight,
+        Bezier,
+        Monotone,
+    }
+
+    [DataContract]
+    public class ChartSeries
+    {
+        [DataMember(Order = 0)]
+        public string Column { get; set; }
+        
+        [DataMember(Order = 1)]
+        public bool LineChart { get; set; } = false;
+        
+        [DataMember(Order = 2)]
+        public string Color { get; set; } = null;
+        
+        [DataMember(Order = 3)]
+        public bool AlternateAxis { get; set; } = false;
     }
     
     [DataContract]
@@ -47,13 +71,10 @@ namespace dexih.repository
         public string LabelColumn { get; set; }
 
         [DataMember(Order = 1)]
-        public string SeriesColumn { get; set; }
+        public ChartSeries[] SeriesColumns { get; set; }
 
         [DataMember(Order = 2)]
         public string PivotColumn { get; set; }
-        
-        [DataMember(Order = 3)]
-        public string[] SeriesColumns { get; set; }
 
         [DataMember(Order = 4)]
         public string XColumn { get; set; }
@@ -82,8 +103,8 @@ namespace dexih.repository
         [DataMember(Order = 12)] 
         public string ColorScheme { get; set; } = "natural";
 
-        [DataMember(Order = 13)]
-        public bool ShowGradient { get; set; }
+        // [DataMember(Order = 13)]
+        // public bool ShowGradient { get; set; }
 
         [DataMember(Order = 14)] public bool ShowXAxis { get; set; } = true;
 
@@ -94,7 +115,7 @@ namespace dexih.repository
         public bool ShowLegend { get; set; }
 
         [DataMember(Order = 17)] 
-        public string LegendPosition { get; set; } = "below";
+        public string LegendPosition { get; set; } = "bottom";
 
         [DataMember(Order = 18)]
         public bool ShowXAxisLabel { get; set; } = true;
@@ -128,10 +149,11 @@ namespace dexih.repository
 
         // pie charts only
         [DataMember(Order = 28)]
-        public bool ExplodeSlices { get; set; }
-
+        public int CutOutPercentage { get; set; }
+        
+        // line charts only
         [DataMember(Order = 29)]
-        public bool Doughnut { get; set; }
+        public bool Fill { get; set; }
         
         /// <summary>
         /// Include a separate axis for combo charts.
@@ -140,22 +162,36 @@ namespace dexih.repository
         public bool SeparateAxis { get; set; }
 
         [DataMember(Order = 31)] 
-        public int BarPadding { get; set; } = 3;
-
+        public ELineCurve LineCurve { get; set; } = ELineCurve.Bezier;
+        
+        /// <summary>
+        /// draw gaps between lines when there are null values.
+        /// </summary>
         [DataMember(Order = 32)] 
-        public bool RoundEdges { get; set; } = false;
+        public bool SpanGaps { get; set; } = false;
         
         [DataMember(Order = 33)] 
         public bool ShowDataLabel { get; set; } = false;
 
         [DataMember(Order = 34)] 
+        public bool ShowDataValue { get; set; } = false;
+
+        [DataMember(Order = 35)] 
+        public string LabelAnchor { get; set; } = "center";
+
+        [DataMember(Order = 36)] 
+        public string LabelAlign { get; set; } = "center";
+
+        [DataMember(Order = 37)] 
         public bool SingleBarColor { get; set; } = true;
 
-        [DataMember(Order = 35)]
+        [DataMember(Order = 38)]
         public string MultiGridColumn { get; set; } // column when laying out a grid of charts
         
-        [DataMember(Order = 36)]
+        [DataMember(Order = 39)]
         public string YAxisLabelRight { get; set; }
+        
+
     }
     
 }
