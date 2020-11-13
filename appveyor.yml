@@ -26,6 +26,8 @@ test_script:
 - dotnet test .\test\dexih.functions.ml.tests\dexih.functions.ml.tests.csproj
 - dotnet test .\test\dexih.transforms.tests\dexih.transforms.tests.csproj
 - dotnet test .\test\dexih.transforms.tests.async\dexih.transforms.tests.async.csproj
+- dotnet test .\test\dexih.functions.financial.tests\dexih.functions.financial.tests.csproj
+
 - cd test\dexih.connections.azure.tests
 - '"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe" start'
 - dotnet test 

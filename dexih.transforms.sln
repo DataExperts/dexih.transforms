@@ -102,6 +102,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.connections.github.te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions.tests.async", "test\dexih.functions.tests.async\dexih.functions.tests.async.csproj", "{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dexih.functions.financial.tests", "test\dexih.functions.financial.tests\dexih.functions.financial.tests.csproj", "{E877F855-BEA9-4D55-8081-8FA7955E4265}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -628,6 +630,18 @@ Global
 		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x64.Build.0 = Release|Any CPU
 		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x86.ActiveCfg = Release|Any CPU
 		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED}.Release|x86.Build.0 = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|x64.Build.0 = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Debug|x86.Build.0 = Debug|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|x64.ActiveCfg = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|x64.Build.0 = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|x86.ActiveCfg = Release|Any CPU
+		{E877F855-BEA9-4D55-8081-8FA7955E4265}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -676,6 +690,7 @@ Global
 		{B460CF52-643E-4337-BC53-DBF41EA09307} = {4E466E6B-B3EB-4D21-A930-FDFA60FBEBCC}
 		{44E81143-3B71-463A-A52D-3A0F07F6FA77} = {4712A230-9747-4447-B4C5-022006511342}
 		{204AD9E2-9C7E-4CC3-9A16-1374BA217CED} = {4712A230-9747-4447-B4C5-022006511342}
+		{E877F855-BEA9-4D55-8081-8FA7955E4265} = {4712A230-9747-4447-B4C5-022006511342}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5BB1D6C4-C2EC-45ED-AB2E-F43CD8D84EA3}
