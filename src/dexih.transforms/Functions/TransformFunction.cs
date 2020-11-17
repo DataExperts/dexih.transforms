@@ -256,12 +256,12 @@ namespace dexih.functions
 					property.SetValue(target, GlobalSettings);
 				}
 				
-				if (parameters != null && property.GetCustomAttribute(typeof(ParameterNamesAttribute)) != null)
+				if (parameters != null && property.GetCustomAttribute(typeof(ParameterNamesAttribute)) != null && parameters.Inputs != null)
 				{
-					if (parameters?.Inputs == null)
-					{
-						throw new FunctionException($"The parameters.inputs was not set, and the function requires column names.");                
-					}
+					// if (parameters?.Inputs == null)
+					// {
+					// 	throw new FunctionException($"The parameters.inputs was not set, and the function requires column names.");                
+					// }
             
 					if (parameters.Inputs[0] is ParameterArray parameterArray)
 					{
@@ -279,10 +279,10 @@ namespace dexih.functions
 						
 						property.SetValue(target, parameterNames);
 					}
-					else
-					{
-						throw new FunctionException($"The parameter {parameters.Inputs[0].Name} is not a column array.");                
-					}
+					// else
+					// {
+					// 	throw new FunctionException($"The parameter {parameters.Inputs[0].Name} is not a column array.");                
+					// }
 				}
 			}
 			

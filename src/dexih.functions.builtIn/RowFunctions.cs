@@ -100,6 +100,11 @@ namespace dexih.functions.BuiltIn
                 _cacheInt++;
             }
 
+            if (ParameterNames == null)
+            {
+                throw new FunctionException("The column to rows failed as there were not any columns specified.");
+            }
+
             while (_cacheInt < column.Length)
             {
                 item = column[_cacheInt.Value];
