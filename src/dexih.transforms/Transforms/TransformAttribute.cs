@@ -8,6 +8,8 @@ namespace dexih.transforms.Transforms
     // [Union(0, typeof(TransformReference))]
     public class TransformAttribute: Attribute
     {
+        // This is overridden as it causes the json serializer to 
+        // Method may only be called on a Type for which Type.IsGenericParameter is true error
         [IgnoreDataMember]
         public override object TypeId { get; }
 

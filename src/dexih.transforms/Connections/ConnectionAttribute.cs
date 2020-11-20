@@ -9,8 +9,10 @@ namespace dexih.transforms
     // [Union(0, typeof(ConnectionReference))]
     public class ConnectionAttribute : Attribute
     {
-        // [IgnoreDataMember]
-        // public override object TypeId { get; }
+        // This is overridden as it causes the json serializer to 
+        // Method may only be called on a Type for which Type.IsGenericParameter is true error
+        [IgnoreDataMember]
+        public override object TypeId { get; }
 
         /// <summary>
         /// Category of the connection

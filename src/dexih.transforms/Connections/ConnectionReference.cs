@@ -10,10 +10,10 @@ namespace dexih.transforms
     [DataContract]
     public class ConnectionReference : ConnectionAttribute
     {
-        [DataMember(Order = 16)]
+        [DataMember(Order = 18)]
         public string ConnectionAssemblyName { get; set; }
 
-        [DataMember(Order = 17)]
+        [DataMember(Order = 19)]
         public string ConnectionClassName { get; set; }
         
         public Type GetConnectionType()
