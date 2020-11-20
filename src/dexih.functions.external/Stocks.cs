@@ -55,7 +55,7 @@ namespace dexih.functions.external
 
             if (response.isSuccess)
             {
-                var reader = new StreamReader(response.response);
+                // var reader = new StreamReader(response.response);
                 // var jsonString = await reader.ReadToEndAsync();
             
                 JsonDocument jsonDocument;

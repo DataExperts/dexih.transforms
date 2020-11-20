@@ -17,11 +17,7 @@ namespace dexih.functions.Parameter
         public IList<Parameter> ResultOutputs { get; set; } = new List<Parameter>();
         public IList<Parameter> ResultReturnParameters { get; set; } = new List<Parameter>();
 
-        public Parameters()
-        {
-        }
-        
-//        public Parameters(IList<Parameter> inputs, Table table, Table joinTable = null)
+        //        public Parameters(IList<Parameter> inputs, Table table, Table joinTable = null)
 //        {
 //            InitializeInputs(inputs, table);
 //        }

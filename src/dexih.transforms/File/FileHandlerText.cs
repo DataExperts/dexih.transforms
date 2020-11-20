@@ -29,12 +29,12 @@ namespace dexih.transforms.File
         public override string FileType { get; } = "Csv";
         public SelectQuery SelectQuery { get; set; }
 
-        private struct CsvField
+        private readonly struct CsvField
         {
-            public ETypeCode TypeCode { get; set; }
-            public int Rank { get; set; }
-            public int Position { get; set; }
-            public Type DataType { get; set; }
+            public ETypeCode TypeCode { get; }
+            public int Rank { get; }
+            public int Position { get; }
+            public Type DataType { get; }
 
             public CsvField(int position, ETypeCode typeCode, int rank)
             {
@@ -127,14 +127,7 @@ namespace dexih.transforms.File
                 {
                     for(var i = 0; i< headers.Length; i++)
                     {
-                        try
-                        {
-                            dataTypes[i].CheckValue(csv[i]);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw;
-                        }
+                        dataTypes[i].CheckValue(csv[i]);
                     }
                 }
             }
@@ -257,7 +250,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override async Task<object[]> GetRow(FileProperties fileProperties = null)
+        public override async Task<object[]> GetRow(FileProperties fileProperties)
         {
             try
             {

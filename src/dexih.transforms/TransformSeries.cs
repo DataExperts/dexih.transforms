@@ -398,6 +398,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="currentRow"></param>
         /// <param name="seriesValue"></param>
+        /// <param name="forecast"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         private async Task CreateFillerRow(object[] currentRow, IComparable seriesValue, bool forecast, CancellationToken cancellationToken)
@@ -451,7 +452,7 @@ namespace dexih.transforms
                 if (_seriesStart != null)
                 {
                     // remove cached items that start before the start date.
-                    while (_cachedRows.Count > 0 && _seriesStart.CompareTo((IComparable) _cachedRows.Peek().seriesValue) > 0)
+                    while (_cachedRows.Count > 0 && _seriesStart.CompareTo(_cachedRows.Peek().seriesValue) > 0)
                     {
                         _cachedRows.Dequeue();
                     }

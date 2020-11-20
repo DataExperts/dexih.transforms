@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using dexih.connections.sql;
 using dexih.functions;
 using dexih.functions.Query;
-using dexih.transforms.Mapping;
 using dexih.transforms.Transforms;
 using Dexih.Utils.CopyProperties;
 
@@ -22,7 +20,6 @@ namespace dexih.transforms
         public ConnectionSql ConnectionSql { get; set; }
 
         private Transform _cachePrimary;
-        private Transform _cacheReference;
         private Table _tablePrimary;
         private Table _tableReference;
 
@@ -99,7 +96,7 @@ namespace dexih.transforms
 
             _cachePrimary = ConnectionSql.GetTransformReader(_tablePrimary);
             _cachePrimary.TableAlias = PrimaryTransform.TableAlias;
-            _cachePrimary.Open(newSelectQuery, cancellationToken);
+            await _cachePrimary.Open(newSelectQuery, cancellationToken);
             GeneratedQuery = _cachePrimary.GeneratedQuery;
             CacheTable = _cachePrimary.CacheTable.Copy();
             CacheTable.OutputSortFields = GeneratedQuery.Sorts;

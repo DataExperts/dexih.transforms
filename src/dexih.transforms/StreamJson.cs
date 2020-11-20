@@ -36,7 +36,7 @@ using System.Threading.Tasks;
         private string _endWrite;
         private readonly SelectQuery _selectQuery = null;
         
-        private TableColumn[] columns = null;
+        private TableColumn[] _columns = null;
 
         public StreamJson(DbDataReader reader, long maxRows = -1, string topNode = null)
         {
@@ -109,10 +109,10 @@ using System.Threading.Tasks;
                             }
                         }
                         
-                        columns = transform.CacheTable.Columns.ToArray();
-                        for (var i = 0; i < columns.Length; i++)
+                        _columns = transform.CacheTable.Columns.ToArray();
+                        for (var i = 0; i < _columns.Length; i++)
                         {
-                            if (!columns[i].IsParent)
+                            if (!_columns[i].IsParent)
                             {
                                 _ordinals.Add(i);
                             }
@@ -193,9 +193,9 @@ using System.Threading.Tasks;
 
                             var value = _reader[i];
                             
-                            if (columns?[i] != null)
+                            if (_columns?[i] != null)
                             {
-                                value = columns[i].FormatValue(value);
+                                value = _columns[i].FormatValue(value);
                             }
                             
                             jObject[_reader.GetName(i)] = JToken.FromObject(value);

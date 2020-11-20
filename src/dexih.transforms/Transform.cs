@@ -2051,10 +2051,10 @@ namespace dexih.transforms
             base.Dispose();
         }
         
-        public async Task DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             await CloseAsync();
-            base.DisposeAsync();
+            await base.DisposeAsync();        
         }
 
         public override async Task CloseAsync()

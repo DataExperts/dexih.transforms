@@ -224,38 +224,38 @@ namespace dexih.functions
         /// </summary>
         private List<(int[] columnOrdinals, Dictionary<object[], List<int>> index)> _indexes;
 
-        /// <summary>
-        /// Performs a row scan lookup on the data contained in the table.
-        /// </summary>
-        /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
-        /// <param name="startRow"></param>
-        /// <returns></returns>
-        public object[] LookupSingleRow(IEnumerable<Filter> filters, int startRow = 0)
-        {
-            try
-            {
-                // use the index to reduce the scan rows
-                var data = IndexLookup(filters) ?? Data;
-                
-                //scan the data for a matching row. 
-                var i = 0;
-                foreach(var item in data)
-                {
-                    if(i++ < startRow) continue;
-                    
-                    if (RowMatch(filters, item))
-                        return item;
-                }
+        // /// <summary>
+        // /// Performs a row scan lookup on the data contained in the table.
+        // /// </summary>
+        // /// <param name="filters">Filter for the lookup.  For an index to be used, the filters must be in the same column order as the index.</param>
+        // /// <param name="startRow"></param>
+        // /// <returns></returns>
+        // public object[] LookupSingleRow(Filter[] filters, int startRow = 0)
+        // {
+        //     try
+        //     {
+        //         // use the index to reduce the scan rows
+        //         var data = IndexLookup(filters) ?? Data;
+        //         
+        //         //scan the data for a matching row. 
+        //         var i = 0;
+        //         foreach(var item in data)
+        //         {
+        //             if(i++ < startRow) continue;
+        //             
+        //             if (RowMatch(filters, item))
+        //                 return item;
+        //         }
+        //
+        //         return null;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new TableException("The lookup row failed.  " + ex.Message, ex);
+        //     }
+        // }
 
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new TableException("The lookup row failed.  " + ex.Message, ex);
-            }
-        }
-
-        public List<object[]> LookupMultipleRows(IEnumerable<Filter> filters, int startRow = 0)
+        public List<object[]> LookupMultipleRows(List<Filter> filters, int startRow = 0)
         {
             try
             {
@@ -278,7 +278,6 @@ namespace dexih.functions
                     }
                 }
                 
-
                 return rows;
             }
             catch (Exception ex)

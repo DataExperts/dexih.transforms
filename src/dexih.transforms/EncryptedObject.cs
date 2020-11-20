@@ -13,9 +13,9 @@ namespace dexih.transforms
     public class EncryptedObject: IEquatable<string>, IEquatable<EncryptedObject>
     {
         [JsonIgnore, IgnoreDataMember]
-        public object OriginalValue {get;set;}
+        public object OriginalValue {get;}
         
-        public string EncryptedValue {get;set;}
+        public string EncryptedValue {get;}
 		
         public EncryptedObject(object originalValue, string encryptedValue)
         {

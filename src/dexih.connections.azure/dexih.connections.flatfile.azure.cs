@@ -100,7 +100,7 @@ namespace dexih.connections.azure
             return fileShares;
         }
 
-        private async Task<CloudBlobDirectory> GetDatabaseDirectory(CancellationToken cancellationToken)
+        private async Task<CloudBlobDirectory> GetDatabaseDirectory()
         {
             try
             {
@@ -118,11 +118,11 @@ namespace dexih.connections.azure
             }
         }
 
-        private async Task<CloudBlobDirectory> GetFileDirectory(FlatFile file, CancellationToken cancellationToken)
+        private async Task<CloudBlobDirectory> GetFileDirectory(FlatFile file)
         {
             try
             {
-                var fileShare = await GetDatabaseDirectory(cancellationToken);
+                var fileShare = await GetDatabaseDirectory();
 
                 if (file != null && !string.IsNullOrEmpty(file.FileRootPath))
                 {
@@ -148,7 +148,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                var directory = await GetDatabaseDirectory(cancellationToken);
+                var directory = await GetDatabaseDirectory();
 
                 var cloudFileDirectory = directory;
 
@@ -180,7 +180,7 @@ namespace dexih.connections.azure
                 var fileNameExtension = Path.GetExtension(fileName);
                 var version = 0;
 
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+                var cloudFileDirectory = await GetFileDirectory(file);
                 var cloudFromDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(fromDirectory));
                 var cloudToDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(toDirectory));
 
@@ -208,7 +208,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+                var cloudFileDirectory = await GetFileDirectory(file);
                 var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 CloudBlob cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
                 await cloudFile.DeleteAsync();
@@ -223,7 +223,7 @@ namespace dexih.connections.azure
         public override async IAsyncEnumerable<FileProperties> GetFileEnumerator(FlatFile file, EFlatFilePath path,
             string searchPattern, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+            var cloudFileDirectory = await GetFileDirectory(file);
             var pathString = file.GetPath(path);
             var pathLength = pathString.Length + 1;
             var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(pathString);
@@ -239,8 +239,9 @@ namespace dexih.connections.azure
 
             } while (continuationToken != null);
 
-            foreach (CloudBlob cloudFile in list)
+            foreach (var listBlobItem in list)
             {
+                var cloudFile = (CloudBlob) listBlobItem;
                 await cloudFile.FetchAttributesAsync();
                 var fileName = cloudFile.Name.Substring(pathLength);
                 if (string.IsNullOrEmpty(searchPattern) || FitsMask(file.Name, searchPattern))
@@ -296,7 +297,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+                var cloudFileDirectory = await GetFileDirectory(file);
                 var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 var stream = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenReadAsync();
                 return stream;
@@ -312,7 +313,7 @@ namespace dexih.connections.azure
         {
             try
             {
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+                var cloudFileDirectory = await GetFileDirectory(file);
                 var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 Stream stream = await cloudSubDirectory.GetBlockBlobReference(fileName).OpenWriteAsync();
                 return stream;
@@ -331,7 +332,7 @@ namespace dexih.connections.azure
                 var fileNameExtension = Path.GetExtension(fileName);
                 var version = 0;
 
-                var cloudFileDirectory = await GetFileDirectory(file, cancellationToken);
+                var cloudFileDirectory = await GetFileDirectory(file);
                 var cloudSubDirectory = cloudFileDirectory.GetDirectoryReference(file.GetPath(path));
                 var cloudFile = cloudSubDirectory.GetBlockBlobReference(fileName);
 
@@ -379,7 +380,7 @@ namespace dexih.connections.azure
             {
 				var flatFile = (FlatFile)table;
 
-				var getDatabaseDirectory = await GetDatabaseDirectory(cancellationToken);
+				var getDatabaseDirectory = await GetDatabaseDirectory();
                 var cloudFileDirectory = getDatabaseDirectory.GetDirectoryReference(flatFile.FileRootPath);
 
                 var exists = await cloudFileDirectory.Container.ExistsAsync();

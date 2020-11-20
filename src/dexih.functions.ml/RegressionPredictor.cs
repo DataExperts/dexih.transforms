@@ -19,7 +19,6 @@ namespace dexih.functions.ml
         /// Extracts the "Predict" method from the "CreatePredictionEngine".
         /// This requires reflection as the "type" is unknown prior to compilation.
         /// </summary>
-        /// <param name="type"></param>
         /// <param name="modelBytes"></param>
         /// <param name="labels"></param>
         public RegressionPredictor(byte[] modelBytes, string[] labels)

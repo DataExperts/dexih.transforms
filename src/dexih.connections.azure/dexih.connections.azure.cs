@@ -569,7 +569,13 @@ namespace dexih.connections.azure
                 else
                 {
                     entity = tableResult.Result as DynamicTableEntity;
-                    value = GetEntityProperty<T>(entity.Properties[IncrementalValueName]); 
+
+                    if (entity == null)
+                    {
+                        throw new ConnectionException("The incremental key result could not be found.");
+                    }
+
+                    value = GetEntityProperty<T>(entity.Properties[IncrementalValueName]);
                     entity.Properties[IncrementalValueName] = NewEntityProperty(value);
                     entity.Properties[LockGuidName] = new EntityProperty(lockGuid);
                 }
@@ -639,9 +645,9 @@ namespace dexih.connections.azure
             return (T)Convert.ChangeType(prop.PropertyAsObject, typeof(T));
         }
 
-        public string ConvertOperator(ECompare Operator)
+        public string ConvertOperator(ECompare op)
         {
-            switch (Operator)
+            switch (op)
             {
                 case ECompare.IsEqual:
                     return "eq";
@@ -656,7 +662,7 @@ namespace dexih.connections.azure
                 case ECompare.NotEqual:
                     return "ne";
                 default:
-                    throw new Exception($"The operator {Operator} is not supported by Azure storage tables.");
+                    throw new Exception($"The operator {op} is not supported by Azure storage tables.");
             }
         }
         

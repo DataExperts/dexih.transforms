@@ -17,7 +17,7 @@ using IBM.Data.DB2.Core;
 namespace dexih.connections.db2
 {
     [Connection(
-        ConnectionCategory = Connection.EConnectionCategory.DatabaseFile,
+        ConnectionCategory = EConnectionCategory.DatabaseFile,
         Name = "DB2", 
         Description = "IBM DB2 Data Server",
         DatabaseDescription = "DB2 Schema",
@@ -358,7 +358,7 @@ namespace dexih.connections.db2
                 await using (var cmd = CreateCommand(connection, "CREATE SCHEMA " + AddDelimiter(databaseName)))
                 {
                     
-                    var value = await cmd.ExecuteNonQueryAsync(cancellationToken);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken);
                 }
 
                 DefaultDatabase = databaseName;

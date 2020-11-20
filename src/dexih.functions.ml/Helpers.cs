@@ -106,10 +106,13 @@ namespace dexih.functions.ml
         /// </summary>
         /// <param name="mlContext"></param>
         /// <param name="fields"></param>
+        /// <param name="featuresColumnName"></param>
+        /// <param name="includePredictedLabel"></param>
         /// <returns></returns>
         public static IEstimator<ITransformer> CreatePipeline(MLContext mlContext, IEnumerable<DynamicTypeProperty> fields, string featuresColumnName, bool includePredictedLabel = true)
         {
             IEstimator<ITransformer> pipeline = null;
+            var fieldsArray = fields.ToArray();
 
             if (includePredictedLabel)
             {
@@ -118,7 +121,7 @@ namespace dexih.functions.ml
 
             var labels = new List<string>();
 
-            foreach(var field in fields.Where(c => c.Encoding == EEncoding.HotEncode))
+            foreach(var field in fieldsArray.Where(c => c.Encoding == EEncoding.HotEncode))
             {
                 var outColumn = field.CleanName + "Encoded";
                 var estimator = mlContext.Transforms.Categorical.OneHotEncoding(outColumn, field.CleanName);
@@ -133,7 +136,7 @@ namespace dexih.functions.ml
                 labels.Add(outColumn);
             }
             
-            foreach(var field in fields.Where(c => c.Encoding == EEncoding.FeaturizeText))
+            foreach(var field in fieldsArray.Where(c => c.Encoding == EEncoding.FeaturizeText))
             {
                 var outColumn = field.CleanName + "Featurized";
                 var estimator = mlContext.Transforms.Text.FeaturizeText(outColumn, field.CleanName);
@@ -148,7 +151,7 @@ namespace dexih.functions.ml
                 labels.Add(outColumn);
             }
             
-            labels.AddRange(fields.Where(c => c.Encoding == EEncoding.None).Select(c => c.CleanName) );
+            labels.AddRange(fieldsArray.Where(c => c.Encoding == EEncoding.None).Select(c => c.CleanName) );
             
             var featuresEstimator = mlContext.Transforms.Concatenate(featuresColumnName, labels.ToArray());
             

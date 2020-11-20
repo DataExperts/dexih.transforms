@@ -50,10 +50,10 @@ namespace dexih.transforms
             var files = _files.Where(c => c.Key.path == path).Select(c => c.Key.fileName);
             foreach (var fileName in files)
             {
-                yield return new FileProperties()
+                yield return await Task.FromResult(new FileProperties()
                 {
                     FileName = fileName,
-                };
+                });
             }
         }
 

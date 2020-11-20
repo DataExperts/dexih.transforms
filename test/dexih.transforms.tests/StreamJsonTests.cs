@@ -53,7 +53,7 @@ namespace dexih.transforms.tests
 
             await handler.SetStream(stream, null);
 
-            var row = await handler.GetRow();
+            var row = await handler.GetRow(null);
 
             // coords are a property, so will return an object.
             Assert.Equal(51.51, row[table.GetOrdinal("coord.lat")]);
@@ -105,20 +105,20 @@ namespace dexih.transforms.tests
             await handler.SetStream(stream, null);
 
             
-            var row = await handler.GetRow();
+            var row = await handler.GetRow(null);
             Assert.Equal("Harry", row[table.GetOrdinal("name")]);
             Assert.Equal(10, row[table.GetOrdinal("age")]);
             Assert.Equal(new [] {1,2,3}, row[table.GetOrdinal("numbers")]);
 
-            row = await handler.GetRow();
+            row = await handler.GetRow(null);
             Assert.Equal("Ron", row[table.GetOrdinal("name")]);
             Assert.Equal(11, row[table.GetOrdinal("age")]);
 
-            row = await handler.GetRow();
+            row = await handler.GetRow(null);
             Assert.Equal("Hermione", row[table.GetOrdinal("name")]);
             Assert.Equal(10, row[table.GetOrdinal("age")]);
 
-            row = await handler.GetRow();
+            row = await handler.GetRow(null);
             Assert.Null(row);
         } 
     }

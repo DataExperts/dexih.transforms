@@ -16,7 +16,6 @@ namespace dexih.functions.ml
 
         public void Reset()
         {
-            new MLContext();
             _data = new List<SentimentIssue>();
         }
 
@@ -131,7 +130,7 @@ namespace dexih.functions.ml
 
             // load the sentiment model
             var stream = new MemoryStream( model );
-            var trainedModel = mlContext.Model.Load(stream, out var inputSchema);
+            var trainedModel = mlContext.Model.Load(stream, out _);
 
             // Turn the data into the ML.NET data view.
             var trainData = mlContext.Data.LoadFromEnumerable(_data);
@@ -151,7 +150,7 @@ namespace dexih.functions.ml
                 _sentimentModel = model;
                 var mlContext = new MLContext();
                 var stream = new MemoryStream( model );
-                var trainedModel = mlContext.Model.Load(stream, out var inputSchema);
+                var trainedModel = mlContext.Model.Load(stream, out _);
                 _predictionFunction = mlContext.Model.CreatePredictionEngine<SentimentIssue, SentimentPredictionResult>(trainedModel);
             }
 

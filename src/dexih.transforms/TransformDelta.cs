@@ -120,7 +120,7 @@ namespace dexih.transforms
 
         private DateTime _currentDateTime;
 
-        private object[] _previousReferenceKey { get; set; } = null;
+        private object[] PreviousReferenceKey { get; set; } = null;
 
         public override string TransformName { get; } = "Delta";
 
@@ -511,10 +511,10 @@ namespace dexih.transforms
                 //second add a where natural key is greater than the first record key.  (excluding where delete detection is on).
                 if (_primaryOpen && !DoDelete)
                 {
-                    foreach (var ordinal in _naturalKeyOrdinals)
+                    foreach (var (ordinal, primaryOrdinal, _) in _naturalKeyOrdinals)
                     {
-                        var filter = new Filter(CacheTable.Columns[ordinal.ordinal], ECompare.GreaterThanEqual,
-                            PrimaryTransform[ordinal.primaryOrdinal]) {AllowNull = true};
+                        filters.Add(new Filter(CacheTable.Columns[ordinal], ECompare.GreaterThanEqual,
+                            PrimaryTransform[primaryOrdinal]) {AllowNull = true});
                     }
                 }
 
@@ -842,7 +842,7 @@ namespace dexih.transforms
                     i++;
                 }
 
-                if (_previousReferenceKey != null)
+                if (PreviousReferenceKey != null)
                 {
                     var compareResult = 0;
                     i = 0;
@@ -850,7 +850,7 @@ namespace dexih.transforms
                     {
                         try
                         {
-                            compareResult = Operations.Compare(CacheTable.Columns[ordinal.ordinal].DataType, _previousReferenceKey[i], newKey[i]);
+                            compareResult = Operations.Compare(CacheTable.Columns[ordinal.ordinal].DataType, PreviousReferenceKey[i], newKey[i]);
                             if (compareResult != 0)
                                 break;
                             i++;
@@ -870,7 +870,7 @@ namespace dexih.transforms
                     }
                 }
 
-                _previousReferenceKey = newKey;
+                PreviousReferenceKey = newKey;
                 
                 if (_colAutoIncrement != null)
                 {

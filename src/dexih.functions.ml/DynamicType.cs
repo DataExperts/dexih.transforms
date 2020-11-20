@@ -28,7 +28,8 @@ namespace dexih.functions.ml
 	    /// <summary>
 	    /// creates an action which can be used to add items to the list
 	    /// </summary>
-	    /// <param name="listType"></param>
+	    /// <param name="list"></param>
+	    /// <param name="fields"></param>
 	    /// <returns></returns>
 	    public static Action<object[]> GetAddAction(IEnumerable<object> list, DynamicTypeProperty[] fields)
 	    {

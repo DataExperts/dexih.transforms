@@ -92,7 +92,7 @@ namespace dexih.functions.financial
         
         public double NpvResult(double rate)
         {
-            if (rate == -1.0)
+            if (Math.Abs(rate - (-1.0)) < 0.0001)
             {
                 throw new Exception("R cannot be -100%");
             }

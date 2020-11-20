@@ -288,6 +288,7 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="table"></param>
         /// <param name="position"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public abstract Task<Table> InitializeTable(Table table, int position, CancellationToken cancellationToken);
 
@@ -613,6 +614,7 @@ namespace dexih.transforms
         /// Function runs when a data write comments.  This is used to put headers on csv files.
         /// </summary>
         /// <param name="table"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual Task DataWriterStart(Table table, CancellationToken cancellationToken)
         {
@@ -923,6 +925,7 @@ namespace dexih.transforms
         /// Function runs when a data write finishes.  This is used to close file streams.
         /// </summary>
         /// <param name="table"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public virtual Task DataWriterFinish(Table table, CancellationToken cancellationToken)
         {

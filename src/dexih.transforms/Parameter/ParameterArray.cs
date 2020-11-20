@@ -50,13 +50,13 @@ namespace dexih.functions.Parameter
 				    case ETypeCode.UInt32:
 					    return Parameters.Select(c => (int) (c.Value??0)).ToArray();
 				    case ETypeCode.UInt64:
-					    return Parameters.Select(c => (ulong) (c.Value??0l)).ToArray();
+					    return Parameters.Select(c => (ulong) (c.Value??0L)).ToArray();
 				    case ETypeCode.Int16:
 					    return Parameters.Select(c => (short) (c.Value??0)).ToArray();
 				    case ETypeCode.Int32:
 					    return Parameters.Select(c => (int) (c.Value??0)).ToArray();
 				    case ETypeCode.Int64:
-					    return Parameters.Select(c => (long) (c.Value??0l)).ToArray();
+					    return Parameters.Select(c => (long) (c.Value??0L)).ToArray();
 				    case ETypeCode.Decimal:
 					    return Parameters.Select(c => (decimal) (c.Value??0m)).ToArray();
 				    case ETypeCode.Double:

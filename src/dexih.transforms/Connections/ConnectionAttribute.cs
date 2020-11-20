@@ -9,8 +9,8 @@ namespace dexih.transforms
     // [Union(0, typeof(ConnectionReference))]
     public class ConnectionAttribute : Attribute
     {
-        [IgnoreDataMember]
-        public override object TypeId { get; }
+        // [IgnoreDataMember]
+        // public override object TypeId { get; }
 
         /// <summary>
         /// Category of the connection

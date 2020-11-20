@@ -477,6 +477,10 @@ namespace dexih.functions
 				paramType = type;
 			}
 
+			if (paramType == null)
+			{
+				return null;
+			}
 			return Activator.CreateInstance(paramType);
 		}
 

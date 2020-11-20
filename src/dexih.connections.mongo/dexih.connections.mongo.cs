@@ -109,20 +109,20 @@ namespace dexih.connections.mongo
             }
         }
 
-        private BsonDocument CreateDocumentRow(Table table, object[] row)
-        {
-            var document = new BsonDocument();
-
-            var elements = new List<BsonElement>();
-            for(var i = 0; i < table.Columns.Count; i++)
-            {
-                var column = table.Columns[i];
-                var dictionary = row.ToDictionary(d => column.Name, d => CreateBsonValue(d, column, column.Rank));
-                document.AddRange(dictionary);
-            }
-
-            return document;
-        }
+        // private BsonDocument CreateDocumentRow(Table table, object[] row)
+        // {
+        //     var document = new BsonDocument();
+        //
+        //     var elements = new List<BsonElement>();
+        //     for(var i = 0; i < table.Columns.Count; i++)
+        //     {
+        //         var column = table.Columns[i];
+        //         var dictionary = row.ToDictionary(d => column.Name, d => CreateBsonValue(d, column, column.Rank));
+        //         document.AddRange(dictionary);
+        //     }
+        //
+        //     return document;
+        // }
 
         private BsonValue CreateBsonValue(object value, TableColumn column, int rank)
         {
@@ -226,11 +226,11 @@ namespace dexih.connections.mongo
                 var buffer = new List<object[]>();
 
                 var sk = table.GetAutoIncrementColumn();
-                var skOrdinal = -1;
-                if (sk != null)
-                {
-                    skOrdinal = reader.GetOrdinal(sk.Name);
-                }
+                // var skOrdinal = -1;
+                // if (sk != null)
+                // {
+                //     skOrdinal = reader.GetOrdinal(sk.Name);
+                // }
 
                 var ordinals = new int[table.Columns.Count];
 
@@ -320,7 +320,7 @@ namespace dexih.connections.mongo
             var database = GetMongoDatabase();
             var collection = database.GetCollection<BsonDocument>(targetTableName);
             
-            var surrogateKey = table.GetAutoIncrementOrdinal();
+            // var surrogateKey = table.GetAutoIncrementOrdinal();
             var data = new List<BsonDocument>();
 
             foreach (var row in buffer)
@@ -810,7 +810,7 @@ namespace dexih.connections.mongo
                         }
 
                         var filtersArray = array.Select(c =>
-                            GenerateFilterCondition(filter.Column1.Name, ECompare.IsEqual, filter.CompareDataType, c));
+                            GenerateFilterCondition(filter.Column1.Name, ECompare.IsEqual,c));
                         filterDefinition = Builders<BsonDocument>.Filter.Or(filtersArray);
                     }
                     else
@@ -825,7 +825,7 @@ namespace dexih.connections.mongo
                             throw new ConnectionException($"The filter value could not be converted to a {filter.CompareDataType}.  {ex.Message}", ex, filter.Value2);
                         }
 
-                        filterDefinition = GenerateFilterCondition(filter.Column1.Name, filter.Operator, filter.CompareDataType, value2);
+                        filterDefinition = GenerateFilterCondition(filter.Column1.Name, filter.Operator, value2);
                     }
 
                     filterDefinitions.Add(filterDefinition);
@@ -837,7 +837,7 @@ namespace dexih.connections.mongo
             }
         }
 
-        private FilterDefinition<BsonDocument> GenerateFilterCondition(string column, ECompare filterOperator, ETypeCode compareDataType, object value)
+        private FilterDefinition<BsonDocument> GenerateFilterCondition(string column, ECompare filterOperator, object value)
         {
             switch (filterOperator)
             {

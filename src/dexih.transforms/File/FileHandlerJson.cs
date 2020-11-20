@@ -393,7 +393,7 @@ namespace dexih.transforms.File
             }
         }
 
-        public override Task<object[]> GetRow(FileProperties fileProperties = null)
+        public override Task<object[]> GetRow(FileProperties fileProperties)
         {
             if (_jEnumerator == null || !_jEnumerator.MoveNext()) return Task.FromResult((object[]) null);
             

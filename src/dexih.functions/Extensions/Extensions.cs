@@ -60,7 +60,8 @@ namespace dexih.functions
         }
 
         /// <summary>
-        /// Converts value to a string, when null insertes \<null\>
+        /// Converts value to a string, when null inserts word null
+        /// when blank inserts word blank
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -172,15 +173,15 @@ namespace dexih.functions
                     {
                         if (v.GetType() == elementType)
                         {
-                            add.Invoke(collection, new object[] {v});
+                            add.Invoke(collection, new[] {v});
                         }
                         else if (v is JsonElement jsonElementItem)
                         {
-                            add.Invoke(collection, new object[] {jsonElementItem.ToObject(elementType)});
+                            add.Invoke(collection, new[] {jsonElementItem.ToObject(elementType)});
                         }
                         else
                         {
-                            add.Invoke(collection, new object[] {Operations.Parse(elementType, value)});
+                            add.Invoke(collection, new[] {Operations.Parse(elementType, value)});
                         }
                     }
                     

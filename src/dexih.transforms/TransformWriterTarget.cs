@@ -435,7 +435,7 @@ namespace dexih.transforms
                 throw new TransformWriterException("The transform node was set to null.");
             }
 
-            transformNode?.SetParentAutoIncrement(deltaValues.AutoIncrementValue);
+            transformNode.SetParentAutoIncrement(deltaValues.AutoIncrementValue);
 
             Transform transform = transformNode;
 

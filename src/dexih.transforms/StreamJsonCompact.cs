@@ -37,7 +37,7 @@ namespace dexih.transforms
         private readonly string _name;
         private readonly bool _showTransformProperties;
 
-        private TableColumn[] columns = null;
+        private TableColumn[] _columns = null;
 
         public StreamJsonCompact(string name, DbDataReader reader, SelectQuery selectQuery = null,
             int maxFieldSize = -1, ViewConfig viewConfig = null, bool showTransformProperties = true)
@@ -125,7 +125,7 @@ namespace dexih.transforms
 
                         if (transform.CacheTable.Columns.Any(c => c.Format != null))
                         {
-                            columns = transform.CacheTable.Columns.ToArray();
+                            _columns = transform.CacheTable.Columns.ToArray();
                         }
                         
                         _streamWriter.Write(columnSerializeObject);
@@ -223,12 +223,12 @@ namespace dexih.transforms
                                     valueString.Substring(0, _maxFieldSize) + " (field data truncated)";
                             }
 
-                            if (columns?[i] != null && columns[i].Format != null)
+                            if (_columns?[i] != null && _columns[i].Format != null)
                             {
-                                var formatted = columns[i].FormatValue(_valuesArray[i]);
+                                var formatted = _columns[i].FormatValue(_valuesArray[i]);
                                 if (!Equals(_valuesArray[i], formatted))
                                 {
-                                    _valuesArray[i] = new {f = columns[i].FormatValue(_valuesArray[i]), r = _valuesArray[i]};    
+                                    _valuesArray[i] = new {f = _columns[i].FormatValue(_valuesArray[i]), r = _valuesArray[i]};    
                                 }
                             }
                         }
@@ -304,7 +304,7 @@ namespace dexih.transforms
             {
                 try
                 {
-                    _reader.Close();
+                    await _reader.CloseAsync();
                 } catch {}
 
                 throw;

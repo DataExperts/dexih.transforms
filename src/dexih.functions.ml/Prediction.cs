@@ -20,7 +20,7 @@ namespace dexih.functions.ml
         // method to run the "predict"
         private readonly MethodInfo _predictMethod;
         private readonly Type _dataType;
-        
+
 
         /// <summary>
         /// Extracts the "Predict" method from the "CreatePredictionEngine".
@@ -29,6 +29,7 @@ namespace dexih.functions.ml
         /// <param name="type"></param>
         /// <param name="modelBytes"></param>
         /// <param name="labels"></param>
+        /// <param name="encodings"></param>
         public Prediction(Type type, byte[] modelBytes, string[] labels, EEncoding[] encodings)
         {
             var fields = labels.Select((label, index) => Helpers.NewDynamicTypeProperty(label, encodings[index]));
@@ -61,14 +62,14 @@ namespace dexih.functions.ml
         public T Run<T>(object[] values)
         {
             var data = DynamicType.CreateDynamicItem(_dataType, values);
-            var parameters = new object[] {data};
+            var parameters = new[] {data};
             var prediction = (T) _predictMethod.Invoke(_predictionEngine, parameters);
             return prediction;
         }
         
         public T Run<T>(object data)
         {
-            var parameters = new object[] {data};
+            var parameters = new[] {data};
             var prediction = (T) _predictMethod.Invoke(_predictionEngine, parameters);
             return prediction;
         }

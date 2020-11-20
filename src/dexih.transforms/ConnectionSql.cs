@@ -761,12 +761,12 @@ namespace dexih.connections.sql
             return sql.ToString();
         }
 
- 
-        
+
         /// <summary>
         /// Either gets an active transaction, or creates a new transaction
         /// </summary>
         /// <param name="transactionReference"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="ConnectionException"></exception>
         protected async Task<(DbConnection connection, DbTransaction transaction)> GetTransaction(int transactionReference, CancellationToken cancellationToken)

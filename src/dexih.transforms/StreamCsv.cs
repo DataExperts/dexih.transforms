@@ -18,7 +18,7 @@ namespace dexih.transforms
     {
         private const int BufferSize = 50000;
         private DbDataReader _reader;
-        private SelectQuery _selectQuery;
+        private readonly SelectQuery _selectQuery;
         private readonly MemoryStream _memoryStream;
         private readonly StreamWriter _streamWriter;
         private long _position;
@@ -26,7 +26,7 @@ namespace dexih.transforms
         private readonly char[] _quoteCharacters = new[] { '"', ' ', ',' };
 
         private bool _isFirst = true;
-        private TableColumn[] columns = null;
+        private TableColumn[] _columns = null;
 
         public StreamCsv(DbDataReader reader)
         {
@@ -105,7 +105,7 @@ namespace dexih.transforms
                         
                         if (transform.CacheTable.Columns.Any(c => c.Format != null))
                         {
-                            columns = transform.CacheTable.Columns.ToArray();
+                            _columns = transform.CacheTable.Columns.ToArray();
                         }
 
                         _streamWriter.WriteLine(string.Join(",", s));
@@ -157,9 +157,9 @@ namespace dexih.transforms
                         {
                             string value;
                             
-                            if (columns?[j] != null)
+                            if (_columns?[j] != null)
                             {
-                                value = columns[j].FormatValue(_reader[j]).ToString();
+                                value = _columns[j].FormatValue(_reader[j]).ToString();
                             }
                             else
                             {

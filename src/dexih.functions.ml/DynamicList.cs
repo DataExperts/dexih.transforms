@@ -48,7 +48,7 @@ namespace dexih.functions.ml
             var dataType = mlContext.Data.GetType();
             var loadMethodGeneric = dataType.GetMethods().First(method => method.Name =="LoadFromEnumerable" && method.IsGenericMethod);
             var loadMethod = loadMethodGeneric.MakeGenericMethod(Type);
-            var trainData = (IDataView) loadMethod.Invoke(mlContext.Data, new[] {_data, null});
+            var trainData = (IDataView) loadMethod.Invoke(mlContext.Data, new[] {_data, (object) null});
             return trainData;
         }
     }

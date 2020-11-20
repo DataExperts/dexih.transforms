@@ -372,7 +372,7 @@ namespace dexih.functions.BuiltIn
                 else
                 {
                     // starting rank is the total number of values.
-                    rank = _sortedRowsDictionary.Sum(c =>((object[])c.Value).Length) + 1;
+                    rank = _sortedRowsDictionary.Sum(c =>c.Value.Length) + 1;
                     increment = -1;
                 }
                 

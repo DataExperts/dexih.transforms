@@ -93,7 +93,6 @@ namespace dexih.transforms
         /// </summary>
         /// <param name="inReader"></param>
         /// <param name="table"></param>
-        /// <param name="sortFields"></param>
         public ReaderDbDataReader(DbDataReader inReader, Table table)
         {
             InReader = inReader;

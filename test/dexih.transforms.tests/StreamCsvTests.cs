@@ -56,13 +56,13 @@ namespace dexih.transforms.tests
             Assert.True(testData.FieldCount > 0);
 
             var count = 0;
-            var row = await handler.GetRow();
+            var row = await handler.GetRow(null);
             while (row != null)
             {
                 count++;
                 Assert.Equal("value" + count.ToString().PadLeft(2, '0'), row[testData.GetOrdinal("StringColumn")]);
                 Assert.Equal(new[] { 1, 1 }, row[testData.GetOrdinal("ArrayColumn")]);
-                row = await handler.GetRow();
+                row = await handler.GetRow(null);
             }
 
             Assert.Equal(10, count);

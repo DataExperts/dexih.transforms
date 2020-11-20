@@ -14,8 +14,6 @@ namespace dexih.connections.mongo
 {
     public class ReaderMongo : Transform
     {
-        private int _currentReadRow;
-
         private readonly ConnectionMongo _connection;
         private IAsyncCursor<BsonDocument> _documents;
         private IEnumerator<BsonDocument> _enumerator;
@@ -82,8 +80,6 @@ namespace dexih.connections.mongo
                 var row = GetRow(_enumerator.Current);
 
                 _enumerator.MoveNext();
-                
-                _currentReadRow++;
 
                 return row;
             }

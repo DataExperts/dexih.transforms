@@ -57,7 +57,7 @@ namespace dexih.connections.sql
             }
         }
         
-        public override async Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
+        public override Task<bool> Open(long auditKey, SelectQuery requestQuery = null, CancellationToken cancellationToken = default)
         {
             if (IsOpen)
             {
@@ -101,7 +101,7 @@ namespace dexih.connections.sql
                     // }
                 }
                 
-                return true;
+                return Task.FromResult(true);
             }
             catch(Exception ex)
             {

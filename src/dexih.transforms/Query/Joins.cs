@@ -10,7 +10,7 @@ namespace dexih.functions.Query
         {
             if (joins == null) return;
 
-            base.AddRange(joins);
+            AddRange(joins);
         }
 
         public Joins(EJoinType joinType, Table table, Filters joinFilters)

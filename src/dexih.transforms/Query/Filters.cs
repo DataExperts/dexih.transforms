@@ -11,7 +11,7 @@ namespace dexih.functions.Query
         {
             if (filters == null) return;
 
-            base.AddRange(filters);
+            AddRange(filters);
         }
 
         public Filters(string columnName, object value)

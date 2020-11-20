@@ -11,7 +11,7 @@ namespace dexih.transforms
     /// <summary>
     /// This reader can be used to convert any data into datatypes supported by a target connection.
     /// </summary>
-    public class ReaderConvertDataTypes: Transform
+    public sealed class ReaderConvertDataTypes: Transform
     {
         private readonly Connection _connection;
 

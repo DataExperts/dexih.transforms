@@ -80,8 +80,8 @@ namespace dexih.transforms
             returnValue = await CreateDirectory(flatFile, EFlatFilePath.Rejected, cancellationToken);
             return returnValue;
         }
-        
-                /// <summary>
+
+        /// <summary>
         /// Saves the stream to the path.
         /// If the file is a zip or gz, they will be decompressed and saved.
         /// </summary>
@@ -89,6 +89,7 @@ namespace dexih.transforms
         /// <param name="path"></param>
         /// <param name="fileName"></param>
         /// <param name="stream"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="ConnectionException"></exception>
         public async Task<bool> SaveFiles(FlatFile file, EFlatFilePath path, string fileName, Stream stream, CancellationToken cancellationToken)
@@ -107,7 +108,7 @@ namespace dexih.transforms
                         foreach(var entry in archive.Entries)
                         {
                             if(string.IsNullOrEmpty(entry.Name) || entry.FullName.StartsWith("__MACOSX") || entry.Length == 0) continue;
-                            result = result & await SaveFileStream(file, path, entry.Name, entry.Open(), cancellationToken);
+                            result = result && await SaveFileStream(file, path, entry.Name, entry.Open(), cancellationToken);
                         }
 
 	                }
@@ -130,8 +131,8 @@ namespace dexih.transforms
                 throw new ConnectionException($"Error occurred saving file stream of file {fileName} at {path}.  {ex.Message}", ex);
             }
         }
-        
-        
+
+
         /// <summary>
         /// Adds a guid to the file name and moves it to the Incoming directory.
         /// </summary>
@@ -139,6 +140,7 @@ namespace dexih.transforms
         /// <param name="fileName"></param>
         /// <param name="fromDirectory"></param>
         /// <param name="toDirectory"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<bool> MoveFile(FlatFile flatFile, string fileName, EFlatFilePath fromDirectory, EFlatFilePath toDirectory, CancellationToken cancellationToken)
         {

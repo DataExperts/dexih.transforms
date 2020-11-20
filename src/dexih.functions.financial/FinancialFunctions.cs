@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using Excel.FinancialFunctions;
 
 namespace dexih.functions.financial
@@ -8,31 +6,31 @@ namespace dexih.functions.financial
   public class FinancialFunctions
   {
     //The cache parameters are used by the functions to maintain a state during a transform process.
-    private OrderedDictionary _cacheSeries;
+    // private OrderedDictionary _cacheSeries;
 
-    public bool Reset()
-    {
-      _cacheSeries?.Clear();
-      return true;
-    }
-
-    private void AddSeries(object series, double value, EAggregate duplicateAggregate)
-    {
-      if (_cacheSeries == null)
-      {
-        _cacheSeries = new OrderedDictionary();
-      }
-
-      if (_cacheSeries.Contains(series))
-      {
-        var current = (SeriesValue<double>) _cacheSeries[series];
-        current.AddValue(value);
-      }
-      else
-      {
-        _cacheSeries.Add(series, new SeriesValue<double>(series, value, duplicateAggregate));
-      }
-    }
+    // public bool Reset()
+    // {
+    //   _cacheSeries?.Clear();
+    //   return true;
+    // }
+    //
+    // private void AddSeries(object series, double value, EAggregate duplicateAggregate)
+    // {
+    //   if (_cacheSeries == null)
+    //   {
+    //     _cacheSeries = new OrderedDictionary();
+    //   }
+    //
+    //   if (_cacheSeries.Contains(series))
+    //   {
+    //     var current = (SeriesValue<double>) _cacheSeries[series];
+    //     current.AddValue(value);
+    //   }
+    //   else
+    //   {
+    //     _cacheSeries.Add(series, new SeriesValue<double>(series, value, duplicateAggregate));
+    //   }
+    // }
 
     /// <summary>
     ///  The accrued interest for a security that pays periodic interest ([learn more](http://office.microsoft.com/en-us/excel/HP052089791033.aspx))

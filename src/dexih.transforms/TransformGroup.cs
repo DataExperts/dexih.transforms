@@ -206,11 +206,6 @@ namespace dexih.transforms
             return returnValue;
         }
 
-        protected override SelectQuery GetGeneratedQuery(SelectQuery requestQuery)
-        {
-            return base.GetGeneratedQuery(requestQuery);
-        }
-
         public override bool ResetTransform()
         {
             Mappings.Reset(EFunctionType.Aggregate);

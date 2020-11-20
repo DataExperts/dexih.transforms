@@ -250,7 +250,7 @@ namespace dexih.connections.flatfile
 //                }
 //				else 
 //				{
-                    var filePath = FixFileName(file, path, fileName, cancellationToken);
+                    var filePath = FixFileName(file, path, fileName);
 	                var newFile = new FileStream(filePath, FileMode.Create, FileAccess.Write);
 	                //stream.Seek(0, SeekOrigin.Begin);
 	                await stream.CopyToAsync(newFile, cancellationToken);
@@ -266,7 +266,7 @@ namespace dexih.connections.flatfile
             }
         }
 
-        private string FixFileName(FlatFile file, EFlatFilePath path, string fileName, CancellationToken cancellationToken)
+        private string FixFileName(FlatFile file, EFlatFilePath path, string fileName)
         {
 			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 			var fileNameExtension = Path.GetExtension(fileName);

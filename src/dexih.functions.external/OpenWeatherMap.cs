@@ -17,11 +17,11 @@ namespace dexih.functions.external
 {
     public class OpenWeatherMap
     {
-        private const string apiKey = "API Key.  Sign up at [openweathermap.org](https://openweathermap.org/price).";
-        private const string maxCalls = "Limit maximum api calls per minute (unlimited = 0)";
+        private const string ApiKey = "API Key.  Sign up at [openweathermap.org](https://openweathermap.org/price).";
+        private const string MaxCalls = "Limit maximum api calls per minute (unlimited = 0)";
 
-        private Stopwatch stopwatch;
-        private int apiCallCount;
+        private Stopwatch _stopwatch;
+        private int _apiCallCount;
         
         [GlobalSettings]
         public GlobalSettings GlobalSettings { get; set; }
@@ -140,10 +140,10 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Name",
             Description = "Gets the weather based on a city name.")]
         public Task<WeatherDetails> WeatherByCityName(
-            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
+            [TransformFunctionParameter(Description = ApiKey), TransformFunctionPassword] string key, 
             string cityName,
             TemperatureScale temperatureScale, 
-            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            [TransformFunctionParameter(Description = MaxCalls)] int maxCallsMinute = 60, 
             CancellationToken cancellationToken = default)
         {
             return GetWeatherResponse(key, $"&q={cityName}", temperatureScale, maxCallsMinute, cancellationToken);
@@ -152,10 +152,10 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By City Id",
             Description = "Gets the weather based on a city id.  Use the row function \"Weather Cities List\" for a list of cities.")]
         public Task<WeatherDetails> WeatherByCityId(
-            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
+            [TransformFunctionParameter(Description = ApiKey), TransformFunctionPassword] string key, 
             int cityId,
             TemperatureScale temperatureScale, 
-            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            [TransformFunctionParameter(Description = MaxCalls)] int maxCallsMinute = 60, 
             CancellationToken cancellationToken = default)
         {
             return GetWeatherResponse(key, $"&id={cityId}", temperatureScale, maxCallsMinute, cancellationToken);
@@ -164,11 +164,11 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Geo Coordinates",
             Description = "Gets the weather based on a longitude and latitude.")]
         public Task<WeatherDetails> WeatherByCoordinates(
-            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
+            [TransformFunctionParameter(Description = ApiKey), TransformFunctionPassword] string key, 
             double latitude, 
             double longitude,
             TemperatureScale temperatureScale, 
-            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            [TransformFunctionParameter(Description = MaxCalls)] int maxCallsMinute = 60, 
             CancellationToken cancellationToken = default)
         {
             return GetWeatherResponse(key, $"&lat={latitude}&lon={longitude}", temperatureScale, maxCallsMinute, cancellationToken);
@@ -177,11 +177,11 @@ namespace dexih.functions.external
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Weather", Name = "Weather By Zip Code",
             Description = "Gets the weather based on a zip code.  Note if country is not specified when USA will be default.")]
         public Task<WeatherDetails> WeatherByZipCode(
-            [TransformFunctionParameter(Description = apiKey), TransformFunctionPassword] string key, 
+            [TransformFunctionParameter(Description = ApiKey), TransformFunctionPassword] string key, 
             string zipCode, 
             string country,
             TemperatureScale temperatureScale,
-            [TransformFunctionParameter(Description = maxCalls)] int maxCallsMinute = 60, 
+            [TransformFunctionParameter(Description = MaxCalls)] int maxCallsMinute = 60, 
             CancellationToken cancellationToken = default)
         {
             return GetWeatherResponse(key, $"&zip={zipCode},{country}", temperatureScale, maxCallsMinute, cancellationToken);
@@ -195,24 +195,24 @@ namespace dexih.functions.external
             int maxCallsPerMinute,
             CancellationToken cancellationToken)
         {
-            if (stopwatch == null && maxCallsPerMinute > 0)
+            if (_stopwatch == null && maxCallsPerMinute > 0)
             {
-                stopwatch = Stopwatch.StartNew();
-                apiCallCount = 0;
+                _stopwatch = Stopwatch.StartNew();
+                _apiCallCount = 0;
             }
 
-            if (stopwatch != null && apiCallCount >= maxCallsPerMinute)
+            if (_stopwatch != null && _apiCallCount >= maxCallsPerMinute)
             {
-                if (stopwatch.Elapsed.Seconds < 60)
+                if (_stopwatch.Elapsed.Seconds < 60)
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(1) - stopwatch.Elapsed, cancellationToken);
+                    await Task.Delay(TimeSpan.FromMinutes(1) - _stopwatch.Elapsed, cancellationToken);
                 }
                 
-                stopwatch.Reset();
-                apiCallCount = 0;
+                _stopwatch.Reset();
+                _apiCallCount = 0;
             }
 
-            apiCallCount++;
+            _apiCallCount++;
             
             var (url, statusCode, isSuccess, response) = await GetWebServiceResponse(key, uri, cancellationToken);
 

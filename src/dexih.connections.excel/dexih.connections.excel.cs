@@ -88,7 +88,7 @@ namespace dexih.connections.excel
 			    case ETypeCode.Date:
 				    return new DateTime(1900,01,01,0,0,0,0); 
 			    case ETypeCode.Int64:
-				    return (long)-999999999999999; 
+				    return -999999999999999; 
 			    case ETypeCode.Decimal:
 				    return (decimal)-999999999999999; 
 			    case ETypeCode.String:

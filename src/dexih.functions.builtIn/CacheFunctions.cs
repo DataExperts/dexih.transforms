@@ -8,7 +8,7 @@ namespace dexih.functions.BuiltIn
     {
         private T _cacheValue;
         private Queue<T> _cacheQueue;
-        private int _cacheCount = 0;
+        private int _cacheCount;
 
         public bool Reset()
         {

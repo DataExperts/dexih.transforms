@@ -216,7 +216,7 @@ namespace dexih.connections.webservice.restful
 
                 if (newRestFunction.Columns.Count > 0)
                 {
-	                var (url, statusCode, isSuccess, dataStream) = await GetWebServiceResponse(newRestFunction, query?.Filters, cancellationToken);
+	                var (url, statusCode, isSuccess, dataStream) = await GetWebServiceResponse(newRestFunction, query.Filters, cancellationToken);
 
 	                if (!isSuccess)
 	                {

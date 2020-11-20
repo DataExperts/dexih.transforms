@@ -566,7 +566,6 @@ namespace dexih.transforms
                                 if (refColumn1a != null)
                                 {
                                     filters.Add(filter);
-                                    return;
                                 }
                             }
                             else
@@ -795,7 +794,7 @@ namespace dexih.transforms
                 if (_containsJoinColumns)
                 {
                     // update the primary row only.
-                    var (isMatch, ignore1) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
+                    var (_, ignore1) = await Mappings.ProcessInputData(PrimaryTransform.CurrentRow, cancellationToken);
                     if (ignore1)
                     {
                         TransformRowsIgnored += 1;

@@ -5,7 +5,6 @@ namespace dexih.functions.ml
     /// </summary>
     public class RegressionMetrics
     {
-        [TransformFunctionParameter(Description = "The absolute loss of the model.")]
         /// <summary>Gets the absolute loss of the model.</summary>
         /// <remarks>
         /// The absolute loss is defined as
@@ -14,9 +13,9 @@ namespace dexih.functions.ml
         /// y'i are the predicted labels for each instance.
         /// yi are the correct labels of each instance.
         /// </remarks>
+        [TransformFunctionParameter(Description = "The absolute loss of the model.")]
         public double MeanAbsoluteError { get; set; }
 
-        [TransformFunctionParameter(Description = "The squared loss of the model.")]
         /// <summary>Gets the squared loss of the model.</summary>
         /// <remarks>
         /// The squared loss is defined as
@@ -25,28 +24,31 @@ namespace dexih.functions.ml
         /// y'i are the predicted labels for each instance.
         /// yi are the correct labels of each instance.
         /// </remarks>
+        [TransformFunctionParameter(Description = "The squared loss of the model.")]
         public double MeanSquaredError { get; set; }
 
-        [TransformFunctionParameter(Description = "The root mean square loss (or RMS) which is the square root of the L2 loss.")]
         /// <summary>
         /// Gets the root mean square loss (or RMS) which is the square root of the L2 loss.
         /// </summary>
+        [TransformFunctionParameter(Description =
+            "The root mean square loss (or RMS) which is the square root of the L2 loss.")]
         public double RootMeanSquaredError { get; set; }
 
-        [TransformFunctionParameter(Description = "The result of user defined loss function.")]
         /// <summary>Gets the result of user defined loss function.</summary>
         /// <remarks>
         /// This is the average of a loss function defined by the user,
         /// computed over all the instances in the test set.
         /// </remarks>
+        [TransformFunctionParameter(Description = "The result of user defined loss function.")]
         public double LossFunction { get; set; }
 
-        [TransformFunctionParameter(Description = "The R squared value of the model, which is also known as the coefficient of determination​.")]
         /// <summary>
         /// Gets the R squared value of the model, which is also known as
         /// the coefficient of determination​.
         /// </summary>
+        [TransformFunctionParameter(Description =
+            "The R squared value of the model, which is also known as the coefficient of determination​.")]
         public double RSquared { get; set; }
 
-        }
+    }
 }

@@ -14,7 +14,6 @@ namespace dexih.transforms.File
     {
         private readonly string _rowPath;
         private XPathNodeIterator _xPathNodeIterator;
-        private readonly Table _table;
         private readonly int _fieldCount;
         private readonly int _responseDataOrdinal;
         private readonly Dictionary<string, (int Ordinal, ETypeCode Datatype)> _responseSegementOrdinals;
@@ -23,17 +22,16 @@ namespace dexih.transforms.File
         private readonly int _fileDateOrdinal;
         public FileHandlerXml(Table table, string rowPath)
         {
-            _table = table;
             _fieldCount = table.Columns.Count;
             _rowPath = rowPath;
             
-            _responseDataOrdinal = _table.GetOrdinal(EDeltaType.ResponseData);
+            _responseDataOrdinal = table.GetOrdinal(EDeltaType.ResponseData);
 
             _responseSegementOrdinals = new Dictionary<string, (int ordinal, ETypeCode typeCode)>();
             
-            foreach (var column in _table.Columns.Where(c => c.DeltaType == EDeltaType.ResponseSegment))
+            foreach (var column in table.Columns.Where(c => c.DeltaType == EDeltaType.ResponseSegment))
             {
-                _responseSegementOrdinals.Add(column.Name, (_table.GetOrdinal(column.Name), column.DataType));
+                _responseSegementOrdinals.Add(column.Name, (table.GetOrdinal(column.Name), column.DataType));
             }
             
             _fileNameOrdinal = table.GetOrdinal(EDeltaType.FileName);
@@ -160,7 +158,7 @@ namespace dexih.transforms.File
             return Task.CompletedTask;
         }
 
-        public override Task<object[]> GetRow(FileProperties fileProperties = null)
+        public override Task<object[]> GetRow(FileProperties fileProperties)
         {
             if (_xPathNodeIterator != null && _xPathNodeIterator.MoveNext())
             {

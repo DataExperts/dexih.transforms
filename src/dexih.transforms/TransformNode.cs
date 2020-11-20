@@ -12,11 +12,6 @@ namespace dexih.transforms
     /// </summary>
     public class TransformNode : Transform
     {
-        public TransformNode()
-        {
-            
-        }
-        
         private object[] _parentRow;
         private Table _primaryTable;
         private Table _parentTable;

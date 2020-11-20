@@ -232,7 +232,12 @@ namespace dexih.functions.ml
             if (_experimentEnumerator.MoveNext())
             {
                 var current = _experimentEnumerator.Current;
-
+                
+                if (current == null)
+                {
+                    throw new FunctionException($"The regression trainer failed to produce any result.");
+                }
+                
                 if (current.Exception != null)
                 {
                     throw new FunctionException($"The regression trainer {current.TrainerName} failed due to {current.Exception.Message}.", current.Exception);

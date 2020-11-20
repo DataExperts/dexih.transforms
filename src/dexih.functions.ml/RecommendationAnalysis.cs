@@ -104,7 +104,7 @@ namespace dexih.functions.ml
 
             // load the sentiment model
             var stream = new MemoryStream( sentimentModel );
-            var trainedModel = mlContext.Model.Load(stream, out var inputSchema);
+            var trainedModel = mlContext.Model.Load(stream, out _);
 
             // Turn the data into the ML.NET data view.
             var trainData = mlContext.Data.LoadFromEnumerable(_recommendationEntries);

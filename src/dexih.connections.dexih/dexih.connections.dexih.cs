@@ -53,7 +53,7 @@ namespace dexih.connections.dexih
         private DexihActiveAgent _activeAgent;
         private DownloadUrl _downloadUrl;
 
-        public KeyValuePair<string, IEnumerable<string>>[] _authenticationHeaders;
+        private KeyValuePair<string, IEnumerable<string>>[] _authenticationHeaders;
         
         public string ServerUrl()
         {
@@ -401,12 +401,7 @@ namespace dexih.connections.dexih
         {
             return Task.FromResult(true);
         }
-
-        public override void Dispose()
-        {
-            // _httpClient?.Dispose();
-            base.Dispose();
-        }
+        
     }
 
     

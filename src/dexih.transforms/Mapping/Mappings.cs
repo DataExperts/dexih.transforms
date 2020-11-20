@@ -459,9 +459,11 @@ namespace dexih.transforms.Mapping
 
         public void SetInputColumns(IEnumerable<TableColumn> inputColumns)
         {
+            var cols = inputColumns.ToArray();
+            
             foreach (var mapping in this.OfType<MapInputColumn>())
             {
-                mapping.SetInput(inputColumns);
+                mapping.SetInput(cols);
             }
         }
 
