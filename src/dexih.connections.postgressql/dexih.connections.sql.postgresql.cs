@@ -813,7 +813,7 @@ ORDER BY c.ordinal_position"))
                 case ETypeCode.Boolean:
                     return NpgsqlDbType.Boolean;
                 case ETypeCode.DateTime:
-                    return NpgsqlDbType.Timestamp;
+                    return NpgsqlDbType.TimestampTz;
                 case ETypeCode.Date:
                     return NpgsqlDbType.Date;
                 case ETypeCode.Time:

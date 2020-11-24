@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace dexih.functions
 {
-    public class JsonDateTimeConverter: JsonConverter<DateTime>
+    public class JsonDateTimeConverter: JsonConverter<DateTime?>
     {
-        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.String)
             {
@@ -22,15 +22,19 @@ namespace dexih.functions
             return default;
         }
 
-        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
         {
-            if (value.Kind == DateTimeKind.Unspecified)
+            if (value == null)
             {
-                writer.WriteStringValue(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+                writer.WriteNullValue();
+            }
+            else if (value.Value.Kind == DateTimeKind.Unspecified)
+            {
+                writer.WriteStringValue(DateTime.SpecifyKind(value.Value, DateTimeKind.Local));
             }
             else
             {
-                writer.WriteStringValue(value);
+                writer.WriteStringValue(value.Value);
             }
         }
     }
