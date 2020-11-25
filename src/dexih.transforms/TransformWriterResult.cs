@@ -211,7 +211,7 @@ namespace dexih.transforms
         public DateTime InitializeTime { get; set; }
 
         [DataMember(Order = 37)]
-        public DateTime? ScheduledTime { get; set; }
+        public DateTimeOffset? ScheduledTime { get; set; }
 
         [DataMember(Order = 38)]
         public DateTime? StartTime { get; set; }
@@ -392,7 +392,7 @@ namespace dexih.transforms
             return true;
         }
         
-        public void Schedule(DateTime startTime, CancellationToken cancellationToken = default)
+        public void Schedule(DateTimeOffset startTime, CancellationToken cancellationToken = default)
         {
             ResetStatistics();
             ScheduledTime = startTime;
