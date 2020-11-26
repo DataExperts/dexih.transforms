@@ -67,6 +67,8 @@ namespace dexih.connections.sqlserver
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new DateTime(9999,12,31);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999, 12, 31, 23, 59, 59, TimeSpan.Zero);
                 case ETypeCode.Decimal:
                     return 1E+20m;
                 default:
@@ -81,6 +83,8 @@ namespace dexih.connections.sqlserver
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new DateTime(1753,1,1);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(1753,1,1, 0, 0, 0, TimeSpan.Zero);
                 case ETypeCode.Decimal:
                     return -1E+20m;
                 default:
@@ -371,6 +375,9 @@ namespace dexih.connections.sqlserver
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "datetime";
+                    break;
+                case ETypeCode.DateTimeOffset:
+                    sqlType = "datetimeoffset";
                     break;
                 case ETypeCode.Date:
                     sqlType = "date";
@@ -699,7 +706,7 @@ namespace dexih.connections.sqlserver
                 case "date": return ETypeCode.Date;
                 case "datetime": return ETypeCode.DateTime;
                 case "datetime2": return ETypeCode.DateTime;
-                case "datetimeoffset": return ETypeCode.Time;
+                case "datetimeoffset": return ETypeCode.DateTimeOffset;
                 case "decimal": return ETypeCode.Decimal;
                 case "float": return ETypeCode.Double;
                 case "image": return ETypeCode.Unknown;
@@ -878,6 +885,8 @@ namespace dexih.connections.sqlserver
                     return SqlDbType.Bit;
                 case ETypeCode.DateTime:
                     return SqlDbType.DateTime;
+                case ETypeCode.DateTimeOffset:
+                    return SqlDbType.DateTimeOffset;
                 case ETypeCode.Date:
                     return SqlDbType.Date;
                 case ETypeCode.Time:

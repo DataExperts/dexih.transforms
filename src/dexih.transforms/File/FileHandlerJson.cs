@@ -301,6 +301,8 @@ namespace dexih.transforms.File
                     case ETypeCode.DateTime:
                     case ETypeCode.Date:
                         return jToken.Value<DateTime>();
+                    case ETypeCode.DateTimeOffset:
+                        return jToken.Value<DateTimeOffset>();
                     case ETypeCode.Time:
                         return jToken.Value<TimeSpan>();
                     case ETypeCode.Guid:

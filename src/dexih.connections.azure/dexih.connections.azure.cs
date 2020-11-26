@@ -103,6 +103,8 @@ namespace dexih.connections.azure
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(1800, 01, 02, 0, 0, 0, 0, TimeSpan.Zero);
                 case ETypeCode.Double:
                     return -1E+100;
                 case ETypeCode.Single:
@@ -118,6 +120,8 @@ namespace dexih.connections.azure
             {
                 case ETypeCode.DateTime:
                     return DateTime.MaxValue.ToUniversalTime();
+                case ETypeCode.DateTimeOffset:
+                    return DateTimeOffset.MaxValue.ToUniversalTime();
                 case ETypeCode.Date:
                     return DateTime.MaxValue.ToUniversalTime().Date;
                 case ETypeCode.UInt64:
@@ -279,7 +283,7 @@ namespace dexih.connections.azure
             }
             catch (StorageException ex)
             {
-                throw new ConnectionException($"Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation.ExtendedErrorInformation.ErrorMessage + ".", ex);
+                throw new ConnectionException($"Error writing to Azure Storage table: " + table.Name + ".  Error Message: " + ex.Message + ".  The extended message:" + ex.RequestInformation?.ExtendedErrorInformation?.ErrorMessage + ".", ex);
             }
             catch (Exception ex)
             {
@@ -758,6 +762,9 @@ namespace dexih.connections.azure
                 case ETypeCode.Date:
                     filterString = TableQuery.GenerateFilterConditionForDate(column, operation, (DateTime)value);
                     break;
+                case ETypeCode.DateTimeOffset:
+                    filterString = TableQuery.GenerateFilterConditionForDate(column, operation, (DateTimeOffset)value);
+                    break;
                 case ETypeCode.Time:
                     filterString = TableQuery.GenerateFilterCondition(column, operation, value.ToString());
                     break;
@@ -893,6 +900,8 @@ namespace dexih.connections.azure
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new EntityProperty((DateTime?)returnValue);
+                case ETypeCode.DateTimeOffset:
+                    return new EntityProperty((DateTimeOffset?)returnValue);
                 case ETypeCode.Guid:
                     return new EntityProperty((Guid?)returnValue);
                 case ETypeCode.Decimal:
@@ -943,6 +952,7 @@ namespace dexih.connections.azure
                     return Convert.ToSingle(value);
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
+                case ETypeCode.DateTimeOffset:
                 case ETypeCode.String:
 				case ETypeCode.Text:
 				case ETypeCode.Json:

@@ -1871,6 +1871,7 @@ namespace dexih.transforms
         {
             return GetValue<DateTime>(i);
         }
+        
         public override decimal GetDecimal(int i)
         {
             return GetValue<decimal>(i);

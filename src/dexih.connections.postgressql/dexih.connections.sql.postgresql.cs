@@ -54,6 +54,8 @@ namespace dexih.connections.postgressql
                     return new DateTime(9999, 12, 31, 23, 59, 59, 999);
                 case ETypeCode.Date:
                     return new DateTime(9999, 12, 31);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999, 12, 31, 0, 0, 0, TimeSpan.Zero);
                 case ETypeCode.Decimal:
                     return 1E+20m;
                 default:
@@ -310,6 +312,9 @@ namespace dexih.connections.postgressql
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "timestamp";
+                    break;
+                case ETypeCode.DateTimeOffset:
+                    sqlType = "timestamp with time zone";
                     break;
                 case ETypeCode.Date:
                     sqlType = "date";
@@ -652,7 +657,7 @@ ORDER BY c.ordinal_position"))
                 case "date": return ETypeCode.Date;
                 case "timestamp": return ETypeCode.DateTime;
                 case "timestamp without time zone": return ETypeCode.DateTime;
-                case "timestamp with time zone": return ETypeCode.DateTime;
+                case "timestamp with time zone": return ETypeCode.DateTimeOffset;
                 case "interval": return ETypeCode.Time;
                 case "time": return ETypeCode.Time;
                 case "time without time zone": return ETypeCode.Time;
@@ -813,6 +818,8 @@ ORDER BY c.ordinal_position"))
                 case ETypeCode.Boolean:
                     return NpgsqlDbType.Boolean;
                 case ETypeCode.DateTime:
+                    return NpgsqlDbType.Timestamp;
+                case ETypeCode.DateTimeOffset:
                     return NpgsqlDbType.TimestampTz;
                 case ETypeCode.Date:
                     return NpgsqlDbType.Date;

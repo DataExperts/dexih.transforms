@@ -48,6 +48,8 @@ namespace dexih.connections.mysql
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new DateTime(9999,12,31);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999,12,31,0,0,0, TimeSpan.Zero);
                 case ETypeCode.Time:
                     return TimeSpan.FromDays(1) - TimeSpan.FromSeconds(1); //mysql doesn't support milliseconds
                 case ETypeCode.Double:
@@ -68,6 +70,8 @@ namespace dexih.connections.mysql
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return new DateTime(1000,1,1);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(1000,1,1, 0, 0, 0, TimeSpan.Zero);
                 case ETypeCode.Double:
                     return -1E+100;
                 case ETypeCode.Single:
@@ -312,6 +316,7 @@ namespace dexih.connections.mysql
                     sqlType = "bit(1)";
                     break;
                 case ETypeCode.DateTime:
+                case ETypeCode.DateTimeOffset: 
                     sqlType = "DateTime";
                     break;
                 case ETypeCode.Date:
@@ -391,6 +396,13 @@ namespace dexih.connections.mysql
                     else
 						returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
                     break;
+                case ETypeCode.DateTimeOffset:
+                    if (value is DateTimeOffset dateTimeOffset)
+                        // convert to local time before writing, as mysql does not support timezones.
+                        returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(dateTimeOffset.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.ff")) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                    else
+                        returnValue = "STR_TO_DATE('"+ MySqlHelper.EscapeString((string)value) + "', '%Y-%m-%d %H:%i:%s.%f')";
+                    break;
                 case ETypeCode.Date:
                     if (value is DateTime dateTime)
                         returnValue = "STR_TO_DATE('" + MySqlHelper.EscapeString(dateTime.ToString("yyyy-MM-dd")) + "', '%Y-%m-%d')";
@@ -411,6 +423,11 @@ namespace dexih.connections.mysql
             }
 
             return returnValue;
+        }
+        
+        private string FormatTimeSpan(TimeSpan time)
+        {
+            return ((time < TimeSpan.Zero) ? "-" : "+") + time.ToString(@"mm\:ss");
         }
 
         public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)

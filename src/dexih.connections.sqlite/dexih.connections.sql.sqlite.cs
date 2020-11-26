@@ -287,6 +287,7 @@ namespace dexih.connections.sqlite
                     sqlType = "boolean";
                     break;
                 case ETypeCode.DateTime:
+                case ETypeCode.DateTimeOffset:
                     sqlType = "datetime";
                     break;
                 case ETypeCode.Date:

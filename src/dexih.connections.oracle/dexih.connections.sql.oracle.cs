@@ -40,12 +40,9 @@ namespace dexih.connections.oracle
         public override bool CanUseBinary => true;
         public override bool CanUseBoolean => false;
         public override bool CanUseTimeSpan => false;
-
         public override bool CanUseUnsigned => false;
-        
         public override bool CanUseSByte { get; } = false;
-
-
+        
         protected override char SqlParameterIdentifier => ':';
         public override bool AllowsTruncate { get; } = false;
 
@@ -58,6 +55,8 @@ namespace dexih.connections.oracle
                     return new DateTime(9999,12,31, 23, 59, 59, 0);
                 case ETypeCode.Date:
                     return new DateTime(9999,12,31);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999,12,31,0,0,0, TimeSpan.Zero);
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
                 //TODO Oracle driver giving error when converting any numeric with scientific number 
@@ -246,6 +245,9 @@ namespace dexih.connections.oracle
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     sqlType = "DATE";
+                    break;
+                case ETypeCode.DateTimeOffset:
+                    sqlType = "TIMESTAMP WITH TIME ZONE";
                     break;
                 case ETypeCode.Time:
                     sqlType = "CHAR(40)";
@@ -579,6 +581,8 @@ namespace dexih.connections.oracle
                 case "date":
                 case "timestamp":
                     return ETypeCode.DateTime;
+                case "timestamp with timezone":
+                    return ETypeCode.DateTimeOffset;
                 case "char": 
                 case "nchar": 
                 case "varchar": 
@@ -767,6 +771,8 @@ ORDER BY cols.table_name, cols.position"))
                 case ETypeCode.DateTime:
                 case ETypeCode.Date:
                     return OracleDbType.Date;
+                case ETypeCode.DateTimeOffset:
+                    return OracleDbType.TimeStampTZ;
                 case ETypeCode.Time:
                     return OracleDbType.Varchar2;
                 case ETypeCode.Guid:

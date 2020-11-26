@@ -68,7 +68,10 @@ namespace dexih.connections.excel
 			    case ETypeCode.DateTime:
 				    return new DateTime(9999,12,31,23,59,59); 
 			    case ETypeCode.Date:
-				    return new DateTime(9999,12,31); 		    case ETypeCode.UInt64:
+				    return new DateTime(9999,12,31); 		    
+			    case ETypeCode.DateTimeOffset:
+				    return new DateTimeOffset(9999,12,31, 0, 0, 0, TimeSpan.Zero); 		    
+			    case ETypeCode.UInt64:
 				    return (ulong)999999999999999; 
 			    case ETypeCode.Int64:
 				    return 999999999999999; 
@@ -87,6 +90,8 @@ namespace dexih.connections.excel
 			    case ETypeCode.DateTime:
 			    case ETypeCode.Date:
 				    return new DateTime(1900,01,01,0,0,0,0); 
+			    case ETypeCode.DateTimeOffset:
+				    return new DateTimeOffset(1900,01,01,0,0,0,0, TimeSpan.Zero);
 			    case ETypeCode.Int64:
 				    return -999999999999999; 
 			    case ETypeCode.Decimal:
@@ -132,6 +137,7 @@ namespace dexih.connections.excel
 				            {
 					            case ETypeCode.Date:
 					            case ETypeCode.DateTime:
+						        case ETypeCode.DateTimeOffset:
 						            sheet.Column(i + 1).Style.Numberformat.Format = "yyyy-mm-dd";
 						            break;
 				            }
@@ -243,14 +249,14 @@ namespace dexih.connections.excel
                         for (var row = ExcelDataRow; row <= worksheet.Dimension.Rows; row++)
                         {
                             var value = worksheet.GetValue(row, col);
-                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.DateTime || dataType == ETypeCode.Date)
+                            if (dataType == ETypeCode.Unknown || dataType == ETypeCode.DateTime || dataType == ETypeCode.Date || dataType == ETypeCode.DateTimeOffset)
                             {
                                 if (worksheet.Cells[row, col].Style.Numberformat.Format.Contains("yy"))
                                 {
                                     dataType = ETypeCode.DateTime;
                                     continue;
                                 }
-                                if (dataType == ETypeCode.DateTime || dataType == ETypeCode.Date)
+                                if (dataType == ETypeCode.DateTime || dataType == ETypeCode.Date || dataType == ETypeCode.DateTimeOffset)
                                 {
                                     dataType = ETypeCode.Int64;
                                 }
@@ -504,7 +510,11 @@ namespace dexih.connections.excel
 		    if (value is double d && (column.DataType == ETypeCode.DateTime || column.DataType == ETypeCode.Date))
 		    {
 			    parsedValue = FromExcelSerialDate(d);
-		    } else if (value is double value1 && column.DataType == ETypeCode.Time)
+		    } else if (value is double d1 && column.DataType == ETypeCode.DateTimeOffset)
+		    {
+			    parsedValue = new DateTimeOffset(FromExcelSerialDate(d1));
+		    }
+		    else if (value is double value1 && column.DataType == ETypeCode.Time)
 		    {
 			    parsedValue = FromExcelSerialTime(value1);
 		    }

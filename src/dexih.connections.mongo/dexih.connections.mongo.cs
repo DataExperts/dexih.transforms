@@ -57,28 +57,32 @@ namespace dexih.connections.mongo
         public override bool CanUseTimeSpan => false;
 
         public const string IncrementalKeyTable = "_incrementalKeys";
-
-//        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
-//        {
-//            switch (typeCode)
-//            {
-//                case ETypeCode.DateTime:
-//                    return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
-//                case ETypeCode.Double:
-//                    return -1E+100;
-//                case ETypeCode.Single:
-//                    return -1E+37F;
-//                default:
-//                    return DataType.GetDataTypeMinValue(typeCode, length);
-//            }
-//        }
+        
+        public override object GetConnectionMinValue(ETypeCode typeCode, int length = 0)
+        {
+            switch (typeCode)
+            {
+                case ETypeCode.DateTime:
+                    return new DateTime(1800, 01, 02, 0, 0, 0, 0, DateTimeKind.Utc);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(1800, 01, 02, 0, 0, 0, 0, TimeSpan.Zero);
+                // case ETypeCode.Double:
+                //     return -1E+100;
+                // case ETypeCode.Single:
+                //     return -1E+37F;
+                default:
+                    return DataType.GetDataTypeMinValue(typeCode, length);
+            }
+        }
 
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)
         {
             switch (typeCode)
             {
-//                case ETypeCode.DateTime:
-//                    return DateTime.MaxValue.ToUniversalTime();
+                case ETypeCode.DateTime:
+                    return new DateTime(9999, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999, 12, 31, 23, 59, 59, 0, TimeSpan.Zero);
                 case ETypeCode.UInt64:
                     return (ulong)long.MaxValue;
 //                case ETypeCode.Double:
@@ -188,6 +192,8 @@ namespace dexih.connections.mongo
                     return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
                 case ETypeCode.Date:
                     return new BsonDateTime(((DateTime) convertedValue).ToUniversalTime());
+                case ETypeCode.DateTimeOffset:
+                    return new BsonDateTime(((DateTimeOffset) convertedValue).UtcDateTime);
                 case ETypeCode.Json:
                     var json = (JsonElement) convertedValue;
                     if (json.ValueKind == JsonValueKind.Array)

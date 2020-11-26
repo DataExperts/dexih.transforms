@@ -901,6 +901,8 @@ namespace dexih.transforms
                     return reader.GetBoolean(ordinal);
                 case ETypeCode.DateTime:
                     return reader.GetDateTime(ordinal);
+                case ETypeCode.DateTimeOffset:
+                    return Operations.Parse<DateTimeOffset>(reader[ordinal]);
                 case ETypeCode.Date:
                     return reader.GetDateTime(ordinal);
                 case ETypeCode.Guid:

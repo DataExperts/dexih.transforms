@@ -70,6 +70,8 @@ namespace dexih.functions.Parameter
 				    case ETypeCode.DateTime:
 				    case ETypeCode.Date:
 					    return Parameters.Select(c => (DateTime) c.Value).ToArray();
+				    case ETypeCode.DateTimeOffset:
+					    return Parameters.Select(c => (DateTimeOffset) c.Value).ToArray();
 				    case ETypeCode.Time:
 					    return Parameters.Select(c => (DateTime) c.Value).ToArray();
 				    case ETypeCode.Guid:

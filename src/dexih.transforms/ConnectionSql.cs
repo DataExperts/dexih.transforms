@@ -40,7 +40,6 @@ namespace dexih.connections.sql
 
         //These properties can be overridden for different databases
         protected virtual string SqlDelimiterOpen { get; } = "\"";
-
         protected virtual string SqlDelimiterClose { get; } = "\"";
         public virtual string SqlValueOpen { get; } = "'";
         public virtual string SqlValueClose { get; } = "'";

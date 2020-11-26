@@ -25,7 +25,7 @@ namespace dexih.connections.mongo
             CacheTable = table;
         }
         
-        public override string TransformName { get; } = "Azure Reader";
+        public override string TransformName { get; } = "MongoD Reader";
         public override Dictionary<string, object> TransformProperties()
         {
             return null;
@@ -100,7 +100,18 @@ namespace dexih.connections.mongo
                 {
                     if (element.Value.IsValidDateTime)
                     {
-                        row[i] = element.Value.ToUniversalTime().ToLocalTime();
+                        if (column.DataType == ETypeCode.DateTimeOffset)
+                        {
+                            row[i] = new DateTimeOffset(element.Value.ToUniversalTime());
+                        }
+                        else if (column.DataType == ETypeCode.Date)
+                        {
+                            row[i] = element.Value.ToLocalTime();
+                        }
+                        else
+                        {
+                            row[i] = element.Value.ToUniversalTime(); //.ToLocalTime();    
+                        }
                     }
                     else
                     {

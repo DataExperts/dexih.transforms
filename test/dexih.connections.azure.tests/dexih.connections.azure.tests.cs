@@ -27,8 +27,6 @@ namespace dexih.connections.azure
                 UseConnectionString = true,
                 ConnectionString = "UseDevelopmentStorage=true"
             };
-
-
         }
 
         [Fact]

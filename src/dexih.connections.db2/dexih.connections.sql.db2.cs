@@ -56,7 +56,9 @@ namespace dexih.connections.db2
                 case ETypeCode.DateTime:
                     return new DateTime(9999,12,31,23,59,59); 
                 case ETypeCode.Date:
-                    return new DateTime(9999,12,31); 
+                    return new DateTime(9999,12,31);
+                case ETypeCode.DateTimeOffset:
+                    return new DateTimeOffset(9999, 12, 31, 0, 0, 0, TimeSpan.Zero);
                 case ETypeCode.Time:
                     return new TimeSpan(23, 59, 59); 
                 case ETypeCode.Decimal:
@@ -275,6 +277,9 @@ namespace dexih.connections.db2
                     break;
                 case ETypeCode.DateTime:
                     sqlType = "timestamp";
+                    break;
+                case ETypeCode.DateTimeOffset:
+                    sqlType = "timestamp with time zone";
                     break;
                 case ETypeCode.Date:
                     sqlType = "date";
@@ -567,7 +572,10 @@ namespace dexih.connections.db2
                 case "DATE":
                     return ETypeCode.Date;
                 case "DATETIME":
+                case "TIMESTAMP":
                     return ETypeCode.DateTime;
+                case "TIMESTAMP WITH TIME ZONE":
+                    return ETypeCode.DateTimeOffset;
             }
             return ETypeCode.Unknown;
         }
