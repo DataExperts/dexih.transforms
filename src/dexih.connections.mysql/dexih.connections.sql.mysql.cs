@@ -39,6 +39,8 @@ namespace dexih.connections.mysql
         protected override string SqlDelimiterOpen { get; } = "`";
         protected override string SqlDelimiterClose { get; } = "`";
         public override bool AllowsTruncate { get; } = true;
+        public override bool CanUseDateTimeOffset => false;
+
 
        
         public override object GetConnectionMaxValue(ETypeCode typeCode, int length = 0)

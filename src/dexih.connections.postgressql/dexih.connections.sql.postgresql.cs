@@ -38,6 +38,8 @@ namespace dexih.connections.postgressql
     public class ConnectionPostgreSql : ConnectionSql
     {
         public override bool CanUseArray => true;
+        public override bool CanUseDateTimeOffset => false;
+
         public override bool CanUseCharArray => true;
         public override bool CanUseUnsigned => false;
         public override bool AllowsTruncate { get; } = true;
@@ -72,6 +74,21 @@ namespace dexih.connections.postgressql
                 default:
                     return DataType.GetDataTypeMinValue(typeCode, length);
             }
+        }
+        
+        public override object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
+        {
+            if (column.DataType == ETypeCode.DateTimeOffset && reader is NpgsqlDataReader npgsqlDataReader)
+            {
+                if (npgsqlDataReader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                var time = npgsqlDataReader.GetFieldValue<DateTimeOffset>(ordinal);
+                return time;
+            }
+
+            return base.ConvertForRead(reader, ordinal, column);
         }
         
         public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
@@ -657,11 +674,11 @@ ORDER BY c.ordinal_position"))
                 case "date": return ETypeCode.Date;
                 case "timestamp": return ETypeCode.DateTime;
                 case "timestamp without time zone": return ETypeCode.DateTime;
-                case "timestamp with time zone": return ETypeCode.DateTimeOffset;
+                case "timestamp with time zone": return ETypeCode.DateTime;
                 case "interval": return ETypeCode.Time;
                 case "time": return ETypeCode.Time;
                 case "time without time zone": return ETypeCode.Time;
-                case "time with time zone": return ETypeCode.Time;
+                case "time with time zone": return ETypeCode.DateTimeOffset;
                 case "character varying": return ETypeCode.String;
                 case "varchar": return ETypeCode.String;
                 case "character": return ETypeCode.CharArray;

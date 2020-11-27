@@ -45,6 +45,8 @@ namespace dexih.connections.mongo
         public override bool CanUpdate => true;
         public override bool CanGroup => false;
         public override bool CanUseBinary => true;
+        public override bool CanUseDateTimeOffset => false;
+
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;
         public override bool CanUseXml => false;

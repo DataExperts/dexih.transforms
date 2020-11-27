@@ -46,6 +46,8 @@ namespace dexih.connections.webservice.restful
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;
+        public override bool CanUseDateTimeOffset => false;
+
         public override bool CanUseBinary => false;
 	    public override bool CanUseArray => false;
 	    public override bool CanUseJson => true;

@@ -49,6 +49,8 @@ namespace dexih.connections.excel
         public override bool CanUpdate => true;
         public override bool CanGroup => false;
 	    public override bool CanUseBinary => false;
+	    public override bool CanUseDateTimeOffset => false;
+
 	    public override bool CanUseArray => false;
 	    public override bool CanUseJson => false;
         public override bool CanUseXml => false;

@@ -12,6 +12,7 @@ using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
 using Oracle.ManagedDataAccess.Client;
+using Oracle.SqlAndPlsqlParser.LocalParsing;
 
 namespace dexih.connections.oracle
 {
@@ -38,6 +39,8 @@ namespace dexih.connections.oracle
         protected override string SqlDelimiterOpen { get; } = $"\"";
         protected override string SqlDelimiterClose { get; } = "\"";
         public override bool CanUseBinary => true;
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseBoolean => false;
         public override bool CanUseTimeSpan => false;
         public override bool CanUseUnsigned => false;
@@ -89,6 +92,28 @@ namespace dexih.connections.oracle
             }
         }
         
+        public override object ConvertForRead(DbDataReader reader, int ordinal, TableColumn column)
+        {
+            if (column.DataType == ETypeCode.DateTimeOffset && reader is OracleDataReader oracleDataReader)
+            {
+                var time = oracleDataReader.GetOracleTimeStampTZ(ordinal);
+                if (time.IsNull)
+                {
+                    return null;
+                }
+                return new DateTimeOffset(time.Value, time.GetTimeZoneOffset());
+            }
+
+            return base.ConvertForRead(reader, ordinal, column);
+        }
+        
+        protected override DbCommand CreateCommand(DbConnection connection)
+        {
+            var cmd = (OracleCommand) connection.CreateCommand();
+            cmd.BindByName = true;
+            return cmd;
+        }
+        
 //        public override object ConvertParameterType(ETypeCode typeCode, int rank, object value)
 //        {
 //            if (value == null || value == DBNull.Value)
@@ -114,6 +139,18 @@ namespace dexih.connections.oracle
 //            
 //            return value;
 //        }
+        
+        public override DbParameter CreateParameter(DbCommand command, string name, ETypeCode type, int rank, ParameterDirection direction, object value)
+        {
+            var param = (OracleParameter) command.CreateParameter();
+            param.ParameterName = name;
+            param.Direction = direction;
+            var converted = ConvertForWrite(param.ParameterName, type, rank, true, value);
+            param.OracleDbType = GetSqlDbType(converted.typeCode);
+            param.Value = converted.value;
+
+            return param;
+        }
         
         public override async Task<DbConnection> NewConnection(CancellationToken cancellationToken)
         {
@@ -734,54 +771,34 @@ ORDER BY cols.table_name, cols.position"))
 
         private OracleDbType GetSqlDbType(ETypeCode typeCode)
         {
-            switch (typeCode)
+            return typeCode switch
             {
-                case ETypeCode.Byte:
-                    return OracleDbType.Byte;
-                case ETypeCode.SByte:
-                    return OracleDbType.Int16;
-                case ETypeCode.UInt16:
-                    return OracleDbType.Int32;
-                case ETypeCode.UInt32:
-                    return OracleDbType.Int64;
-                case ETypeCode.UInt64:
-                    return OracleDbType.Int64;
-                case ETypeCode.Int16:
-                    return OracleDbType.Int16;
-                case ETypeCode.Int32:
-                    return OracleDbType.Int32;
-                case ETypeCode.Int64:
-                    return OracleDbType.Int64;
-                case ETypeCode.Decimal:
-                    return OracleDbType.Decimal;
-                case ETypeCode.Double:
-                    return OracleDbType.Double;
-                case ETypeCode.Single:
-                    return OracleDbType.Double;
-                case ETypeCode.String:
-                    return OracleDbType.Varchar2;
-				case ETypeCode.Text:
-                case ETypeCode.Json:
-                case ETypeCode.Xml:
-                case ETypeCode.Node:
-                case ETypeCode.Unknown:
-				    return OracleDbType.Clob;
-                case ETypeCode.Boolean:
-                    return OracleDbType.Byte;
-                case ETypeCode.DateTime:
-                case ETypeCode.Date:
-                    return OracleDbType.Date;
-                case ETypeCode.DateTimeOffset:
-                    return OracleDbType.TimeStampTZ;
-                case ETypeCode.Time:
-                    return OracleDbType.Varchar2;
-                case ETypeCode.Guid:
-                    return OracleDbType.Varchar2;
-                case ETypeCode.Binary:
-                    return OracleDbType.Blob;
-                default:
-                    return OracleDbType.Varchar2;
-            }
+                ETypeCode.Byte => OracleDbType.Byte,
+                ETypeCode.SByte => OracleDbType.Int16,
+                ETypeCode.UInt16 => OracleDbType.Int32,
+                ETypeCode.UInt32 => OracleDbType.Int64,
+                ETypeCode.UInt64 => OracleDbType.Int64,
+                ETypeCode.Int16 => OracleDbType.Int16,
+                ETypeCode.Int32 => OracleDbType.Int32,
+                ETypeCode.Int64 => OracleDbType.Int64,
+                ETypeCode.Decimal => OracleDbType.Decimal,
+                ETypeCode.Double => OracleDbType.Double,
+                ETypeCode.Single => OracleDbType.Double,
+                ETypeCode.String => OracleDbType.Varchar2,
+                ETypeCode.Text => OracleDbType.Clob,
+                ETypeCode.Json => OracleDbType.Clob,
+                ETypeCode.Xml => OracleDbType.Clob,
+                ETypeCode.Node => OracleDbType.Clob,
+                ETypeCode.Unknown => OracleDbType.Clob,
+                ETypeCode.Boolean => OracleDbType.Byte,
+                ETypeCode.DateTime => OracleDbType.Date,
+                ETypeCode.Date => OracleDbType.Date,
+                ETypeCode.DateTimeOffset => OracleDbType.TimeStampTZ,
+                ETypeCode.Time => OracleDbType.Varchar2,
+                ETypeCode.Guid => OracleDbType.Varchar2,
+                ETypeCode.Binary => OracleDbType.Blob,
+                _ => OracleDbType.Varchar2
+            };
         }
         
 //          public override async Task ExecuteInsertBulk(Table table, DbDataReader reader, CancellationToken cancellationToken = default)
@@ -880,8 +897,7 @@ ORDER BY cols.table_name, cols.position"))
 //                throw new ConnectionException($"Bulk insert failed. {ex.Message}", ex);
 //            }
 //        }
-          
-       
+
         public override async Task<long> ExecuteInsert(Table table, List<InsertQuery> queries, int transactionReference, CancellationToken cancellationToken = default)
         {
              try
@@ -934,12 +950,9 @@ ORDER BY cols.table_name, cols.position"))
 
                                  for (var i = 0; i < query.InsertColumns.Count; i++)
                                  {
-                                     var converted = ConvertForWrite(query.InsertColumns[i].Column,
-                                         query.InsertColumns[i].Value);
-                                     var param = cmd.CreateParameter();
-                                     param.ParameterName = $"col{i}";
-                                     param.OracleDbType = GetSqlDbType(converted.typeCode);
-                                     param.Value = converted.value;
+                                     var insertColumn = query.InsertColumns[i];
+                                     var param = CreateParameter(cmd, $"col{i}", insertColumn.Column.DataType,
+                                         insertColumn.Column.Rank, ParameterDirection.Input, insertColumn.Value);
                                      cmd.Parameters.Add(param);
                                  }
                                 

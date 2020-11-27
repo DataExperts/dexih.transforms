@@ -40,6 +40,7 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
+                    new QueryColumn(new TableColumn("DateOffsetColumn", ETypeCode.DateTimeOffset), new DateTimeOffset(2001, 01, 21, 0, 0, 0, TimeSpan.FromHours(5)) ),
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
@@ -58,6 +59,7 @@ namespace dexih.connections.test
                     new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value2" ),
                     new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), false ),
                     new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
+                    new QueryColumn(new TableColumn("DateOffsetColumn", ETypeCode.DateTimeOffset), new DateTimeOffset(2001, 01, 21, 0, 0, 0, TimeSpan.FromHours(5)) ),
                     new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Double), 1.1 ),
                     new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.2m ),
                     new QueryColumn(new TableColumn("GuidColumn", ETypeCode.Guid), Guid.NewGuid() ),
@@ -83,6 +85,22 @@ namespace dexih.connections.test
             
             SelectQuery selectQuery;
 
+            if (connection.CanUseDateTimeOffset)
+            {
+                selectQuery = new SelectQuery()
+                {
+                    Columns = new SelectColumns() { new SelectColumn(new TableColumn("DateOffsetColumn")) },
+                    Rows = 1,
+                    TableName = "test_table"
+                };
+
+                //should return value2 from second row
+                var dateTimeOffset = await connection.ExecuteScalar(table, selectQuery, CancellationToken.None);
+                
+                Assert.IsType<DateTimeOffset>(dateTimeOffset);
+                Assert.Equal(TimeSpan.FromHours(5), ((DateTimeOffset)dateTimeOffset).Offset);
+            }
+            
             //run a select query with one row, sorted descending.  
             if (connection.CanFilter)
             {

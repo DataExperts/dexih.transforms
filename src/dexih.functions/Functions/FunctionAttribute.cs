@@ -9,7 +9,7 @@ namespace dexih.functions
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum EGenericType
     {
-        None = 1, Numeric, All, String
+        None = 1, Numeric, DateTime, All, String
     }
 
     /// <summary>

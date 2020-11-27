@@ -27,6 +27,8 @@ namespace dexih.transforms
 
         public override bool CanGroup => throw new NotImplementedException();
 
+        public override bool CanUseDateTimeOffset => false;
+
         public override bool CanUseBinary => false;
 
         public override bool CanUseArray => false;

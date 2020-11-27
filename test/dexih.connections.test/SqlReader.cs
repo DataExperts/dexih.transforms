@@ -45,6 +45,7 @@ namespace dexih.connections.test
                 new QueryColumn(new TableColumn("IntColumn", ETypeCode.Int32), 1),
                 new QueryColumn(new TableColumn("StringColumn", ETypeCode.String), "value1" ),
                 new QueryColumn(new TableColumn("DateColumn", ETypeCode.DateTime), new DateTime(2001, 01, 21, 0, 0, 0, DateTimeKind.Utc) ),
+                new QueryColumn(new TableColumn("DateOffsetColumn", ETypeCode.DateTimeOffset), new DateTimeOffset(2001, 01, 21, 0, 0, 0, TimeSpan.FromHours(0)) ),
                 new QueryColumn(new TableColumn("DoubleColumn", ETypeCode.Decimal), 1.1 ),
                 new QueryColumn(new TableColumn("DecimalColumn", ETypeCode.Decimal), 1.1m ),
                 new QueryColumn(new TableColumn("BooleanColumn", ETypeCode.Boolean), true ),
@@ -75,7 +76,7 @@ namespace dexih.connections.test
             // check the columns can be imported.
             var importTable = await connection.GetSourceTableInfo(sqlTable, CancellationToken.None);
 
-            Assert.Equal(10, importTable.Columns.Count(c => c.DeltaType != EDeltaType.RowKey));
+            Assert.Equal(11, importTable.Columns.Count(c => c.DeltaType != EDeltaType.RowKey));
             
             Assert.Equal("IntColumn", importTable.Columns["IntColumn"].Name);
             Assert.True(ETypeCode.Int32 == importTable.Columns["IntColumn"].DataType || ETypeCode.Int64 == importTable.Columns["IntColumn"].DataType);

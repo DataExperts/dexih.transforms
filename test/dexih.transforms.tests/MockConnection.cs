@@ -16,6 +16,8 @@ namespace dexih.transforms.tests
         public override bool CanUpdate { get; } = true;
         public override bool CanDelete { get; } = true;
         public override bool CanGroup { get; } = true;
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseBinary { get; } = true;
         public override bool CanUseArray { get; } = true;
         public override bool CanUseJson { get; } = true;

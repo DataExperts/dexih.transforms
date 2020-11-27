@@ -41,6 +41,8 @@ namespace dexih.connections.dexih
         public override bool CanUpdate => false;
         public override bool CanGroup => false;
 	    public override bool CanUseBinary => true;
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;
         public override bool CanUseXml => true;

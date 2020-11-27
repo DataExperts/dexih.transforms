@@ -89,6 +89,11 @@ namespace dexih.transforms
         public abstract bool CanUseBinary { get; }
         
         /// <summary>
+        /// The connection can directly insert binary (byte[])
+        /// </summary>
+        public abstract bool CanUseDateTimeOffset { get; }
+        
+        /// <summary>
         /// The connection can directly insert arrays
         /// </summary>
         public abstract bool CanUseArray { get; }
@@ -627,7 +632,7 @@ namespace dexih.transforms
         }
 
 
-        public (ETypeCode typeCode, object value) ConvertForWrite(TableColumn column, object value)
+        public virtual (ETypeCode typeCode, object value) ConvertForWrite(TableColumn column, object value)
         {
             return ConvertForWrite(column.Name, column.DataType, column.Rank, column.AllowDbNull, value);
         }

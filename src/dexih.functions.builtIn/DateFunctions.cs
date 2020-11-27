@@ -6,6 +6,7 @@ namespace dexih.functions.builtIn
 {
     public class DateFunctions
     {
+
       [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date",
         Description = "Converts the string value to a date/time")]
         public DateTime ToDate(string value)
@@ -17,6 +18,19 @@ namespace dexih.functions.builtIn
             }
 
             throw new Exception($"The value {value} could not be converted to a date.");
+        }
+
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date",
+            Description = "Converts the string value to a date/time with time zone offset")]
+        public DateTimeOffset ToDateOffset(string value)
+        {
+            var canParse = DateTimeOffset.TryParse(value, out var result);
+            if(canParse)
+            {
+                return result;
+            }
+
+            throw new Exception($"The value {value} could not be converted to a date offset.");
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date (Format)",
@@ -38,6 +52,24 @@ namespace dexih.functions.builtIn
             throw new Exception($"The value {value} could not be converted to a date using the format {format}.");
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date Offset (Format)",
+            Description =
+                "Converts a sting to a date/time with time zone offset based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
+        public DateTimeOffset? ToDateOffsetExact(string value, string[] format)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            var canParse = DateTimeOffset.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result);
+            if(canParse)
+            {
+                return result;
+            }
+
+            throw new Exception($"The value {value} could not be converted to a date offset using the format {format}.");
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
             Description =

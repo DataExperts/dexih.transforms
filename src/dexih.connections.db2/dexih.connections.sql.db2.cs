@@ -39,6 +39,8 @@ namespace dexih.connections.db2
         public override bool CanUseUnsigned => false;
         public override bool CanUseBoolean => false;
         public override bool CanUseDbAutoIncrement => true;
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseArray => false;
 
         public override bool CanUseSByte => false;

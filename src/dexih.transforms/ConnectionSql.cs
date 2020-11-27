@@ -27,6 +27,8 @@ namespace dexih.connections.sql
         public override bool CanGroup => true;
         public override bool CanDelete => true;
         public override bool CanUpdate => true;
+        public override bool CanUseDateTimeOffset => false;
+
         public override bool CanUseBinary => true;
         public override bool CanUseArray => false;
         public override bool CanUseCharArray => false;
@@ -124,14 +126,20 @@ namespace dexih.connections.sql
 
         protected virtual DbCommand CreateCommand(DbConnection connection, string commandText, DbTransaction transaction = null)
         {
-            var cmd = connection.CreateCommand();
+            var cmd = CreateCommand(connection);
             cmd.CommandText = commandText;
             cmd.CommandTimeout = CommandTimeout;
             cmd.Transaction = transaction;
 
             return cmd;
         }
-
+        
+        protected virtual DbCommand CreateCommand(DbConnection connection)
+        {
+            var cmd = connection.CreateCommand();
+            return cmd;
+        }
+        
         //protected DbParameter CreateParameter(DbCommand cmd, string parameterName, object value)
         //{
         //    var param = cmd.CreateParameter();
@@ -180,7 +188,7 @@ namespace dexih.connections.sql
 
                     await using (var transaction = await connection.BeginTransactionAsync(cancellationToken))
                     {
-                        await using (var cmd = connection.CreateCommand())
+                        await using (var cmd = CreateCommand(connection))
                         {
                             cmd.CommandText = insertCommand;
                             cmd.Transaction = transaction;
@@ -189,10 +197,8 @@ namespace dexih.connections.sql
 
                             for (var i = 0; i < columns.Length; i++)
                             {
-                                var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}", columns[i].DataType,
+                                var param = CreateParameter(cmd, $"col{i}", columns[i].DataType,
                                     columns[i].Rank, ParameterDirection.Input, null);
-//                                var param = cmd.CreateParameter();
-//                                param.ParameterName = $"{SqlParameterIdentifier}col{i}";
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
                             }
@@ -233,7 +239,7 @@ namespace dexih.connections.sql
             try
             {
                 await using (var connection = await NewConnection(cancellationToken))
-                await using (var cmd = connection.CreateCommand())
+                await using (var cmd = CreateCommand(connection))
                 {
                     cmd.CommandText = $"select count(*) from {SqlTableName(table)} ";
                     var count = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -252,7 +258,7 @@ namespace dexih.connections.sql
             try
             {
                 await using (var connection = await NewConnection(cancellationToken))
-                await using (var command = connection.CreateCommand())
+                await using (var command = CreateCommand(connection))
                 {
                     command.CommandText = $"drop table {SqlTableName(table)}";
                     await command.ExecuteNonQueryAsync(cancellationToken);
@@ -325,7 +331,7 @@ namespace dexih.connections.sql
 
                     createSql.AppendLine(")");
 
-                    await using (var command = connection.CreateCommand())
+                    await using (var command = CreateCommand(connection))
                     {
                         try
                         {
@@ -458,13 +464,13 @@ namespace dexih.connections.sql
             column.OutputColumn?.Name == null
                 ? (alias == null && column.Column.ReferenceTable == null
                     ? AddDelimiter(column.Column.Name)
-                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "--" + column.Column.Name))
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "__" + column.Column.Name))
                 : (alias == null && column.Column.ReferenceTable == null
                     ? AddDelimiter(column.OutputColumn?.Name)
-                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "--" + column.OutputColumn?.Name));
-        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}--{column.Name}");
+                    : AddDelimiter((column.Column.ReferenceTable ?? alias) + "__" + column.OutputColumn?.Name));
+        private string GetFieldName(TableColumn column, string alias) => alias == null  && column.ReferenceTable == null? AddDelimiter(column.Name) : AddDelimiter($"{column.ReferenceTable?? alias}__{column.Name}");
         
-        private string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
+        protected string BuildSelectQuery(Table table, SelectQuery query, DbCommand cmd)
         {
             var sql = new StringBuilder();
 
@@ -595,7 +601,7 @@ namespace dexih.connections.sql
                     {
                         if (filter.Column1.IsInput && filter.Value2 == null)
                         {
-                            var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column1Default";
+                            var parameterName = $"{prefix}{index}Column1Default";
                             if (cmd != null)
                             {
                                 var param = CreateParameter(
@@ -607,7 +613,7 @@ namespace dexih.connections.sql
                                 cmd.Parameters.Add(param);
                             }
 
-                            sql.Append($" {parameterName} ");
+                            sql.Append($" {SqlParameterIdentifier}{parameterName} ");
                         }
                         else
                         {
@@ -623,7 +629,7 @@ namespace dexih.connections.sql
                     }
                     else
                     {
-                        var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value1";
+                        var parameterName = $"{prefix}{index}Value1";
                         if (cmd != null)
                         {
                             var param = CreateParameter(cmd, parameterName, filter.BestDataType(), 0,
@@ -632,7 +638,7 @@ namespace dexih.connections.sql
                             cmd.Parameters.Add(param);
                         }
 
-                        sql.Append($" {parameterName} ");
+                        sql.Append($" {SqlParameterIdentifier}{parameterName} ");
                     }
 
                     if (filter.Operator == ECompare.IsEqual && filter.Column2 == null && filter.Value2 == null)
@@ -648,14 +654,14 @@ namespace dexih.connections.sql
                             if (filter.Column2 != null)
                                 if (filter.Column2.IsInput)
                                 {
-                                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Column2Default";
+                                    var parameterName = $"{prefix}{index}Column2Default";
                                     if (cmd != null)
                                     {
                                         var param = CreateParameter(cmd, parameterName, filter.Column2.DataType,
                                             filter.Column2.Rank, ParameterDirection.Input,
                                             filter.Column2.DefaultValue);
                                         cmd.Parameters.Add(param);
-                                        sql.Append($" {parameterName} ");
+                                        sql.Append($" {SqlParameterIdentifier}{parameterName} ");
                                     }
                                 }
                                 else
@@ -699,7 +705,7 @@ namespace dexih.connections.sql
                                         sql.Append(" (" + string.Join(",", array.Select((c, arrayIndex) =>
                                                    {
                                                        var parameterName =
-                                                           $"{SqlParameterIdentifier}{prefix}{index1}ArrayValue{arrayIndex}";
+                                                           $"{prefix}{index1}ArrayValue{arrayIndex}";
                                                        if (cmd != null)
                                                        {
                                                            var param = CreateParameter(cmd, parameterName,
@@ -707,14 +713,14 @@ namespace dexih.connections.sql
                                                            cmd.Parameters.Add(param);
                                                        }
 
-                                                       return $"{parameterName}";
+                                                       return $"{SqlParameterIdentifier}{parameterName}";
                                                    })) +
                                                    ") ");
                                     }
                                 }
                                 else
                                 {
-                                    var parameterName = $"{SqlParameterIdentifier}{prefix}{index}Value2";
+                                    var parameterName = $"{prefix}{index}Value2";
                                     if (cmd != null)
                                     {
                                         var param = CreateParameter(cmd, parameterName, filter.BestDataType(),
@@ -723,7 +729,7 @@ namespace dexih.connections.sql
                                         cmd.Parameters.Add(param);
                                     }
 
-                                    sql.Append($" {parameterName} ");
+                                    sql.Append($" {SqlParameterIdentifier}{parameterName} ");
                                 }
                             }
                         }
@@ -844,23 +850,17 @@ namespace dexih.connections.sql
 
                         try
                         {
-                            await using (var cmd = transaction.connection.CreateCommand())
+                            await using (var cmd = CreateCommand(transaction.connection))
                             {
                                 cmd.CommandText = insertCommand;
                                 cmd.Transaction = transaction.transaction;
 
                                 for (var i = 0; i < query.InsertColumns.Count; i++)
                                 {
-                                    var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}",
+                                    var param = CreateParameter(cmd, $"col{i}",
                                         query.InsertColumns[i].Column.DataType, query.InsertColumns[i].Column.Rank, ParameterDirection.Input,
                                          query.InsertColumns[i].Value);
-                                    
-                                    //    query.InsertColumns[i].Value) )
-                                    //var param = cmd.CreateParameter();
-                                    //param.ParameterName = $"{SqlParameterIdentifier}col{i}";
-                                    //param.Value = ConvertForWrite(query.InsertColumns[i].Column,
-                                    //    query.InsertColumns[i].Value);
-                                    //// param.DbType = GetDbType(query.InsertColumns[i].Column.DataType);
+
                                     cmd.Parameters.Add(param);
                                 }
 
@@ -880,7 +880,7 @@ namespace dexih.connections.sql
                     {
                         var autoIncrementSql =
                             $" select max({AddDelimiter(deltaColumn.Name)}) from {SqlTableName(table)}";
-                        await using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = CreateCommand(transaction.connection))
                         {
                             cmd.CommandText = autoIncrementSql;
                             cmd.Transaction = transaction.transaction;
@@ -929,39 +929,18 @@ namespace dexih.connections.sql
                         sql.Remove(sql.Length - 1, 1); //remove last comma
 
                         //  Retrieving schema for columns from a single table
-                        await using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = CreateCommand(transaction.connection))
                         {
                             cmd.Transaction = transaction.transaction;
 
                             var parameters = new DbParameter[query.UpdateColumns.Count];
                             for (var i = 0; i < query.UpdateColumns.Count; i++)
                             {
-                                var param = CreateParameter(cmd, $"{SqlParameterIdentifier}col{i}",
+                                var param = CreateParameter(cmd, $"col{i}",
                                     query.UpdateColumns[i].Column.DataType,  
                                     query.UpdateColumns[i].Column.Rank, 
                                     ParameterDirection.Input, 
                                     query.UpdateColumns[i].Value);
-
-                                //var param = cmd.CreateParameter();
-                                //param.ParameterName = $"{SqlParameterIdentifier}col{i}";
-                                //// param.DbType = GetDbType(query.UpdateColumns[i].Column.DataType);
-                                //// param.Size = -1;
-
-                                //var value = ConvertForWrite(query.UpdateColumns[i].Column,
-                                //    query.UpdateColumns[i].Value);
-                                //param.Value = value;
-
-                                // replaced with ConvertParameterType above.
-                                //// GUID's get parameterized as binary.  So need to explicitly convert to string.
-                                //if (query.UpdateColumns[i].Column.DataType == ETypeCode.Guid)
-                                //{
-                                //    param.Value = query.UpdateColumns[i].Value == null ? (object)DBNull.Value : query.UpdateColumns[i].Value.ToString();
-                                //}
-                                //else
-                                //{
-                                //    param.Value = query.UpdateColumns[i].Value == null ? DBNull.Value
-                                //        : query.UpdateColumns[i].Value;
-                                //}
 
                                 cmd.Parameters.Add(param);
                                 parameters[i] = param;
@@ -1011,7 +990,7 @@ namespace dexih.connections.sql
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        await using (var cmd = transaction.connection.CreateCommand())
+                        await using (var cmd = CreateCommand(transaction.connection))
                         {
                             sql.Append(BuildFiltersString(query.Filters, cmd, "where"));
 
@@ -1049,15 +1028,28 @@ namespace dexih.connections.sql
                 {
 
                     //  Retrieving schema for columns from a single table
-                    await using (var cmd = connection.CreateCommand())
+                    await using (var cmd = CreateCommand(connection))
                     {
                         var sql = BuildSelectQuery(table, query, cmd);
                         cmd.CommandText = sql;
 
+                        var column = table[query.Columns[0].Column.Name];
+
                         object value;
                         try
                         {
-                            value = await cmd.ExecuteScalarAsync(cancellationToken);
+                            // use a reader rather than executescaler so the database specific conversions can be done.
+                            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken))
+                            {
+                                if (await reader.ReadAsync(cancellationToken))
+                                {
+                                    value = ConvertForRead(reader, 0, column);
+                                }
+                                else
+                                {
+                                    value = null;
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -1089,7 +1081,7 @@ namespace dexih.connections.sql
                 
                 try
                 {
-                    var cmd = transaction.connection.CreateCommand();
+                    var cmd = CreateCommand(transaction.connection);
                     cmd.Transaction = transaction.transaction;
                     
                     // if there is no transaction, then use truncate
@@ -1107,7 +1099,7 @@ namespace dexih.connections.sql
                             {
                                 transaction = await GetTransaction(transactionReference, cancellationToken);
                             }
-                            cmd = transaction.connection.CreateCommand();
+                            cmd = CreateCommand(transaction.connection);
                             cmd.Transaction = transaction.transaction;
                             cmd.CommandText = "delete from " + SqlTableName(table);
 
@@ -1155,7 +1147,7 @@ namespace dexih.connections.sql
             try
             {
                 await using (var connection = await NewConnection(cancellationToken))
-                await using (var cmd = connection.CreateCommand())
+                await using (var cmd = CreateCommand(connection))
                 {
                     DbDataReader reader;
 
@@ -1203,7 +1195,7 @@ namespace dexih.connections.sql
         {
             try
             {
-                var cmd = connection.CreateCommand();
+                var cmd = CreateCommand(connection);
                 cmd.CommandText = table.TableType == Table.ETableType.Query ? table.QueryString : BuildSelectQuery(table, query, cmd);
                 DbDataReader reader;
 

@@ -1,8 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Description>Data transformation and anaytics library - GitHub Connection and reader.</Description>
+        <AssemblyTitle>Data Experts Group - GitHub Connection</AssemblyTitle>
+        <VersionPrefix>1.0.1</VersionPrefix>
+        <Authors>Gary Holland</Authors>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <LangVersion>latestmajor</LangVersion>
+        <AssemblyName>dexih.connections.github</AssemblyName>
+        <PackageId>dexih.connections.github</PackageId>
+        <PackageTags>Business Intelligence;BI;ETL;Data Integration;Data Management;DbDataReader;Data Processing;Analytics;sqlserver;sqlite;sql;ftp;sftp;oracle;postgres;postgressql;mysql;azure;excel;oracle;mongo;mongodb;db2;github</PackageTags>
+        <PackageReleaseNotes>Refer to the project url (https://github.com/dataexperts/dexih.transforms) for documentation and raising issues</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/dataexperts/dexih.transforms</PackageProjectUrl>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -22,6 +22,8 @@ namespace dexih.transforms
         public override bool CanDelete => false;
         public override bool CanUpdate => false;
         public override bool CanGroup => false;
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseBinary => true;
         public override bool CanUseArray => true;
         public override bool CanUseJson => true;

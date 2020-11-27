@@ -39,6 +39,8 @@ namespace dexih.connections.sqlserver
     )]
     public class ConnectionSqlServer : ConnectionSql
     {
+        public override bool CanUseDateTimeOffset => true;
+
         public override bool CanUseGuid { get; } = true;
         public override bool AllowsTruncate { get; } = true;
 

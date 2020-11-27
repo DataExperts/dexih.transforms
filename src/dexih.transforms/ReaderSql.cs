@@ -125,7 +125,7 @@ namespace dexih.connections.sql
                 for (var i = 0; i < _sqlReader.FieldCount; i++)
                 {
                     var fieldName = _sqlReader.GetName(i);
-                    var field = fieldName.Split("--", 2);
+                    var field = fieldName.Split("__", 2);
                     int ordinal;
                     if (field.Length == 1)
                     {

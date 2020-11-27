@@ -19,21 +19,23 @@ namespace dexih.connections.test
                 new TableColumn("DoubleColumn", ETypeCode.Double),
                 new TableColumn("BooleanColumn", ETypeCode.Boolean),
                 new TableColumn("DateColumn", ETypeCode.DateTime),
+                new TableColumn("DateOffsetColumn", ETypeCode.DateTimeOffset),
                 new TableColumn("GuidColumn", ETypeCode.Guid),
                 new TableColumn("ArrayColumn", ETypeCode.Int32, rank: 1),
                 new TableColumn("MatrixColumn", ETypeCode.Int32, rank: 2)
                 );
 
-            table.AddRow(new object[] { "value1", 1, 1.1m, 1.1, true, Convert.ToDateTime("2015/01/01"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value2", "2", "2.1", "2.1", "false", "2015-01-02", Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value3", 3, 3.1m, 3.1, true, Convert.ToDateTime("2015/01/03"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value4", 4, 4.1m, 4.1, false, Convert.ToDateTime("2015/01/04"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value5", 5, 5.1m, 5.1, true, Convert.ToDateTime("2015/01/05"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value6", 6, 6.1m, 6.1, false, Convert.ToDateTime("2015/01/06"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value7", 7, 7.1m, 7.1, true, Convert.ToDateTime("2015/01/07"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value8", 8, 8.1m, 8.1, false, Convert.ToDateTime("2015/01/08"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value9", 9, 9.1m, 9.1, true, Convert.ToDateTime("2015/01/09"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
-            table.AddRow(new object[] { "value10", 10, 10.1m, 10.1, false, Convert.ToDateTime("2015/01/10"), Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            var dateOffset = new DateTimeOffset(2015, 01, 01, 0, 0, 0, TimeSpan.FromHours(5));
+            table.AddRow(new object[] { "value1", 1, 1.1m, 1.1, true, Convert.ToDateTime("2015/01/01"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value2", "2", "2.1", "2.1", "false", "2015-01-02", dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value3", 3, 3.1m, 3.1, true, Convert.ToDateTime("2015/01/03"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value4", 4, 4.1m, 4.1, false, Convert.ToDateTime("2015/01/04"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value5", 5, 5.1m, 5.1, true, Convert.ToDateTime("2015/01/05"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value6", 6, 6.1m, 6.1, false, Convert.ToDateTime("2015/01/06"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value7", 7, 7.1m, 7.1, true, Convert.ToDateTime("2015/01/07"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value8", 8, 8.1m, 8.1, false, Convert.ToDateTime("2015/01/08"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value9", 9, 9.1m, 9.1, true, Convert.ToDateTime("2015/01/09"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
+            table.AddRow(new object[] { "value10", 10, 10.1m, 10.1, false, Convert.ToDateTime("2015/01/10"), dateOffset, Guid.NewGuid(), new [] {1,1}, new [,] {{1,1},{2,2}} });
 
             ReaderMemory Adapter = new ReaderMemory(table);
             Adapter.Reset();
@@ -103,6 +105,14 @@ namespace dexih.connections.test
                 Name = "DateColumn",
                 Description = "A date column column",
                 DataType = ETypeCode.DateTime,
+                DeltaType = EDeltaType.TrackingField
+            });
+            
+            table.Columns.Add(new TableColumn()
+            {
+                Name = "DateOffsetColumn",
+                Description = "A date offset column column",
+                DataType = ETypeCode.DateTimeOffset,
                 DeltaType = EDeltaType.TrackingField
             });
             
