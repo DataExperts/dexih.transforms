@@ -84,8 +84,15 @@ namespace dexih.connections.postgressql
                 {
                     return null;
                 }
-                var time = npgsqlDataReader.GetFieldValue<DateTimeOffset>(ordinal);
-                return time;
+
+                // ignore the error and just use a regular date conversion if the field type can't be asserted directly.
+                try
+                {
+                    var time = npgsqlDataReader.GetFieldValue<DateTimeOffset>(ordinal);
+                    return time;
+                }
+                catch(Exception) {}
+                
             }
 
             return base.ConvertForRead(reader, ordinal, column);

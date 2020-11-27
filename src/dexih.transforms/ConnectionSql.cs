@@ -740,11 +740,11 @@ namespace dexih.connections.sql
                 {
                     if (filter.Column1 != null)
                     {
-                        sql.Append($" or ${GetColumn(filter.Column1)} {GetSqlCompare(ECompare.IsNull)} ");
+                        sql.Append($" or {GetColumn(filter.Column1)} {GetSqlCompare(ECompare.IsNull)} ");
                     }
                     if (filter.Column2 != null)
                     {
-                        sql.Append($" or ${GetColumn(filter.Column2)} {GetSqlCompare(ECompare.IsNull)} ");
+                        sql.Append($" or {GetColumn(filter.Column2)} {GetSqlCompare(ECompare.IsNull)} ");
                     }
                 }
 

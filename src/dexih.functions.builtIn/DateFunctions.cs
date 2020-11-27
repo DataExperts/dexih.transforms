@@ -70,6 +70,19 @@ namespace dexih.functions.builtIn
 
             throw new Exception($"The value {value} could not be converted to a date offset using the format {format}.");
         }
+        
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date Offset (Specify offset)",
+            Description =
+                "Converts a date to a date time with a specific hours offset.")]
+        public DateTimeOffset? ToDateOffsetHour(DateTime? value, double? hours)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return new DateTimeOffset(value.Value, hours == null ? TimeSpan.FromHours(hours.Value) : TimeSpan.Zero);
+        }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",
             Description =
