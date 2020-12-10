@@ -36,39 +36,39 @@ namespace dexih.functions.builtIn
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date (Format)",
             Description =
                 "Converts a sting to a date/time based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
-        public DateTime? ToDateExact(string value, string[] format)
+        public DateTime? ToDateExact(string value, string[] format, DateTimeStyles dateStyle = DateTimeStyles.AssumeLocal)
         {
             if (string.IsNullOrEmpty(value))
             {
                 return null;
             }
 
-            var canParse = DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result);
+            var canParse = DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, dateStyle, out var result);
             if(canParse)
             {
                 return result;
             }
 
-            throw new Exception($"The value {value} could not be converted to a date using the format {format}.");
+            throw new Exception($"The value {value} could not be converted to a date using the format {string.Join(", ",format)}.");
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date Offset (Format)",
             Description =
                 "Converts a sting to a date/time with time zone offset based on a specific string format.  See [format strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings?view=netframework-4.7.2) for more information.")]
-        public DateTimeOffset? ToDateOffsetExact(string value, string[] format)
+        public DateTimeOffset? ToDateOffsetExact(string value, string[] format, DateTimeStyles dateStyle = DateTimeStyles.AssumeLocal)
         {
             if (string.IsNullOrEmpty(value))
             {
                 return null;
             }
 
-            var canParse = DateTimeOffset.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result);
+            var canParse = DateTimeOffset.TryParseExact(value, format, CultureInfo.CurrentCulture, dateStyle, out var result);
             if(canParse)
             {
                 return result;
             }
 
-            throw new Exception($"The value {value} could not be converted to a date offset using the format {format}.");
+            throw new Exception($"The value {value} could not be converted to a date offset using the format {string.Join(", ",format)}.");
         }
         
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "To Date Offset (Specify offset)",
@@ -81,7 +81,7 @@ namespace dexih.functions.builtIn
                 return null;
             }
 
-            return new DateTimeOffset(value.Value, hours == null ? TimeSpan.FromHours(hours.Value) : TimeSpan.Zero);
+            return new DateTimeOffset(value.Value, hours == null ? TimeSpan.Zero : TimeSpan.FromHours(hours.Value));
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "Date", Name = "Create Date",

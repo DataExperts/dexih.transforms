@@ -442,7 +442,7 @@ namespace dexih.transforms
                                 referenceQuery.Columns.Add(copy);
                             }
                         }
-                        else if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null)
+                        if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null)
                         {
                             SelectQuery.Columns ??= new SelectColumns();
                             var column = PrimaryTransform.CacheTable.Columns[selectColumn.Column];

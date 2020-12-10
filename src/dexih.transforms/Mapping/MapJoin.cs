@@ -155,27 +155,7 @@ namespace dexih.transforms.Mapping
             var item2 = _column2Ordinal == -1 ? JoinValue : JoinColumn.Name;
             return $"Join({item1} {Compare} {item2}";
         }
-
-        // public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
-        // {
-        //     if (InputColumn == null)
-        //     {
-        //         return new SelectColumn[0];
-        //     }
-        //
-        //     return new[] {new SelectColumn(InputColumn)};
-        // }
-        //
-        // public override IEnumerable<TableColumn> GetRequiredReferenceColumns()
-        // {
-        //     if (JoinColumn == null)
-        //     {
-        //         return new TableColumn[0];
-        //     }
-        //
-        //     return new[] {JoinColumn};
-        // }
-
+        
         public object GetJoinValue(object[] row = null)
         {
             if (_column2Ordinal == -1)

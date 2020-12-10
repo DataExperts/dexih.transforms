@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using System.Threading;
 using System.Xml;
@@ -110,9 +111,20 @@ namespace dexih.functions.builtIn.tests
         {
             get
             {
-                var date1 =  DateTime.Parse("2015-09-24");
+                var date1string = "2015-09-24";
+                var date1 =  DateTime.Parse(date1string);
                 var date2 = DateTime.Parse("2015-09-25");
 
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToDate), new object[] {date1string}, date1};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToDateOffset), new object[] {"2015-09-24 12:00:00+05:00"}, new DateTimeOffset(2015, 09, 24, 12, 00,00, TimeSpan.FromHours(5))};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToDateExact), new object[] {date1string, new [] {"yyyy-MM-dd"}, DateTimeStyles.None}, date1};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToDateOffsetExact), new object[] {"2015-09-24 12:00:00+05:00", new [] { "yyyy-MM-dd HH:mm:ssK"}, DateTimeStyles.None}, new DateTimeOffset(2015, 09, 24, 12, 00,00, TimeSpan.FromHours(5))};
+                yield return new object[]
+                    {typeof(DateFunctions), nameof(DateFunctions.ToDateOffsetHour), new object[] {date1, 5d}, new DateTimeOffset(2015, 09, 24, 0, 00,00, TimeSpan.FromHours(5))};
                 yield return new object[]
                     {typeof(DateFunctions), nameof(DateFunctions.DayOfMonth), new object[] {date1}, 24};
                 yield return new object[]
