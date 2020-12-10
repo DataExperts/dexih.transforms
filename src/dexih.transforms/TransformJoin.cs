@@ -92,11 +92,25 @@ namespace dexih.transforms
 
             if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
             {
-                var col = table.Columns.First(c => c.DeltaType == EDeltaType.ValidFromDate);
-                table.Columns.Remove(col);
+                var col = table.Columns.Where(c => c.DeltaType == EDeltaType.ValidFromDate);
+                if (col.Count() > 1)
+                {
+                    table.Columns.Remove(col.First());
+                }
+                //else
+                //{
+                //    throw new Exception("A valid from column could not be found.");
+                //}
 
-                col = table.Columns.First(c => c.DeltaType == EDeltaType.ValidToDate);
-                table.Columns.Remove(col);
+                col = table.Columns.Where(c => c.DeltaType == EDeltaType.ValidToDate);
+                if (col.Count() > 1)
+                {
+                    table.Columns.Remove(col.First());
+                }
+                //else
+                //{
+                //    throw new Exception("A valid to column could not be found.");
+                //}
             }
 
             return table;
@@ -284,23 +298,6 @@ namespace dexih.transforms
                 }
             }
 
-            if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
-            {
-                _primaryValidFromOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidFromDate);
-                _primaryValidToOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidToDate);
-                _referenceValidFromOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidFromDate);
-                _referenceValidToOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidToDate);
-
-                if(_primaryValidFromOrdinal < 0 || _primaryValidToOrdinal < 0 || _referenceValidFromOrdinal < 0 || _referenceValidToOrdinal < 0)
-                {
-                    throw new Exception("The join transform has a duplicate strategy of Merge Valid/To/From dates, however the primary or join tables do not each contain a columns with delta types valid from and valid to.");
-                }
-
-                _validFromOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidFromDate);
-                _validToOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidToDate);
-            }
-
-
             //if the joinSortField has been, we need to ensure the reference dataset is sorted for duplication resolution.
             if (JoinSortField != null)
             {
@@ -427,7 +424,7 @@ namespace dexih.transforms
                 }
             }
             
-            // if the join is null, then we can push down query to the database.
+            // if the join is null, then we can not push down query to the database.
             if (join == null)
             {
                 // if columns have been requested, then allocate them to the primary or reference table queries
@@ -435,29 +432,34 @@ namespace dexih.transforms
                 {
                     void AllocateSelectColumn(SelectColumn selectColumn)
                     {
-                        if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null && (SelectQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
-                        {
-                            SelectQuery.Columns ??= new SelectColumns();
-                            if (!SelectQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
-                            {
-                                var copy = selectColumn.CloneProperties();
-                                copy.Column.ReferenceTable = PrimaryTransform.TableAlias;
-                                SelectQuery.Columns.Add(copy);
-                            }
-                        }
-
                         if (_referenceTable.Columns[selectColumn.Column] != null && (referenceQuery.Alias == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable)))
                         {
                             referenceQuery.Columns ??= new SelectColumns();
                             if (!referenceQuery.Columns.Exists(c => c.Column.Name == selectColumn.Column.Name && (c.Column.ReferenceTable == selectColumn.Column.ReferenceTable || string.IsNullOrEmpty(selectColumn.Column.ReferenceTable))))
                             {
                                 var copy = selectColumn.CloneProperties();
-                                copy.Column.ReferenceTable = referenceQuery.Alias;
+                                copy.Column.ReferenceTable ??= referenceQuery.Alias;
                                 referenceQuery.Columns.Add(copy);
                             }
                         }
+                        else if (PrimaryTransform.CacheTable.Columns[selectColumn.Column] != null)
+                        {
+                            SelectQuery.Columns ??= new SelectColumns();
+                            var column = PrimaryTransform.CacheTable.Columns[selectColumn.Column];
+                            if (!SelectQuery.Columns.Exists(c => c.Column.Name == column.Name && (c.Column.ReferenceTable == column.ReferenceTable || string.IsNullOrEmpty(column.ReferenceTable))))
+                            {
+                                var copy = selectColumn.CloneProperties();
+                                copy.Column = column;
+                                // copy.Column.ReferenceTable ??= PrimaryTransform.TableAlias;
+                                SelectQuery.Columns.Add(copy);
+                            }
+                        }
+                        //else
+                        //{
+                        //    throw new TransformException($"The column {selectColumn.Column.Name} could not be found in the primary or join table.");
+                        //}
                     }
-                    
+
                     foreach (var column in requestQuery.GetAllColumns())
                     {
                         AllocateSelectColumn(new SelectColumn(column));
@@ -471,6 +473,19 @@ namespace dexih.transforms
                     foreach (var column in Mappings.GetRequiredReferenceColumns(true))
                     {
                         AllocateSelectColumn(column);
+                    }
+
+                    // if this is a mergeDate join, we will also need the valid from/to from each transform.
+                    if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+                    {
+                        var col = PrimaryTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
+                        if (col != null) AllocateSelectColumn(new SelectColumn(col));
+                        col = PrimaryTransform.CacheTable.GetColumn(EDeltaType.ValidToDate);
+                        if (col != null) AllocateSelectColumn(new SelectColumn(col));
+                        col = _referenceTable.GetColumn(EDeltaType.ValidFromDate);
+                        if (col != null) AllocateSelectColumn(new SelectColumn(col));
+                        col = _referenceTable.GetColumn(EDeltaType.ValidToDate);
+                        if (col != null) AllocateSelectColumn(new SelectColumn(col));
                     }
                 }
             }
@@ -593,7 +608,7 @@ namespace dexih.transforms
 
             var returnValue = await PrimaryTransform.Open(auditKey, SelectQuery, cancellationToken);
             if (!returnValue) return false;
-            
+
             GeneratedQuery = new SelectQuery()
             {
                 Columns = PrimaryTransform.Columns,
@@ -631,6 +646,22 @@ namespace dexih.transforms
                 CacheTable = InitializeCacheTable(false); // Mappings.Initialize(PrimaryTransform?.CacheTable, ReferenceTransform?.CacheTable, GetReferenceTableAlias, false);
                 _primaryFieldCount = PrimaryTransform.BaseFieldCount;
                 _referenceFieldCount = ReferenceTransform.BaseFieldCount;
+
+                if (JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
+                {
+                    _primaryValidFromOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidFromDate);
+                    _primaryValidToOrdinal = PrimaryTransform.GetOrdinal(EDeltaType.ValidToDate);
+                    _referenceValidFromOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidFromDate);
+                    _referenceValidToOrdinal = ReferenceTransform.GetOrdinal(EDeltaType.ValidToDate);
+
+                    if (_primaryValidFromOrdinal < 0 || _primaryValidToOrdinal < 0 || _referenceValidFromOrdinal < 0 || _referenceValidToOrdinal < 0)
+                    {
+                        throw new Exception("The join transform has a duplicate strategy of Merge Valid/To/From dates, however the primary or join tables do not each contain a columns with delta types valid from and valid to.");
+                    }
+
+                    _validFromOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidFromDate);
+                    _validToOrdinal = CacheTable.GetOrdinal(EDeltaType.ValidToDate);
+                }
 
                 var canUseSorted = true;
                 // if one of the functions joins the two tables then we will need to default to HashJoin.
@@ -1214,7 +1245,13 @@ namespace dexih.transforms
 
             if(JoinDuplicateStrategy == EDuplicateStrategy.MergeValidDates)
             {
-                var column = CacheTable.GetColumn(EDeltaType.ValidFromDate);
+                var column = PrimaryTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
+
+                if (column == null)
+                {
+                    throw new TransformException("The update strategy is merge valid dates which requires a valid from date on the join table.");
+                }
+
                 if (fields.Count(c => c.Column.Name == column.Name) > 0)
                 {
                     throw new TransformException("The update strategy is merge valid dates, and the validfrom field is part of the joins.  Remove the validfrom from the joins.");

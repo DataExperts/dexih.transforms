@@ -257,8 +257,8 @@ namespace dexih.transforms
             if (_autoIncrementKey > 0)
             {
                 return _autoIncrementKey;
-                
             }
+
             // get the last surrogate key it there is one on the table.
             var autoIncrement = TargetTable.GetColumn(EDeltaType.AutoIncrement);
             if (autoIncrement != null)

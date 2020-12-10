@@ -65,12 +65,10 @@ namespace dexih.transforms.Mapping
 
         public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
-            if (InputColumn == null)
+            if (InputColumn != null)
             {
-                return new SelectColumn[0];
+                yield return new SelectColumn(InputColumn);
             }
-
-            return new[] {new SelectColumn(InputColumn), };
         }
 
         public void SetInput(IEnumerable<TableColumn> inputColumns)

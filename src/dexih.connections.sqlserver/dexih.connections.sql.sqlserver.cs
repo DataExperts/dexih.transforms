@@ -50,14 +50,14 @@ namespace dexih.connections.sqlserver
             return geometryWriter.Write(value);
         }
 
-        protected override string SqlFromAttribute(Table table)
+        protected override string SqlFromAttribute(Table table, string alias)
         {
-            var sql = "";
+            var sql = SqlTableName(table) + " ";
 
             if (table.IsVersioned)
-                sql = "FOR system_time all ";
+                sql = sql + "FOR system_time all ";
 
-            sql = sql + " WITH(NOLOCK) ";
+            sql = sql + $"{AddDelimiter(alias)} WITH(NOLOCK) ";
 
             return sql;
         }

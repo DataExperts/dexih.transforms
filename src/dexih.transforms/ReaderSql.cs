@@ -78,7 +78,7 @@ namespace dexih.connections.sql
                 // disables push down query logic
                 if (IgnoreQuery)
                 {
-                    requestQuery = null;
+                    requestQuery = new SelectQuery() { Alias = requestQuery.Alias };
                 }
 
                 SelectQuery = requestQuery;

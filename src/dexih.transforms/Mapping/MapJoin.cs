@@ -198,12 +198,12 @@ namespace dexih.transforms.Mapping
 
         public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
-            if(InputColumn != null) yield return new SelectColumn(InputColumn);
+            if (JoinColumn != null) yield return new SelectColumn(JoinColumn);
         }
         
         public override IEnumerable<SelectColumn> GetRequiredReferenceColumns()
         {
-            if(JoinColumn != null) yield return new SelectColumn(JoinColumn);
+            if (InputColumn != null) yield return new SelectColumn(InputColumn);
         }
     }
 }

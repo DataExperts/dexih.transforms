@@ -401,14 +401,14 @@ namespace dexih.functions.Query
             {
                 foreach (var joinFilter in Joins.SelectMany(join => join.JoinFilters))
                 {
-                    if (joinFilter.Column1 != null)
-                    {
-                        yield return joinFilter.Column1;
-                    }
-
                     if (joinFilter.Column2 != null)
                     {
                         yield return joinFilter.Column2;
+                    }
+
+                    if (joinFilter.Column1 != null)
+                    {
+                        yield return joinFilter.Column1;
                     }
                 }
             }

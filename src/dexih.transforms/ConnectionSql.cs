@@ -45,7 +45,7 @@ namespace dexih.connections.sql
         protected virtual string SqlDelimiterClose { get; } = "\"";
         public virtual string SqlValueOpen { get; } = "'";
         public virtual string SqlValueClose { get; } = "'";
-        protected virtual string SqlFromAttribute(Table table) => "";
+        protected virtual string SqlFromAttribute(Table table, string alias) => $"{SqlTableName(table)} {AddDelimiter(alias)}";
 
         public virtual bool AllowsTruncate { get; } = false;
 
@@ -492,8 +492,7 @@ namespace dexih.connections.sql
             
             sql.Append("select ");
             sql.Append(string.Join(",", columns.Select(c => c.Value.name + " " + c.Value.alias )) + " ");
-            sql.Append($"from {SqlTableName(table)} {AddDelimiter(alias)} ");
-            sql.Append(" " + SqlFromAttribute(table) + " ");
+            sql.Append($"from {SqlFromAttribute(table, alias)} ");
 
             if (query != null)
             {
@@ -509,7 +508,7 @@ namespace dexih.connections.sql
                     };
 
                     sql.Append(
-                        $" {joinType} join {SqlTableName(join.JoinTable)} {AddDelimiter(join.Alias)} {SqlFromAttribute(join.JoinTable)} on ");
+                        $" {joinType} join {SqlFromAttribute(join.JoinTable, join.Alias)} on ");
                     sql.Append(BuildFiltersString(join.JoinFilters, cmd, "", alias));
                 }
             }

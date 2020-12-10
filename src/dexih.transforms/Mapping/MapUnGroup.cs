@@ -98,12 +98,10 @@ namespace dexih.transforms.Mapping
         
         public override IEnumerable<SelectColumn> GetRequiredColumns(bool includeAggregate)
         {
-            if (NodeColumn == null)
+            if (NodeColumn != null)
             {
-                return new SelectColumn[0];
+                yield return new SelectColumn(NodeColumn);
             }
-
-            return new[] {new SelectColumn(NodeColumn)};
         }
         
         public override bool MatchesSelectQuery(SelectQuery selectQuery)
