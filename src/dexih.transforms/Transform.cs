@@ -517,6 +517,13 @@ namespace dexih.transforms
                 else
                 {
                     columns = new SelectColumns(requestQuery.Columns);
+
+                    // if there is an incremental column, we need to included it for deltas
+                    var incrementalColumns = CacheTable.Columns.Where(c => c.IsIncrementalUpdate).ToArray();
+                    if(incrementalColumns.Length == 1)
+                    {
+                        columns.AddIfNotExists(new SelectColumn(incrementalColumns[0]), c => c.Column.Name);
+                    }
                 }
 
                 if (ReferenceConnection.CanFilter)

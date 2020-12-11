@@ -1234,11 +1234,14 @@ namespace dexih.transforms
                 foreach (var col in ReferenceTransform.CacheTable.GetColumns(EDeltaType.NaturalKey))
                 {
                     var primaryColumn = PrimaryTransform.CacheTable.Columns[col.Name];
-                    if (primaryColumn == null)
+                    //if (primaryColumn == null)
+                    //{
+                    //    throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+                    //}
+                    if (primaryColumn != null)
                     {
-                        throw new Exception($"The delta could not run as the target table contains a column {col.Name} that does not have a matching input column.");
+                        fields.Add(new Sort(primaryColumn));
                     }
-                    fields.Add(new Sort(primaryColumn));
                 }
                 var validFrom = ReferenceTransform.CacheTable.GetColumn(EDeltaType.ValidFromDate);
                 if (validFrom != null)

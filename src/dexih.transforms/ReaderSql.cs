@@ -83,6 +83,7 @@ namespace dexih.connections.sql
 
                 SelectQuery = requestQuery;
                 GeneratedQuery = GetGeneratedQuery(requestQuery);
+                GeneratedQuery.Alias = TableAlias;
                 
                 if (GeneratedQuery?.Columns?.Count > 0)
                 {
@@ -117,8 +118,7 @@ namespace dexih.connections.sql
             {
                 _firstRead = false;
                 _sqlConnection = await ((ConnectionSql) ReferenceConnection).NewConnection(cancellationToken);
-                _sqlReader =
-                    await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, SelectQuery, cancellationToken);
+                _sqlReader = await ReferenceConnection.GetDatabaseReader(CacheTable, _sqlConnection, GeneratedQuery, cancellationToken);
                 _fieldCount = _sqlReader.FieldCount;
                 _fieldOrdinals = new List<int>();
 

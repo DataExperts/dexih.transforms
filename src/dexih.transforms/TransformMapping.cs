@@ -122,11 +122,12 @@ namespace dexih.transforms
 						Column = column,
 						Direction = sort.Direction
 					};
-					if (!mappedSorts.TryAdd(newSort, sort))
+					if (mappedSorts.TryAdd(newSort, sort))
 					{
-						throw new TransformException($"The column {column.Name} is duplicated in the sort.  Check sorts and groups and avoid duplicate keys.");
+						newSorts.Add(newSort);
+						// throw new TransformException($"The column {column.Name} is duplicated in the sort.  Check sorts and groups and avoid duplicate keys.");
 					}
-					newSorts.Add(newSort);
+					
 				}
 
 				newSelectQuery.Sorts = newSorts;
