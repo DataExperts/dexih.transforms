@@ -383,7 +383,12 @@ namespace dexih.functions
                 case ETypeCode.UInt16:
                 case ETypeCode.UInt32:
                 case ETypeCode.UInt64:
-                    Format = "#,##0";
+                    // if the column is a tracking or non-tracking field, it is likely to be a value which should be formatted with commas. 
+                    if (DeltaType == EDeltaType.TrackingField || DeltaType == EDeltaType.NonTrackingField)
+                    {
+                        Format = "#,##0";
+                    }
+
                     break;
                 case ETypeCode.Single:
                 case ETypeCode.Decimal:

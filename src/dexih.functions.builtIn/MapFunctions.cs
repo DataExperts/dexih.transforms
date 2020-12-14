@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -96,7 +97,7 @@ namespace dexih.functions.BuiltIn
         }
 
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split",
-            Description = "Splits a string into multiple return fields that are based on the characters in an array.")]
+            Description = "Splits a string into multiple return fields using the separator as the delimiter")]
         public int Split(string value, string separator, int? count, out string[] result)
         {
             if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(separator))
@@ -110,6 +111,22 @@ namespace dexih.functions.BuiltIn
             return result.Length;
         }
 
+        [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Split Reverse",
+            Description = "Splits a string into multiple return fields (in reverse) using the separator as the delimiter")]
+        public int SplitReverse(string value, string separator, out string[] result)
+        {
+            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(separator))
+            {
+                result = null;
+                return 0;
+            }
+
+            result = value.Split(separator.ToCharArray()).Reverse().ToArray();
+            
+            return result.Length;
+        }
+
+        
         [TransformFunction(FunctionType = EFunctionType.Map, Category = "String", Name = "Substring",
             Description =
                 "Retrieves a substring from this instance. The substring starts at a specified character position and has a specified length.")]
@@ -478,7 +495,8 @@ namespace dexih.functions.BuiltIn
 
             return defaultValue;
         }
-
+        
+        
     }
 
 }
