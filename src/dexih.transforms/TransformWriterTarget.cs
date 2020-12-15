@@ -755,7 +755,7 @@ namespace dexih.transforms
                 WriterResult.ReadTicks += inTransform.ReaderTimeSpan().Ticks;
                 WriterResult.ProcessingTicks += inTransform.ProcessingTimeSpan().Ticks;
 
-                if (WriterResult.RowsTotal == 0)
+                if (WriterResult.RowsReadPrimary == 0)
                     WriterResult.MaxIncrementalValue = WriterResult.LastMaxIncrementalValue;
                 else
                     WriterResult.MaxIncrementalValue = inTransform.GetMaxIncrementalValue();
