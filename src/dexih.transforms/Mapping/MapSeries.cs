@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using dexih.functions;
 using dexih.functions.Query;
 using Dexih.Utils.DataType;
@@ -10,13 +11,31 @@ namespace dexih.transforms.Mapping
     // [JsonConverter(typeof(StringEnumConverter))]
     public enum ESeriesGrain
     {
+        [Description("Every Second")]
         Second = 1,
+        
+        [Description("Every Minute")]
         Minute,
+        
+        [Description("Hourly")]
         Hour,
+        
+        [Description("Daily")]
         Day,
+        
+        [Description("Weekly")]
         Week,
+        
+        [Description("Daily (weekdays only)")]
+        WeekDay,
+        
+        [Description("Monthly")]
         Month,
+        
+        [Description("Yearly")]
         Year,
+        
+        [Description("By numeric sequence")]
         Number
     }
     
@@ -102,6 +121,7 @@ namespace dexih.transforms.Mapping
                     case ESeriesGrain.Hour:
                         return new DateTime(dateValue.Year, dateValue.Month, dateValue.Day, dateValue.Hour, 0, 0);
                     case ESeriesGrain.Day:
+                    case ESeriesGrain.WeekDay:
                         return new DateTime(dateValue.Year, dateValue.Month, dateValue.Day, 0, 0, 0);
                     case ESeriesGrain.Week:
                         var newDate = new DateTime(dateValue.Year, dateValue.Month, dateValue.Day, 0, 0, 0);
@@ -167,7 +187,7 @@ namespace dexih.transforms.Mapping
                 }
             }
 
-            throw new Exception($"Can not create a series grain of {SeriesGrain} on data type {value.GetType().Name}.");
+            throw new Exception($"Can not create a series grain of {SeriesGrain} on data type {value?.GetType().Name ?? "null"}.");
         }
         
 
@@ -194,6 +214,18 @@ namespace dexih.transforms.Mapping
                         return dateValue.AddDays(SeriesStep);
                     case ESeriesGrain.Week:
                         return dateValue.AddDays(SeriesStep * 7);
+                    case ESeriesGrain.WeekDay:
+                        var newDate = dateValue;
+                        for (var i = 0; i < SeriesStep; i++)
+                        {
+                            newDate = newDate.AddDays(1);
+                            while (newDate.DayOfWeek == DayOfWeek.Saturday || newDate.DayOfWeek == DayOfWeek.Sunday)
+                            {
+                                newDate = newDate.AddDays(1);
+                            }
+                        }
+                        return newDate;
+
                     case ESeriesGrain.Month:
                         return dateValue.AddMonths(SeriesStep);
                     case ESeriesGrain.Year:
