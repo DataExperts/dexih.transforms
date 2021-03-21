@@ -10,7 +10,7 @@ namespace dexih.transforms.File
     /// reflects options used by the csvHelper = https://joshclose.github.io/CsvHelper/
     /// </summary>
     [DataContract]
-    public class FileConfiguration : CsvHelper.Configuration.CsvConfiguration
+    public record FileConfiguration : CsvHelper.Configuration.CsvConfiguration
     {
         public FileConfiguration(): base(CultureInfo.CurrentCulture)
         {
@@ -31,9 +31,13 @@ namespace dexih.transforms.File
         [DataMember(Order = 2)]
         public bool SetWhiteSpaceCellsToNull { get; set; } = true;
 
-        [JsonIgnore, IgnoreDataMember]
-        public override CultureInfo CultureInfo { get => base.CultureInfo; set => base.CultureInfo = value; }
-        
+        // [JsonIgnore, IgnoreDataMember]
+        // public override CultureInfo CultureInfo
+        // {
+        //     get => base.CultureInfo; 
+        //     set => base.CultureInfo = value;
+        // }
+        //
     }
 
 }

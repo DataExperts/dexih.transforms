@@ -12,7 +12,7 @@ using dexih.functions;
 using dexih.transforms;
 using dexih.transforms.Exceptions;
 using Dexih.Utils.DataType;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace dexih.connections.mysql
 {

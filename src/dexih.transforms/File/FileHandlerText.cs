@@ -107,7 +107,7 @@ namespace dexih.transforms.File
                     {
                         await csv.ReadAsync();
                         csv.ReadHeader();
-                        headers = csv.Context.HeaderRecord;
+                        headers = csv.HeaderRecord;
                     }
                     catch (Exception ex)
                     {
@@ -117,7 +117,7 @@ namespace dexih.transforms.File
                 else
                 {
                     await csv.ReadAsync();
-                    headers = Enumerable.Range(0, csv.Context.HeaderRecord.Length)
+                    headers = Enumerable.Range(0, csv.HeaderRecord.Length)
                         .Select(c => "column-" + c.ToString().PadLeft(3, '0')).ToArray();
                 }
             
@@ -225,9 +225,9 @@ namespace dexih.transforms.File
                     var column = _table.Columns[col];
                     if (column.DeltaType != EDeltaType.FileName && column.DeltaType != EDeltaType.FileRowNumber)
                     {
-                        for (var csvPos = 0; csvPos < _csvReader.Context.HeaderRecord.Length; csvPos++)
+                        for (var csvPos = 0; csvPos < _csvReader.HeaderRecord.Length; csvPos++)
                         {
-                            if (_csvReader.Context.HeaderRecord[csvPos] == column.Name)
+                            if (_csvReader.HeaderRecord[csvPos] == column.Name)
                             {
                                 _csvOrdinalMappings.Add(col, new CsvField(csvPos, column.DataType, column.Rank));
                                 break;
@@ -260,7 +260,7 @@ namespace dexih.transforms.File
 
                     if (_responseDataOrdinal >= 0)
                     {
-                        row[_responseDataOrdinal] = _csvReader.Context.RawRecord;
+                        row[_responseDataOrdinal] = _csvReader.Parser.RawRecord;
                     }
 
                     _currentFileRowNumber++;

@@ -80,7 +80,7 @@ namespace dexih.functions
 
         public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
         {
-            throw new InvalidOperationException("Should not get here.");
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
         }
     }
 }
