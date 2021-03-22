@@ -226,9 +226,9 @@ namespace dexih.transforms
 
         public override Task DataWriterFinish(Table table, CancellationToken cancellationToken)
         {
+            _csvWriter.Dispose();
             _fileWriter.Dispose();
             _fileStream.Dispose();
-            _csvWriter.Dispose();
 
             return Task.CompletedTask;
         }
