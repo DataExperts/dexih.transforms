@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
+      <PackageReference Include="MathNet.Numerics" Version="5.0.0-alpha08" />
     </ItemGroup>
 
     <ItemGroup>

@@ -27,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Dexih.Utils.CopyProperties" Version="1.0.97" />
     <PackageReference Include="Dexih.Utils.DataType" Version="1.0.156" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
   </ItemGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputType>Library</OutputType>

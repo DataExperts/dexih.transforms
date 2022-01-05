@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="IBM.Data.DB2.Core-osx" Version="3.1.0.300" />
+      <PackageReference Include="IBM.Data.DB2.Core-osx" Version="3.1.0.500" />
     </ItemGroup>
 
 </Project>
